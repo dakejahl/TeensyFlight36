@@ -10,11 +10,20 @@ int main()
 	while (1) 
 	{
 		digitalWriteFast(13, HIGH);
-		delay(1000);
+		delay(100);
 		digitalWriteFast(13, LOW);
-		delay(1000);
+		delay(100);
 	}
 
 	return 0;
 }
 
+
+
+// As a minimum, the following source files must be included in your project:
+
+// FreeRTOS/Source/tasks.c
+// FreeRTOS/Source/queue.c
+// FreeRTOS/Source/list.c
+// FreeRTOS/Source/portable/[compiler]/[architecture]/port.c.
+// FreeRTOS/Source/portable/MemMang/heap_x.c where ‘x’ is 1, 2, 3, 4 or 5.
