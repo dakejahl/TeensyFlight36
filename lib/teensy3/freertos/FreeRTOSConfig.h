@@ -85,13 +85,14 @@ off.  The blinky demo will use the default tickless idle implementation to
 turn the tick off. */
 #define configUSE_TICKLESS_IDLE		0
 
+#define configUSE_TIME_SLICING                  1
 #define configUSE_PREEMPTION					1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION	0
 #define configUSE_QUEUE_SETS					1
-#define configUSE_IDLE_HOOK						0
+#define configUSE_IDLE_HOOK						1
 #define configUSE_TICK_HOOK						0  // change from 1
 #define configCPU_CLOCK_HZ						(F_CPU)
-#define configMAX_PRIORITIES					( 5 )
+#define configMAX_PRIORITIES					( 3 )
 #define configMINIMAL_STACK_SIZE				( ( unsigned short ) 120 )
 #define configTOTAL_HEAP_SIZE					( ( size_t ) ( 26 * 1024 ) )
 #define configMAX_TASK_NAME_LEN					( 10 )
