@@ -20,24 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Arduino.h>
+#include "DispatchQueue.hpp"
 
-#include <FreeRTOS.h>
-#include <task.h>
-
-// extern tasks declared elsewhere in program
-void LEDTask(void* args);
-void SerialTask(void* args);
-
-int main() {
-  // create the tasks
-  xTaskCreate(LEDTask, "LT", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
-  xTaskCreate(SerialTask, "ST", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-
-  // start scheduler, main should stop functioning here
-  vTaskStartScheduler();
-
-  for(;;);
-
-  return 0;
+void DispatchQueue::do_nothing(void)
+{
+	// What
+	return;
 }

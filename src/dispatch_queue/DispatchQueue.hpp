@@ -22,22 +22,13 @@
 
 #include <Arduino.h>
 
-#include <FreeRTOS.h>
-#include <task.h>
+#include <freertos/include/FreeRTOS.h>
+#include <freertos/include/task.h>
+#include <freertos/include/event_groups.h>
+#include <freertos/include/semphr.h>
 
-// extern tasks declared elsewhere in program
-void LEDTask(void* args);
-void SerialTask(void* args);
-
-int main() {
-  // create the tasks
-  xTaskCreate(LEDTask, "LT", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
-  xTaskCreate(SerialTask, "ST", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-
-  // start scheduler, main should stop functioning here
-  vTaskStartScheduler();
-
-  for(;;);
-
-  return 0;
-}
+class DispatchQueue
+{
+public:
+	void do_nothing(void);
+};
