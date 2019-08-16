@@ -27,6 +27,16 @@
 
 #include <dispatch_queue/DispatchQueue.hpp>
 
+// printf convenience macro
+// TODO: make it thread safe
+#define _PRINTF_BUFFER_LENGTH_ 64U
+static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];
+#define printf(a,...)														\
+	do{																		\
+	snprintf(_pf_buffer_, sizeof(_pf_buffer_), a, ##__VA_ARGS__);			\
+	Serial.print(_pf_buffer_);												\
+	}while(0);
+
 extern void LEDTask(void* args);
 
 int main()
