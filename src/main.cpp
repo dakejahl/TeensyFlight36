@@ -51,7 +51,7 @@ int main()
 
 	auto printout = []
 	{
-		Serial.println("This is a test");
+		printf("This is a test\n")
 	};
 
 	dispatcher->dispatch(printout);

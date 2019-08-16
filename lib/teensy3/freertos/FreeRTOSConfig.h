@@ -113,6 +113,9 @@ turn the tick off. */
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portGET_RUN_TIME_COUNTER_VALUE()
 
+// CLI stuff
+#define configCOMMAND_INT_MAX_OUTPUT_SIZE 3200 // TODO: size appropriately
+
 /* This demo makes use of one or more example stats formatting functions.  These
 format the raw data provided by the uxTaskGetSystemState() function in to human
 readable ASCII form.  See the notes in the implementation of vTaskList() within
