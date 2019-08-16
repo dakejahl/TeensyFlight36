@@ -25,19 +25,37 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-// extern tasks declared elsewhere in program
-void LEDTask(void* args);
-void SerialTask(void* args);
+#include <dispatch_queue/DispatchQueue.hpp>
 
-int main() {
-  // create the tasks
-  xTaskCreate(LEDTask, "LT", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
-  xTaskCreate(SerialTask, "ST", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+extern void LEDTask(void* args);
 
-  // start scheduler, main should stop functioning here
-  vTaskStartScheduler();
+int main()
+{
+	// Create the tasks
+	xTaskCreate(LEDTask, "LT", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 
-  for(;;);
+	Serial.begin(9600);
 
-  return 0;
+	// Create our dispatch queue
+	auto dispatcher = new DispatchQueue("dispatcher");
+
+	auto printout = []
+	{
+		Serial.println("This is a test");
+	};
+
+	dispatcher->dispatch(printout);
+
+	// dispatcher will just sleep forever now...
+
+	vTaskStartScheduler();
+
+	for(;;);
+
+	return 0;
+}
+
+extern "C" void vApplicationIdleHook(void)
+{
+	// Add profiling here
 }

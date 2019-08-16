@@ -27,7 +27,7 @@
 #include <Arduino.h>
 
 
-#define LED_PIN 13U
+#define LED_PIN 13
 
 void LEDTask(void* args)
 {
