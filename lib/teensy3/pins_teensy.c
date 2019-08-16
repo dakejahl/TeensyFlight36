@@ -453,7 +453,7 @@ extern void usb_init(void);
 
 #if F_CPU > 16000000
 #define F_TIMER (F_PLL/2)
-#else 
+#else
 #define F_TIMER (F_PLL)
 #endif//Low Power
 
@@ -607,9 +607,11 @@ void _init_Teensyduino_internal_(void)
 	// https://forum.pjrc.com/threads/36606-startup-time-(400ms)?p=113980&viewfull=1#post113980
 	// https://forum.pjrc.com/threads/31290-Teensey-3-2-Teensey-Loader-1-24-Issues?p=87273&viewfull=1#post87273
 
-	delay_NoSysTick(TEENSY_INIT_USB_DELAY_BEFORE * 2);
+	// TODO: This is problematic. The delay before/after value is not correct for the
+	// delay_NoSysTick() function. I need to measure this...
+	delay_NoSysTick(TEENSY_INIT_USB_DELAY_BEFORE * 5);
 	usb_init();
-	delay_NoSysTick(TEENSY_INIT_USB_DELAY_AFTER * 2);
+	delay_NoSysTick(TEENSY_INIT_USB_DELAY_AFTER * 5);
 }
 
 
@@ -969,7 +971,7 @@ void analogWriteFrequency(uint8_t pin, float frequency)
 	}
 #endif
 
-	
+
 	for (prescale = 0; prescale < 7; prescale++) {
 		minfreq = (float)(ftmClock >> prescale) / 65536.0f;	//Use ftmClock instead of F_TIMER
 		if (frequency >= minfreq) break;
@@ -1295,7 +1297,7 @@ uint32_t pulseIn_low(volatile uint8_t *reg, uint32_t timeout)
 {
 	uint32_t timeout_count = timeout * PULSEIN_LOOPS_PER_USEC;
 	uint32_t usec_start, usec_stop;
-	
+
 	// wait for any previous pulse to end
 	while (!*reg) {
 		if (--timeout_count == 0) return 0;
@@ -1348,7 +1350,7 @@ uint32_t pulseIn_low(volatile uint8_t *reg, uint8_t mask, uint32_t timeout)
 {
 	uint32_t timeout_count = timeout * PULSEIN_LOOPS_PER_USEC;
 	uint32_t usec_start, usec_stop;
-	
+
 	// wait for any previous pulse to end
 	while (!(*reg & mask)) {
 		if (--timeout_count == 0) return 0;
