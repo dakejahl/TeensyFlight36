@@ -334,11 +334,13 @@ void MillisTimer::runFromTimer()
 // code will run at lower interrupt priority for better compatibility
 // with libraries using mid-to-high priority interrupts.
 
-extern "C" volatile uint32_t systick_millis_count;
-void systick_isr(void)
-{
-	systick_millis_count++;
-	MillisTimer::runFromTimer();
-}
+
+// Replaced in mk20dx128.c
+// extern "C" volatile uint32_t systick_millis_count;
+// void systick_isr(void)
+// {
+// 	systick_millis_count++;
+// 	MillisTimer::runFromTimer();
+// }
 
 

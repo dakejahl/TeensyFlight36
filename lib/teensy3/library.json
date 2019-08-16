@@ -1,0 +1,19 @@
+{
+    "name": "teensy36_FreeRTOS",
+    "version": "0.0.0",
+    "build": {
+        "flags": [
+        	"-I freertos/",
+	        "-I freertos/include",
+	        "-I freertos/portable/GCC/ARM_CM4F/"
+    	],
+
+    	"srcFilter": [
+    		"+<freertos>",
+    		"+<freertos/portable/GCC/ARM_CM4F>",
+        	"+<*.c>",
+        	"+<*.cpp>",
+        	"+<*.h>"
+    	]
+    }
+}

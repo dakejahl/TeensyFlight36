@@ -140,6 +140,9 @@ const struct digital_pin_bitband_and_config_table_struct digital_pin_to_info_PGM
 
 #endif
 
+// Jake: added so that delay() can be called before systick is configured
+static void delay_NoSysTick(uint32_t millis);
+
 static void dummy_isr() {};
 
 typedef void (*voidFuncPtr)(void);
@@ -604,9 +607,9 @@ void _init_Teensyduino_internal_(void)
 	// https://forum.pjrc.com/threads/36606-startup-time-(400ms)?p=113980&viewfull=1#post113980
 	// https://forum.pjrc.com/threads/31290-Teensey-3-2-Teensey-Loader-1-24-Issues?p=87273&viewfull=1#post87273
 
-	delay(TEENSY_INIT_USB_DELAY_BEFORE);
+	delay_NoSysTick(TEENSY_INIT_USB_DELAY_BEFORE * 2);
 	usb_init();
-	delay(TEENSY_INIT_USB_DELAY_AFTER);
+	delay_NoSysTick(TEENSY_INIT_USB_DELAY_AFTER * 2);
 }
 
 
@@ -1175,7 +1178,17 @@ uint8_t shiftIn_msbFirst(uint8_t dataPin, uint8_t clockPin)
         return value;
 }
 
-
+// Jake: calibration factor for delay_NoSysTick, verified timing on Teensy3.6 with F_CPU = 180000000
+#define CAL_FACTOR (F_CPU/6007)
+// delay function that is safe to use when SysTick is not running yet
+// param[in] millis milliseconds to delay
+void delay_NoSysTick(uint32_t millis) {
+  uint32_t iterations = millis * CAL_FACTOR;
+  uint32_t i;
+  for(i = 0; i < iterations; ++i) {
+    asm volatile("nop\n\t");
+  }
+}
 
 // the systick interrupt is supposed to increment this at 1 kHz rate
 volatile uint32_t systick_millis_count = 0;

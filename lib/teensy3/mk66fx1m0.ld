@@ -106,6 +106,11 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
+	.heap (NOLOAD) : {
+		. = ALIGN(4);
+		*(.heapsection)
+	} > RAM
+
 	_estack = ORIGIN(RAM) + LENGTH(RAM);
 	_teensy_model_identifier = 0x22;
 }
