@@ -32,6 +32,10 @@
 #include "pins_arduino.h"
 #include "HardwareSerial.h"
 
+// Jake:
+// Helpers for understanding my config
+#define STR_HELPER(x) #x
+#define TO_STRING(x) STR_HELPER(x)
 
 #if defined(KINETISK)
 #define GPIO_BITBAND_ADDR(reg, bit) (((uint32_t)&(reg) - 0x40000000) * 32 + (bit) * 4 + 0x42000000)
@@ -459,6 +463,10 @@ extern void usb_init(void);
 
 #endif
 
+// Jake:
+// F_TIMER == F_BUS == 60MHz ... we are on a KINETIS K MCU (MK66F)
+#pragma message "F_TIMER: " TO_STRING(F_TIMER)
+
 #if F_TIMER == 128000000
 #define DEFAULT_FTM_MOD (65536 - 1)
 #define DEFAULT_FTM_PRESCALE 2
@@ -517,6 +525,8 @@ extern void usb_init(void);
 #define DEFAULT_FTM_MOD (4096 - 1)
 #define DEFAULT_FTM_PRESCALE 0
 #endif
+
+#pragma message "DEFAULT_FTM_MOD: " TO_STRING(DEFAULT_FTM_MOD)
 
 //void init_pins(void)
 __attribute__((noinline))

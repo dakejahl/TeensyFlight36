@@ -25,7 +25,14 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
+#include <board_config.hpp>
 #include <dispatch_queue/DispatchQueue.hpp>
+
+// Let's test our assumptions.
+// All of these should hold true, otherwise compilation fails.
+static_assert(F_CPU == 180000000, "F_CPU is not 180MHz");
+static_assert(configTICK_RATE_HZ == 1000, "SYSTICK is not 1KHz");
+
 
 // printf convenience macro
 // TODO: make it thread safe
@@ -38,25 +45,19 @@ static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];
 	}while(0);
 
 extern void LEDTask(void* args);
+extern void DummyTask(void* args);
+
+
+
+
 
 int main()
 {
 	// Create the tasks
-	xTaskCreate(LEDTask, "LT", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
+	// xTaskCreate(LEDTask, "LT", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
+	xTaskCreate(DummyTask, "DT", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 
-	Serial.begin(9600);
-
-	// Create our dispatch queue
-	auto dispatcher = new DispatchQueue("dispatcher");
-
-	auto printout = []
-	{
-		printf("This is a test\n")
-	};
-
-	dispatcher->dispatch(printout);
-
-	// dispatcher will just sleep forever now...
+	// Serial.begin(9600);
 
 	vTaskStartScheduler();
 
@@ -65,7 +66,47 @@ int main()
 	return 0;
 }
 
+volatile extern bool _isr_flag_;
+void DummyTask(void* args)
+{
+	#define LED_PIN 13
+	pinMode(LED_PIN, OUTPUT);
+
+	digitalWrite(LED_PIN, LOW);
+	bool led_on = false;
+
+	unsigned counter = 0;
+	while(1)
+	{
+		// Count ISR signals
+		if (_isr_flag_)
+		{
+			counter++;
+			_isr_flag_ = false;
+		}
+
+		// Turn LED on after a period
+		if (counter == 100 && led_on)
+		{
+			digitalWrite(LED_PIN, LOW);
+			led_on = false;
+			counter = 0;
+		}
+		// Turn LED off after a period
+		else if (counter == 100 && !led_on)
+		{
+			digitalWrite(LED_PIN, HIGH);
+			led_on = true;
+			counter = 0;
+		}
+	}
+}
+
+// The ONLY place Serial.* gets used
 extern "C" void vApplicationIdleHook(void)
 {
 	// Add profiling here
+	// Add shell here
+	// -- printing
+	// -- reading --> executing --> DispatchQueue!
 }

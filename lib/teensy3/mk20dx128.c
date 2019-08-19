@@ -69,6 +69,7 @@ extern unsigned long _estack;
 
 
 extern int main (void);
+extern void sys_init(void);
 void ResetHandler(void);
 void _init_Teensyduino_internal_(void) __attribute__((noinline));
 void __libc_init_array(void);
@@ -308,6 +309,7 @@ __attribute__ ((section(".dmabuffers"), used, aligned(512)))
 void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
 
 __attribute__ ((section(".vectors"), used))
+
 void (* const _VectorsFlash[NVIC_NUM_INTERRUPTS+16])(void) =
 {
 	(void (*)(void))((unsigned long)&_estack),  //  0 ARM: Initial Stack Pointer
@@ -896,6 +898,7 @@ void ResetHandler(void)
 #endif
 
 	// Jake: next 4 lines are commented out for FreeRTOS port, FreeRTOS configures SysTick
+
 	// initialize the SysTick counter
 	// SYST_RVR = (F_CPU / 1000) - 1;
 	// SYST_CVR = 0;
@@ -905,7 +908,9 @@ void ResetHandler(void)
 	//init_pins();
 	__enable_irq();
 
+	// Jake: Teensy default init
 	_init_Teensyduino_internal_();
+	sys_init();
 
 #if defined(KINETISK)
 	// RTC initialization

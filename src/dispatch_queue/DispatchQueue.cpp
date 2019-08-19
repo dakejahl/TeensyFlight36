@@ -22,6 +22,7 @@
 
 #include "DispatchQueue.hpp"
 
+// TODO: implement assert()
 DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 							const PriorityLevel priority, const uint8_t num_threads)
 	: _name(name)
@@ -71,6 +72,11 @@ void DispatchQueue::dispatch(const fp_t& work)
 	xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
 	return;
 }
+
+// void DispatchQueue::dispatch_after(const fp_t& work, unsigned time_ms)
+// {
+
+// }
 
 void DispatchQueue::dispatch_thread_handler(void)
 {
