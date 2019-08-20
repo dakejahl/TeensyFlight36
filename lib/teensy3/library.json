@@ -5,14 +5,12 @@
         "flags": [
         	"-I freertos/",
 	        "-I freertos/include",
-	        "-I freertos/portable/GCC/ARM_CM4F/",
-    		"-I freertos/FreeRTOS-Plus-CLI"
+	        "-I freertos/portable/GCC/ARM_CM4F/"
     	],
 
     	"srcFilter": [
     		"+<freertos>",
     		"+<freertos/portable/GCC/ARM_CM4F>",
-    		"+<freertos/FreeRTOS-Plus-CLI>",
         	"+<*.c>",
         	"+<*.cpp>",
         	"+<*.h>"

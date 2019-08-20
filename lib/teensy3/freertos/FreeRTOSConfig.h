@@ -114,7 +114,7 @@ turn the tick off. */
 #define portGET_RUN_TIME_COUNTER_VALUE()
 
 // CLI stuff
-#define configCOMMAND_INT_MAX_OUTPUT_SIZE 3200 // TODO: size appropriately
+// #define configCOMMAND_INT_MAX_OUTPUT_SIZE 3200 // TODO: size appropriately
 
 /* This demo makes use of one or more example stats formatting functions.  These
 format the raw data provided by the uxTaskGetSystemState() function in to human
