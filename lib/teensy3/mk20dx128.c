@@ -144,7 +144,15 @@ void fault_isr(void)
 		ser_print("\n");
 		asm("ldr %0, [sp, #0]" : "=r" (addr) ::);
 #endif
+	pinMode(13, OUTPUT);
+
 	while (1) {
+
+		digitalWrite(13, HIGH);
+		// delay_NoSysTick(100);
+		// digitalWrite(13, LOW);
+		// delay_NoSysTick(100);
+
 		// keep polling some communication while in fault
 		// mode, so we don't completely die.
 		if (SIM_SCGC4 & SIM_SCGC4_USBOTG) usb_isr();

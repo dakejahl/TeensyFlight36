@@ -57,5 +57,6 @@ void init_task(void* args)
 	{
 		// Tasks never return.
 		vTaskDelay(500);
+		SYS_INFO("init_task");
 	}
 }

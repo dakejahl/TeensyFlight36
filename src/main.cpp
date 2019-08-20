@@ -44,7 +44,7 @@ int main()
 
 	// LED task that tells us all is OK
 	xTaskCreate(led_task, "LT", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
-	xTaskCreate(init_task, "LT", configMINIMAL_STACK_SIZE * 2, NULL, PriorityLevel::HIGHEST, NULL);
+	xTaskCreate(init_task, "LT", configMINIMAL_STACK_SIZE * 2, NULL, 0, NULL);
 
 	vTaskStartScheduler();
 

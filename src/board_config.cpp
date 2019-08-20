@@ -88,8 +88,8 @@ extern "C" void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *
 	while (1)
 	{
 		digitalWrite(13, HIGH);
-		delay_NoSysTick(100);
-		digitalWrite(13, LOW);
-		delay_NoSysTick(100);
+		// delay_NoSysTick(100);
+		// digitalWrite(13, LOW);
+		// delay_NoSysTick(100);
 	}
 }
