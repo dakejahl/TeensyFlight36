@@ -1,0 +1,9 @@
+{
+    "description": "gcc-arm-embedded",
+    "name": "toolchain-gccarmnoneeabi",
+    "system": [
+        "linux_x86_64"
+    ],
+    "url": "https://launchpad.net/gcc-arm-embedded",
+    "version": "1.50401.0"
+}

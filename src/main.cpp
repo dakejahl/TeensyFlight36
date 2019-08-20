@@ -36,7 +36,7 @@ extern void init_task(void* args);
 
 extern time::SystemTimer* SystemTimer;
 
-int main()
+extern "C" int main()
 {
 
 	// Init system timer
