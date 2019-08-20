@@ -20,24 +20,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <kinetis.h>
-#include <FreeRTOS.h>
-#include <task.h>
+#pragma once
 
-#include <Arduino.h>
+#include <board_config.hpp>
+
+using abs_time_t = uint64_t;
+#define FTM_MAX_TICKS 65536
 
 
-#define LED_PIN 13
+namespace time {
 
-void LEDTask(void* args)
+///////////////////////////////
+// ------ Specifications ------
+// Resolution: 0.533us
+// Overflow rate: 28.61Hz --> 34.952ms
+class SystemTimer
 {
-	pinMode(LED_PIN, OUTPUT);
+public:
 
-	for(;;)
-	{
-		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(500);
-		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(500);
-	}
-}
+	~SystemTimer();
+
+	static void Instantiate(void);
+	static SystemTimer* Instance();
+
+	abs_time_t get_absolute_time_us(void);
+
+	abs_time_t get_ticks_since_boot(void);
+
+	void handle_timer_overflow(void);
+
+private:
+	SystemTimer(){}; // Private so that it can  not be called
+	SystemTimer(SystemTimer const&){}; // copy constructor is private
+	SystemTimer& operator=(SystemTimer const&){return *Instance();}; // assignment operator is private
+
+	static SystemTimer* _instance;
+
+	abs_time_t _base_ticks = 0;
+};
+
+} // end namespace time

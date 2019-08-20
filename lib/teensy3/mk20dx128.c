@@ -79,21 +79,6 @@ void xPortPendSVHandler( void ) __attribute__ (( naked ));
 void xPortSysTickHandler( void );
 void vPortSVCHandler( void ) __attribute__ (( naked ));
 
-// So that we know if we've blown a stack
-void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName )
-{
-	// This must be the LED
-	pinMode(13, OUTPUT);
-
-	while (1)
-	{
-		digitalWriteFast(13, HIGH);
-		delay(50);
-		digitalWriteFast(13, LOW);
-		delay(50);
-	}
-}
-
 // Replace systick_isr
 extern volatile uint32_t systick_millis_count;
 __attribute__ (( weak, naked )) void systick_isr(void)
@@ -908,8 +893,9 @@ void ResetHandler(void)
 	//init_pins();
 	__enable_irq();
 
-	// Jake: Teensy default init
 	_init_Teensyduino_internal_();
+
+	// Jake:
 	sys_init();
 
 #if defined(KINETISK)

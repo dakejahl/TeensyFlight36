@@ -145,7 +145,7 @@ const struct digital_pin_bitband_and_config_table_struct digital_pin_to_info_PGM
 #endif
 
 // Jake: added so that delay() can be called before systick is configured
-static void delay_NoSysTick(uint32_t millis);
+void delay_NoSysTick(uint32_t millis);
 
 static void dummy_isr() {};
 
@@ -544,17 +544,17 @@ void _init_Teensyduino_internal_(void)
 #endif
 	//SIM_SCGC6 |= SIM_SCGC6_FTM0;	// TODO: use bitband for atomic read-mod-write
 	//SIM_SCGC6 |= SIM_SCGC6_FTM1;
-	FTM0_CNT = 0;
-	FTM0_MOD = DEFAULT_FTM_MOD;
-	FTM0_C0SC = 0x28; // MSnB:MSnA = 10, ELSnB:ELSnA = 10
-	FTM0_C1SC = 0x28;
-	FTM0_C2SC = 0x28;
-	FTM0_C3SC = 0x28;
-	FTM0_C4SC = 0x28;
-	FTM0_C5SC = 0x28;
+	// FTM0_CNT = 0;
+	// FTM0_MOD = DEFAULT_FTM_MOD;
+	// FTM0_C0SC = 0x28; // MSnB:MSnA = 10, ELSnB:ELSnA = 10
+	// FTM0_C1SC = 0x28;
+	// FTM0_C2SC = 0x28;
+	// FTM0_C3SC = 0x28;
+	// FTM0_C4SC = 0x28;
+	// FTM0_C5SC = 0x28;
 #if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-	FTM0_C6SC = 0x28;
-	FTM0_C7SC = 0x28;
+	// FTM0_C6SC = 0x28;
+	// FTM0_C7SC = 0x28;
 #endif
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	FTM3_C0SC = 0x28;
@@ -566,7 +566,7 @@ void _init_Teensyduino_internal_(void)
 	FTM3_C6SC = 0x28;
 	FTM3_C7SC = 0x28;
 #endif
-	FTM0_SC = FTM_SC_CLKS(1) | FTM_SC_PS(DEFAULT_FTM_PRESCALE);
+	// FTM0_SC = FTM_SC_CLKS(1) | FTM_SC_PS(DEFAULT_FTM_PRESCALE);
 	FTM1_CNT = 0;
 	FTM1_MOD = DEFAULT_FTM_MOD;
 	FTM1_C0SC = 0x28;

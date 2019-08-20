@@ -20,14 +20,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+
 #include <board_config.hpp>
 
-class Timer
+
+#define LED_PIN 13
+
+void led_task(void* args)
 {
-public:
-	Timer();
-	~Timer();
+	pinMode(LED_PIN, OUTPUT);
 
-private:
-
-};
+	for(;;)
+	{
+		digitalWrite(LED_PIN, LOW);
+		vTaskDelay(500);
+		digitalWrite(LED_PIN, HIGH);
+		vTaskDelay(500);
+	}
+}

@@ -20,11 +20,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
+#include <Arduino.h>
 #include "core_pins.h"
+#include <kinetis.h>
+
+#include <FreeRTOS.h>
+#include <task.h>
 
 // Helpers for understanding my config
 #define STR_HELPER(x) #x
 #define TO_STRING(x) STR_HELPER(x)
 
+// static constexpr float MICROS_PER_TICK = 0.53333333333333333333333333f;
+static constexpr float MICROS_PER_TICK = 0.5333333333333333f;
+
+
 // Setup peripherals etc
 extern "C" void sys_init(void);
+
+#define _PRINTF_BUFFER_LENGTH_ 64U
+static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];
+#define SYS_PRINT() Serial.println(_pf_buffer_)
+#define SYS_INFO(fmt,...)                                               \
+do{                                                                     \
+	snprintf(_pf_buffer_, sizeof(_pf_buffer_), fmt, ##__VA_ARGS__);		\
+	SYS_PRINT();                                                        \
+	}while(0);
+
+enum PriorityLevel : uint8_t
+{
+	LOWEST = 0,
+	LOW_PRI_Q = 1,
+	HI_PRI_Q = 2,
+	HIGHEST = configMAX_PRIORITIES,
+};

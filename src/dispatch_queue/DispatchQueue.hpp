@@ -20,7 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Arduino.h>
+#pragma once
+
+#include <board_config.hpp>
 
 #include <freertos/include/FreeRTOS.h>
 #include <freertos/include/task.h>
@@ -50,14 +52,6 @@ struct freertos_thread_t
 	std::string name;
 };
 
-enum PriorityLevel : uint8_t
-{
-	LOWEST = 0,
-	LOW_PRI_Q = 1,
-	HI_PRI_Q = 2,
-	HIGHEST = configMAX_PRIORITIES,
-};
-
 enum Event : uint8_t
 {
 	DISPATCH_WAKE = 0x01,
@@ -80,8 +74,6 @@ private:
 	void dispatch_thread_handler(void);
 
 	void join_worker_threads(void);
-
-	void println(std::string words);
 
 	std::string _name;
 	std::vector<freertos_thread_t> _threads;

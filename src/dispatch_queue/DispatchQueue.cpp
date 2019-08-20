@@ -22,6 +22,8 @@
 
 #include "DispatchQueue.hpp"
 
+#include <Time.hpp>
+
 // TODO: implement assert()
 DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 							const PriorityLevel priority, const uint8_t num_threads)
@@ -32,10 +34,7 @@ DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 	// the mutex will not be available to any other task until it has
 	// also ‘given’ the mutex back exactly five times.
 	_mutex = xSemaphoreCreateRecursiveMutex(); // cannot be used in ISR.
-	// assert(mutex_ != NULL && "Failed to create mutex!");
-
 	_notify_flags = xEventGroupCreate();
-	// assert(notify_flags_ != NULL && "Failed to create event group!");
 
 	// Initialize our thread(s)
 	for(size_t i = 0; i < _threads.size(); i++)
@@ -45,43 +44,32 @@ DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 		itoa(i,buf, 10);
 		_threads[i].name = std::string("Dispatch Thread #" + std::string(buf));
 
-		println(_threads[i].name);
+		SYS_INFO(_threads[i].name.c_str());
 
-		BaseType_t status = xTaskCreate(reinterpret_cast<void(*)(void*)>(
-								BOUNCE(DispatchQueue, dispatch_thread_handler)),
-								_threads[i].name.c_str(),
-								stack_size,
-								reinterpret_cast<void*>(this), // pass in the "this" pointer as pvParameters...why?
-								priority,
-								&_threads[i].thread); // pass the TaskHandle in...why?
-		(void)status;
-		// assert(status == pdPASS && "Failed to create thread!");
+		xTaskCreate(reinterpret_cast<void(*)(void*)>(
+					BOUNCE(DispatchQueue, dispatch_thread_handler)),
+					_threads[i].name.c_str(),
+					stack_size,
+					reinterpret_cast<void*>(this), // pass in the "this" pointer as pvParameters...why?
+					priority,
+					&_threads[i].thread); // pass the TaskHandle in...why?
 	}
 }
 
 void DispatchQueue::dispatch(const fp_t& work)
 {
-	BaseType_t status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
-	(void)status;
-	// assert(status == pdTRUE && "Failed to lock mutex!");
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
 	_queue.push(work);
-	status = xSemaphoreGiveRecursive(_mutex);
-	// assert(status == pdTRUE && "Failed to unlock mutex!");
+	xSemaphoreGiveRecursive(_mutex);
 
 	// Wake up worker thread
 	xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
 	return;
 }
 
-// void DispatchQueue::dispatch_after(const fp_t& work, unsigned time_ms)
-// {
-
-// }
-
 void DispatchQueue::dispatch_thread_handler(void)
 {
 	BaseType_t status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
-	// assert(status == pdTRUE && "Failed to lock mutex!");
 
 	do
 	{
@@ -92,26 +80,28 @@ void DispatchQueue::dispatch_thread_handler(void)
 			_queue.pop();
 
 			status = xSemaphoreGiveRecursive(_mutex);
-			// assert(status == pdTRUE && "Failed to unlock mutex!");
 
-			this->println("Hello Mr. Jake");
+			SYS_INFO("Doing work");
+
+			auto start_time = time::SystemTimer::Instance()->get_absolute_time_us();
+			// Run function
 			work();
+			auto end_time = time::SystemTimer::Instance()->get_absolute_time_us();
+			auto elapsed = end_time - start_time;
+			SYS_INFO("elapsed time: %lluus", elapsed);
 
 			status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
-			// assert(status == pdTRUE && "Failed to lock mutex!");
 		}
 		// Our queue is empty -- go to sleep until we have work.
 		else if(!_should_exit)
 		{
 			status = xSemaphoreGiveRecursive(_mutex);
-			// assert(status == pdTRUE && "Failed to unlock mutex!");
 
 			// Wait for new work - clear flags on exit
 			xEventGroupWaitBits(_notify_flags, Event::DISPATCH_WAKE, pdTRUE, pdFALSE, portMAX_DELAY);
 
 			// We are awake! Time to do some work...
 			status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
-			// assert(status == pdTRUE && "Failed to lock mutex!");
 		}
 		else
 		{
@@ -122,12 +112,10 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 	// We were holding the mutex after we woke up
 	status = xSemaphoreGiveRecursive(_mutex);
-	// assert(status == pdTRUE && "Failed to unlock mutex!");
 
 	// Inidcate to DTOR that thread is cleaned up
 	status = xEventGroupSetBits(_notify_flags, Event::DISPATCH_EXIT);
 	(void)status;
-	// assert(status == pdTRUE && "Failed to set event flags!");
 
 	// NOTE: The idle task is responsible for freeing the RTOS kernel allocated
 	// memory from tasks that have been deleted. It is therefore important that
@@ -138,13 +126,6 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 	vTaskDelete(NULL); // NULL causes calling task to be deleted
  	return;
-}
-
-void DispatchQueue::println(std::string words)
-{
-	// TODO: Serial is not thread safe... add a globle printer
-	// function (printf!) guarded with a mutex.
-	Serial.println(words.c_str());
 }
 
 DispatchQueue::~DispatchQueue(void)
@@ -163,7 +144,7 @@ void DispatchQueue::join_worker_threads(void)
 	for (size_t i = 0; i < _threads.size(); ++i) {
 		eTaskState state;
 
-		// We continually loop sending the exit signal until we detect that ALL threads have died
+		// We continually loop sending the exit signal until each thread has died
 		do {
 			// Signal wake - check exit flag
 			xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
@@ -171,8 +152,7 @@ void DispatchQueue::join_worker_threads(void)
 			// Wait until a thread signals exit. Timeout is acceptable.
 			xEventGroupWaitBits(_notify_flags, Event::DISPATCH_EXIT, pdTRUE, pdFALSE, pdMS_TO_TICKS(10)); // wait 10 ms
 
-			// If it was not _thread[i], that is ok, but we will loop around
-			// until _threads[i] has exited
+			// If not dead, keeping looping/signalling
 			state = eTaskGetState(_threads[i].thread);
 		} while (state != eDeleted);
 

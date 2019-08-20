@@ -1999,6 +1999,7 @@ void _restart_Teensyduino_(void) __attribute__((noreturn));
 void yield(void);
 
 void delay(uint32_t msec);
+extern void delay_NoSysTick(uint32_t millis);
 
 extern volatile uint32_t systick_millis_count;
 

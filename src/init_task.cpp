@@ -20,49 +20,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <FreeRTOS.h>
+#include <task.h>
+
 #include <board_config.hpp>
+#include <Time.hpp>
+#include <dispatch_queue/DispatchQueue.hpp>
 
-static void init_FTM0(void);
 
-extern "C" void sys_init(void)
+void init_task(void* args)
 {
-	// Set up custom peripherals
-	init_FTM0();
-}
+	auto start_time = time::SystemTimer::Instance()->get_absolute_time_us();
 
-#define FTM_PRESCALE_533_NANO_SEC 32
-#define FTM_SYS_CLK 1
-// Frequency: 60MHz (F_BUS)
-// counter: 16bit
-// prescaler: 32
-// resolution: 0.533us
-// overflow rate: 34.952ms --> 28.61Hz
-static void init_FTM0(void)
-{
-	// Disable write protection to change the settings -- TODO reenable write protection?
-	FTM0_MODE = FTM_MODE_WPDIS | FTM_MODE_FTMEN;
-	FTM0_CNT = 0x0000; //reset count to zero
-	FTM0_MOD = 0xFFFF; //max modulus = 65535 (gives count = 65,536 on roll-over)
-	// Turn the timer on and configure with our settings
-	FTM0_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
-			| FTM_SC_PS(64) // set prescaler for desired resolution / overflow rate
-			| FTM_SC_TOIE; // enable overflow interrupt
+	auto dispatcher = new DispatchQueue("hi_pri_wq");
 
-	// Enable the interrupt
-	NVIC_ENABLE_IRQ(IRQ_FTM0);
-}
+	auto end_time = time::SystemTimer::Instance()->get_absolute_time_us();
+	SYS_INFO("create dispatch_queue: %lluus", end_time - start_time);
 
-volatile extern bool _isr_flag_ = 0;
-volatile unsigned toggle = 0;
-extern "C" void ftm0_isr(void)
-{
-	{ // Implement custom code?
-		_isr_flag_ = true;
-	}
-
-	// Clear overflow flag -- reset happens on overflow (FTM0_MOD = 0xFFFF)
-	if ((FTM0_SC & FTM_SC_TOF) != 0)
+	auto func = []
 	{
-		FTM0_SC &= ~FTM_SC_TOF;
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 100000000; ++i)
+		{
+			dummy++;
+		}
+	};
+
+	start_time = time::SystemTimer::Instance()->get_absolute_time_us();
+
+	dispatcher->dispatch(func);
+
+	end_time = time::SystemTimer::Instance()->get_absolute_time_us();
+	SYS_INFO("dispatch: %lluus", end_time - start_time);
+
+	while(1)
+	{
+		// Tasks never return.
+		vTaskDelay(500);
 	}
 }
