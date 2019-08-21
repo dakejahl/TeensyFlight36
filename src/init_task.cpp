@@ -40,7 +40,7 @@ void init_task(void* args)
 	auto func = []
 	{
 		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 100000000; ++i)
+		for (unsigned i = 0; i < 10000000; ++i)
 		{
 			dummy++;
 		}

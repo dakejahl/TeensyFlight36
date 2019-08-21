@@ -93,10 +93,9 @@ turn the tick off. */
 #define configUSE_TICK_HOOK						0  // change from 1
 #define configCPU_CLOCK_HZ						(F_CPU)
 #define configMAX_PRIORITIES					( 3 )
-#define configMINIMAL_STACK_SIZE				( ( unsigned short ) 120 )
+#define configMINIMAL_STACK_SIZE				( ( unsigned short ) 250 )
 #define configTOTAL_HEAP_SIZE					( ( size_t ) ( 26 * 1024 ) )
 #define configMAX_TASK_NAME_LEN					( 10 )
-#define configUSE_TRACE_FACILITY				0
 #define configUSE_16_BIT_TICKS					0
 #define configIDLE_SHOULD_YIELD					1
 #define configUSE_MUTEXES						1
@@ -109,11 +108,17 @@ turn the tick off. */
 #define configSUPPORT_STATIC_ALLOCATION			0    // change from 0
 
 /* Run time stats gathering definitions. */
-#define configGENERATE_RUN_TIME_STATS	0
+// #define configGENERATE_RUN_TIME_STATS	1
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portGET_RUN_TIME_COUNTER_VALUE()
 
-// CLI stuff
+// RTOS aware debugging
+#define configTASK_RETURN_ADDRESS 0
+#define configRECORD_STACK_HIGH_ADDRESS             1
+#define configFRTOS_MEMORY_SCHEME                   4
+#define configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H   1
+#define configUSE_TRACE_FACILITY                    1
+
 // #define configCOMMAND_INT_MAX_OUTPUT_SIZE 3200 // TODO: size appropriately
 
 /* This demo makes use of one or more example stats formatting functions.  These

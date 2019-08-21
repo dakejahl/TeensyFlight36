@@ -29,8 +29,6 @@ static_assert(F_CPU == 180000000, "F_CPU is not 180MHz");
 static_assert(configTICK_RATE_HZ == 1000, "SYSTICK is not 1KHz");
 
 
-
-
 extern void led_task(void* args);
 extern void init_task(void* args);
 
@@ -38,13 +36,18 @@ extern time::SystemTimer* SystemTimer;
 
 extern "C" int main()
 {
+	FreeRTOSDebugConfig[0] = 0xFF;
+	if (FreeRTOSDebugConfig[0] == 0 || freeRTOSMemoryScheme != 4)
+	{ /* just use it, so the linker cannot remove FreeRTOSDebugConfig[] */
+		for(;;); /* FreeRTOSDebugConfig[0] should always be non-zero, so this should never happen */
+	}
 
 	// Init system timer
 	time::SystemTimer::Instantiate();
 
 	// LED task that tells us all is OK
-	xTaskCreate(led_task, "LT", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
-	xTaskCreate(init_task, "LT", configMINIMAL_STACK_SIZE * 2, NULL, 0, NULL);
+	xTaskCreate(led_task, "super_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
+	xTaskCreate(init_task, "duper_task", configMINIMAL_STACK_SIZE * 2, NULL, 0, NULL);
 
 	vTaskStartScheduler();
 

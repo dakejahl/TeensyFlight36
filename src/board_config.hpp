@@ -36,6 +36,9 @@
 // static constexpr float MICROS_PER_TICK = 0.53333333333333333333333333f;
 static constexpr float MICROS_PER_TICK = 0.5333333333333333f;
 
+extern volatile uint8_t FreeRTOSDebugConfig[16];
+extern volatile uint8_t freeRTOSMemoryScheme;
+
 
 // Setup peripherals etc
 extern "C" void sys_init(void);
