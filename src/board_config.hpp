@@ -42,6 +42,7 @@ extern "C" void sys_init(void);
 
 #define _PRINTF_BUFFER_LENGTH_ 64U
 static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];
+
 #define SYS_PRINT() Serial.println(_pf_buffer_)
 #define SYS_INFO(fmt,...)                                               \
 do{                                                                     \

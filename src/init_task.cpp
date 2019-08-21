@@ -25,7 +25,7 @@
 
 #include <board_config.hpp>
 #include <Time.hpp>
-#include <dispatch_queue/DispatchQueue.hpp>
+#include <DispatchQueue.hpp>
 
 
 void init_task(void* args)
