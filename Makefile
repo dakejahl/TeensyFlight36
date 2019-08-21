@@ -38,7 +38,7 @@ TEENSYCOREPATH = teensy3
 # path location for Arduino libraries
 LIBRARYPATH = lib
 
-CMSIS_LIB_ARM = $(abspath $(CURDIR)/CMSIS/CMSIS/Lib/ARM/)
+# CMSIS_LIB_ARM = $(abspath $(CURDIR)/CMSIS/DSP/Lib/GCC/)
 
 # path location for the arm-none-eabi compiler -- use the same one as for PX4
 # COMPILERPATH = /home/jake/gcc-arm-none-eabi-7-2017-q4-major/bin/
@@ -70,7 +70,7 @@ LDFLAGS = -Os -Wl,--gc-sections -mthumb
 
 # additional libraries to link
 LIBS = -lm -lstdc++
-LIBS += $(CMSIS_LIB_ARM)/arm_cortexM4lf_math.lib
+# LIBS += $(CMSIS_LIB_ARM)/libarm_cortexM4lf_math.a
 
 # Teensy 3.6
 CPPFLAGS += -D__MK66FX1M0__ -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
