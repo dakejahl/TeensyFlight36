@@ -33,12 +33,13 @@ extern void led_task(void* args);
 extern void init_task(void* args);
 
 extern time::SystemTimer* SystemTimer;
+extern const uint8_t FreeRTOSDebugConfig[];
 
 extern "C" int main()
 {
 	// FreeRTOSDebugConfig[0] = 0xFF;
 	// SHOULD NEVER BE ZERO!!!
-	if (FreeRTOSDebugConfig[0] == 0 || freeRTOSMemoryScheme != 4)
+	if (FreeRTOSDebugConfig[0] == 0)
 	{ /* just use it, so the linker cannot remove FreeRTOSDebugConfig[] */
 		for(;;); /* FreeRTOSDebugConfig[0] should always be non-zero, so this should never happen */
 	}

@@ -26,9 +26,6 @@
 static void init_FTM0(void);
 static void init_serial(void);
 
-volatile uint8_t FreeRTOSDebugConfig[16];
-volatile uint8_t freeRTOSMemoryScheme = configFRTOS_MEMORY_SCHEME;
-
 extern "C" void sys_init(void)
 {
 	init_FTM0();
