@@ -27,6 +27,7 @@
 using abs_time_t = uint64_t;
 #define FTM_MAX_TICKS 65536
 
+extern volatile uint32_t _freertos_stats_base_ticks;
 
 namespace time {
 

@@ -33,9 +33,9 @@ void led_task(void* args)
 	for(;;)
 	{
 		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(500);
+		vTaskDelay(1000);
 		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(500);
+		vTaskDelay(1000);
 		SYS_INFO("led_task");
 	}
 }

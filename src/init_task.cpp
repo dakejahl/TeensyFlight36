@@ -40,7 +40,7 @@ void init_task(void* args)
 	auto func = []
 	{
 		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 10000000; ++i)
+		for (unsigned i = 0; i < 100000; ++i)
 		{
 			dummy++;
 		}
@@ -48,7 +48,7 @@ void init_task(void* args)
 
 	start_time = time::SystemTimer::Instance()->get_absolute_time_us();
 
-	dispatcher->dispatch(func);
+	// dispatcher->dispatch(func);
 
 	end_time = time::SystemTimer::Instance()->get_absolute_time_us();
 	SYS_INFO("dispatch: %lluus", end_time - start_time);
@@ -57,6 +57,7 @@ void init_task(void* args)
 	{
 		// Tasks never return.
 		vTaskDelay(500);
+		dispatcher->dispatch(func);
 		SYS_INFO("init_task");
 	}
 }

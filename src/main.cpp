@@ -48,8 +48,8 @@ extern "C" int main()
 	time::SystemTimer::Instantiate();
 
 	// LED task that tells us all is OK
-	xTaskCreate(led_task, "super_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
-	xTaskCreate(init_task, "duper_task", configMINIMAL_STACK_SIZE * 2, NULL, 0, NULL);
+	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
+	xTaskCreate(init_task, "init_task", configMINIMAL_STACK_SIZE * 3, NULL, 3, NULL);
 
 	vTaskStartScheduler();
 

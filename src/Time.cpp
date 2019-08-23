@@ -22,6 +22,8 @@
 
 #include <Time.hpp>
 
+extern volatile uint32_t _freertos_stats_base_ticks = 0;
+
 namespace time {
 
 // Global static pointer used to ensure a single instance of the class.
@@ -81,6 +83,7 @@ uint64_t SystemTimer::get_ticks_since_boot(void)
 void SystemTimer::handle_timer_overflow(void)
 {
 	_base_ticks += FTM_MAX_TICKS;
+	_freertos_stats_base_ticks = _base_ticks;
 }
 
 } // end namespace time

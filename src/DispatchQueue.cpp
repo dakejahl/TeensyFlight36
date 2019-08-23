@@ -67,6 +67,17 @@ void DispatchQueue::dispatch(const fp_t& work)
 	return;
 }
 
+void DispatchQueue::dispatch(fp_t&& work)
+{
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+	_queue.push(std::move(work));
+	xSemaphoreGiveRecursive(_mutex);
+
+	// Wake up worker thread
+	xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
+	return;
+}
+
 void DispatchQueue::dispatch_thread_handler(void)
 {
 	BaseType_t status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);

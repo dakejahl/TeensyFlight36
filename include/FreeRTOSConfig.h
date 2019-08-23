@@ -108,9 +108,12 @@ turn the tick off. */
 #define configSUPPORT_STATIC_ALLOCATION			0    // change from 0
 
 /* Run time stats gathering definitions. */
-#define configGENERATE_RUN_TIME_STATS	0
-// #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() void
-// #define portGET_RUN_TIME_COUNTER_VALUE() (*(volatile uint32_t *)0x40038004)
+extern volatile uint32_t _freertos_stats_base_ticks;
+// extern uint32_t FTM0_CNT;
+
+#define configGENERATE_RUN_TIME_STATS	        1
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() void
+#define portGET_RUN_TIME_COUNTER_VALUE() _freertos_stats_base_ticks + (*(volatile uint32_t *)0x40038004)
 
 // RTOS aware debugging
 #define configTASK_RETURN_ADDRESS                   0
@@ -126,7 +129,7 @@ turn the tick off. */
 format the raw data provided by the uxTaskGetSystemState() function in to human
 readable ASCII form.  See the notes in the implementation of vTaskList() within
 FreeRTOS/Source/tasks.c for limitations. */
-#define configUSE_STATS_FORMATTING_FUNCTIONS	0
+#define configUSE_STATS_FORMATTING_FUNCTIONS	1
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES			 0

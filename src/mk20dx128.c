@@ -167,11 +167,36 @@ void unused_isr(void)
 	fault_isr();
 }
 
+void reserved_isr(void)
+{
+	fault_isr();
+}
+
+void hard_fault_isr(void)
+{
+	fault_isr();
+}
+
+void memmanage_fault_isr(void)
+{
+	fault_isr();
+}
+
+void bus_fault_isr(void)
+{
+	fault_isr();
+}
+
+void usage_fault_isr(void)
+{
+	fault_isr();
+}
+
 void nmi_isr(void)      __attribute__ ((weak, alias("unused_isr")));
-void hard_fault_isr(void)   __attribute__ ((weak, alias("fault_isr")));
-void memmanage_fault_isr(void)  __attribute__ ((weak, alias("fault_isr")));
-void bus_fault_isr(void)    __attribute__ ((weak, alias("fault_isr")));
-void usage_fault_isr(void)  __attribute__ ((weak, alias("fault_isr")));
+// void hard_fault_isr(void)   __attribute__ ((weak, alias("fault_isr")));
+// void memmanage_fault_isr(void)  __attribute__ ((weak, alias("fault_isr")));
+// void bus_fault_isr(void)    __attribute__ ((weak, alias("fault_isr")));
+// void usage_fault_isr(void)  __attribute__ ((weak, alias("fault_isr")));
 
 // Will be defined by FreeRTOS
 // void svcall_isr(void)        __attribute__ ((weak, alias("unused_isr")));
@@ -312,14 +337,14 @@ void (* const _VectorsFlash[NVIC_NUM_INTERRUPTS+16])(void) =
 	memmanage_fault_isr,            //  4 ARM: MemManage Fault
 	bus_fault_isr,                  //  5 ARM: Bus Fault
 	usage_fault_isr,                //  6 ARM: Usage Fault
-	fault_isr,                  	//  7 --
-	fault_isr,                  	//  8 --
-	fault_isr,                  	//  9 --
-	fault_isr,                  	// 10 --
+	reserved_isr,                  	//  7 --
+	reserved_isr,                  	//  8 --
+	reserved_isr,                  	//  9 --
+	reserved_isr,                  	// 10 --
 	// svcall_isr,                  // 11 ARM: Supervisor call (SVCall)
 	vPortSVCHandler,                // 11 ARM: Supervisor call (SVCall)
 	debugmonitor_isr,               // 12 ARM: Debug Monitor
-	fault_isr,                  	// 13 --
+	reserved_isr,                  	// 13 --
 	// pendablesrvreq_isr,          // 14 ARM: Pendable req serv(PendableSrvReq)
 	xPortPendSVHandler,				// 14 ARM: Pendable req serv(PendableSrvReq)
 	systick_isr,                    // 15 ARM: System tick timer (SysTick)

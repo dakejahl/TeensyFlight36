@@ -53,7 +53,7 @@ FREERTOSPORT = portable/GCC/ARM_CM4F
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mthumb -ffunction-sections -fdata-sections -nostdlib
+CPPFLAGS = -Wall -g -O0 -mthumb -ffunction-sections -fdata-sections -nostdlib
 CPPFLAGS += -DTEENSYDUINO=$(TEENSYDUINO) -DF_CPU=$(TEENSY_CORE_SPEED) -MMD $(OPTIONS)
 CPPFLAGS += -I$(FREERTOSPATH)/include -I$(FREERTOSPATH)/$(FREERTOSPORT)/
 CPPFLAGS += -I$(SOURCE_DIR) -I$(TEENSYCOREPATH) -I$(INCLUDE_DIR)
@@ -66,7 +66,7 @@ CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 CFLAGS =
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections -mthumb
+LDFLAGS = -O0 -Wl,--gc-sections -mthumb
 
 # additional libraries to link
 LIBS = -lm -lstdc++

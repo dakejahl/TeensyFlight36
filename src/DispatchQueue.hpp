@@ -69,6 +69,7 @@ public:
 	~DispatchQueue(void);
 
 	void dispatch(const fp_t& work);
+	void dispatch(fp_t&& work);
 
 private:
 	void dispatch_thread_handler(void);
