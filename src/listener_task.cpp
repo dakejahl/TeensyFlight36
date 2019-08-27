@@ -27,13 +27,15 @@
 
 void listener_task(void* args)
 {
-	auto accel_sub = new messenger::Subscriber<accel_raw_data_s>();
+	// auto accel_sub = new messenger::Subscriber<accel_raw_data_s>();
+	messenger::Subscriber<accel_raw_data_s> accel_sub;
+
 	auto dispatcher = new DispatchQueue("dummy_q");
 
 	auto func = []
 	{
 		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 10000; ++i)
+		for (unsigned i = 0; i < 1000; ++i)
 		{
 			dummy++;
 		}
@@ -43,17 +45,17 @@ void listener_task(void* args)
 	{
 		accel_raw_data_s data;
 
-		if (accel_sub->updated())
+		if (accel_sub.updated())
 		{
-			data = accel_sub->get();
-			// SYS_INFO("listener_task: got some data");
+			data = accel_sub.get();
+			SYS_INFO("listener_task: got some data");
 			dispatcher->dispatch(func);
 		}
 		else
 		{
-			// SYS_INFO("listener_task: no data available");
+			SYS_INFO("listener_task: no data available");
 		}
 
-		vTaskDelay(10);
+		vTaskDelay(100);
 	}
 }

@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <list>
+#include <vector>
 #include <string>
 #include <atomic>
 
@@ -56,42 +56,83 @@ struct mag_raw_data_s
 namespace messenger
 {
 
+template <typename T>
+class Subscriber;
+
 // A single data file per topic, shared between publisher and subscriber(s)
+// Static class!
 template <typename T>
 class DataFile
 {
 public:
-	T& data(void) { return _data; };
+	static T& get_data(void)
+	{
+		return _data;
+	};
+
+	static void set_data(T data) { _data = data; };
+	static void add_subscriber(Subscriber<T>* sub)
+	{
+		_subscribers.push_back(sub);
+	}
+
+	static void notify_subscribers(void)
+	{
+		for (auto& s : _subscribers)
+		{
+			s->notify();
+		}
+	}
 
 protected:
-	static T _data;
+	static T _data; // static container for the data
+	static std::vector<Subscriber<T>*> _subscribers; // list of pointers to subscribers to this data
 };
-
 template<class T>
 T DataFile<T>::_data {};
+template<class T>
+std::vector<Subscriber<T>*> DataFile<T>::_subscribers; // Reserve 5 places for subscribers to avoid allocation
 
 template <typename T>
 class Subscriber
 {
 public:
-	bool updated()
+	Subscriber()
 	{
-		auto data_timestamp = _file->data().timestamp;
-		return data_timestamp > _last_timestamp;
+		taskENTER_CRITICAL();
+
+		// Add this subscriber to the DataFiles list
+		_file->add_subscriber(this);
+
+		taskEXIT_CRITICAL();
 	}
 
-	T get()
+	void notify(void)
 	{
-		auto data = _file->data();
-		_last_timestamp = data.timestamp;
+		_updated = true;
+	}
+
+	// Dumb impl -- subscribers must poll
+	bool updated(void)
+	{
+		return _updated;
+	}
+
+	T get(void)
+	{
+		taskENTER_CRITICAL();
+
+		auto data = _file->get_data();
+		_updated = false;
+
+		taskEXIT_CRITICAL();
+
 		return data;
 	};
 
 private:
-	// This data is created by publisher and shared with us.
+	bool _updated = false; // TODO: std::atomic
 	DataFile<T>* _file;
-
-	uint64_t _last_timestamp = 0; // timestamp from the last data we read.
 };
 
 template <typename T>
@@ -100,8 +141,6 @@ class Publisher
 public:
 	Publisher()
 	{
-		// Create the shared data memory
-		_file = new DataFile<T>();
 	}
 
 	~Publisher()
@@ -114,12 +153,13 @@ public:
 	void publish(T& data)
 	{
 		taskENTER_CRITICAL();
-		_file->data() = data;
+		_file->set_data(data);
+		// Notify each subscriber of the updated data
+		_file->notify_subscribers();
 		taskEXIT_CRITICAL();
 
 		// TODO: notification / scheduling for dependant work.
 	}
-
 private:
 	DataFile<T>* _file;
 };

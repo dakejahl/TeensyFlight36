@@ -51,7 +51,7 @@ extern "C" int main()
 
 	// LED task that tells us all is OK
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
-	xTaskCreate(talker_task, "talker", configMINIMAL_STACK_SIZE * 3, NULL, 3, NULL);
+	xTaskCreate(talker_task, "talker", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 	xTaskCreate(listener_task, "listener", configMINIMAL_STACK_SIZE * 3, NULL, 3, NULL);
 
 	vTaskStartScheduler();
