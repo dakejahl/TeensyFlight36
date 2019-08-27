@@ -56,10 +56,8 @@ struct mag_raw_data_s
 };
 
 
-// namespace messenger
-// {
-
-////////////////////////
+namespace messenger
+{
 
 template <typename T>
 class DataFile
@@ -95,7 +93,7 @@ private:
 	// This data is created by publisher and shared with us.
 	DataFile<T>* _file;
 
-	uint64_t _last_timestamp = 0; // timestamp from the last data we read
+	uint64_t _last_timestamp = 0; // timestamp from the last data we read.
 };
 
 template <typename T>
@@ -111,7 +109,7 @@ public:
 
 	~Publisher()
 	{
-		// delete _file;
+		// NOTE: we assume the data file is never deleted after being created at init.
 	}
 
 	void publish(T& data)
@@ -120,7 +118,7 @@ public:
 		_file->data() = data;
 		taskEXIT_CRITICAL();
 
-		// TODO: notification / scheduling for dependant work
+		// TODO: notification / scheduling for dependant work.
 	}
 
 private:
@@ -128,6 +126,4 @@ private:
 	DataFile<T>* _file;
 };
 
-
-
-// } // end namespace messenger
+} // end namespace messenger

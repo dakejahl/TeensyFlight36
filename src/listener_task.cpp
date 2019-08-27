@@ -23,10 +23,21 @@
 
 #include <board_config.hpp>
 #include <PublishSubscribe.hpp>
+#include <DispatchQueue.hpp>
 
 void listener_task(void* args)
 {
-	auto accel_sub = new Subscriber<accel_raw_data_s>();
+	auto accel_sub = new messenger::Subscriber<accel_raw_data_s>();
+	auto dispatcher = new DispatchQueue("dummy_q");
+
+	auto func = []
+	{
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 10000; ++i)
+		{
+			dummy++;
+		}
+	};
 
 	for(;;)
 	{
@@ -35,13 +46,14 @@ void listener_task(void* args)
 		if (accel_sub->updated())
 		{
 			data = accel_sub->get();
-			SYS_INFO("listener_task: got some data");
+			// SYS_INFO("listener_task: got some data");
+			dispatcher->dispatch(func);
 		}
 		else
 		{
-			SYS_INFO("listener_task: no data available");
+			// SYS_INFO("listener_task: no data available");
 		}
 
-		vTaskDelay(100);
+		vTaskDelay(1);
 	}
 }

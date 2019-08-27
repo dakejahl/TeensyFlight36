@@ -27,18 +27,16 @@
 
 void talker_task(void* args)
 {
-	auto accel_pub = new Publisher<accel_raw_data_s>();
+	auto accel_pub = new messenger::Publisher<accel_raw_data_s>();
 
 	for(;;)
 	{
-		SYS_INFO("talker_task");
-
 		accel_raw_data_s data;
 		data.timestamp = time::SystemTimer::Instance()->get_absolute_time_us();
 		data.x = 1;
 		data.y = 2;
 		data.z = 3;
 		accel_pub->publish(data);
-		vTaskDelay(500);
+		vTaskDelay(10);
 	}
 }
