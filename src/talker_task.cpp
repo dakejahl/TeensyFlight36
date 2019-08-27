@@ -20,44 +20,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <FreeRTOS.h>
-#include <task.h>
 
 #include <board_config.hpp>
-#include <Time.hpp>
-#include <DispatchQueue.hpp>
+#include <PublishSubscribe.hpp>
 
 
-void init_task(void* args)
+void talker_task(void* args)
 {
-	auto start_time = time::SystemTimer::Instance()->get_absolute_time_us();
+	auto accel_pub = new messenger::Publisher<accel_raw_data_s>();
 
-	auto dispatcher = new DispatchQueue("hi_pri_wq");
-
-	auto end_time = time::SystemTimer::Instance()->get_absolute_time_us();
-	SYS_INFO("create dispatch_queue: %lluus", end_time - start_time);
-
-	auto func = []
+	for(;;)
 	{
-		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 100000; ++i)
-		{
-			dummy++;
-		}
-	};
-
-	start_time = time::SystemTimer::Instance()->get_absolute_time_us();
-
-	// dispatcher->dispatch(func);
-
-	end_time = time::SystemTimer::Instance()->get_absolute_time_us();
-	SYS_INFO("dispatch: %lluus", end_time - start_time);
-
-	while(1)
-	{
-		// Tasks never return.
-		vTaskDelay(500);
-		dispatcher->dispatch(func);
-		SYS_INFO("init_task");
+		accel_raw_data_s data;
+		data.timestamp = time::SystemTimer::Instance()->get_absolute_time_us();
+		data.x = 1;
+		data.y = 2;
+		data.z = 3;
+		accel_pub->publish(data);
+		vTaskDelay(40);
 	}
 }

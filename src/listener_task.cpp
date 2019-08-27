@@ -20,33 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class Publisher
+
+#include <board_config.hpp>
+#include <PublishSubscribe.hpp>
+#include <DispatchQueue.hpp>
+
+void listener_task(void* args)
 {
-public:
+	auto accel_sub = new messenger::Subscriber<accel_raw_data_s>();
+	auto dispatcher = new DispatchQueue("dummy_q");
 
+	auto func = []
+	{
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 10000; ++i)
+		{
+			dummy++;
+		}
+	};
 
-};
+	for(;;)
+	{
+		accel_raw_data_s data;
 
-Publisher<data_type_s> myPub;
+		if (accel_sub->updated())
+		{
+			data = accel_sub->get();
+			// SYS_INFO("listener_task: got some data");
+			dispatcher->dispatch(func);
+		}
+		else
+		{
+			// SYS_INFO("listener_task: no data available");
+		}
 
-
-
-
-
-
-
-
-
-int main(void)
-{
-
-	data_type_s my_data;
-
-
-	int data = sensor->read_data();
-	my_data.data = data;
-
-	myPub->publish(my_data);
-
-	return 0;
+		vTaskDelay(10);
+	}
 }
