@@ -22,6 +22,7 @@
 
 
 #include <board_config.hpp>
+#include <Messenger.hpp>
 
 
 #define LED_PIN 13
@@ -30,8 +31,17 @@ void led_task(void* args)
 {
 	pinMode(LED_PIN, OUTPUT);
 
+	messenger::Publisher<accel_raw_data_s> accel_pub;
+
 	for(;;)
 	{
+		accel_raw_data_s data;
+		data.timestamp = time::SystemTimer::Instance()->get_absolute_time_us();
+		data.x = 3;
+		data.y = 2;
+		data.z = 1;
+		accel_pub.publish(data);
+
 		digitalWrite(LED_PIN, LOW);
 		vTaskDelay(1000);
 		digitalWrite(LED_PIN, HIGH);

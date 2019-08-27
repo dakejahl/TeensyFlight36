@@ -52,14 +52,14 @@ struct mag_raw_data_s
 };
 
 
-// Single publisher multiple subscriber implementation
+// Multiple publisher multiple subscriber implementation
+// with a (SHARED!) data file.
 namespace messenger
 {
 
 template <typename T>
 class Subscriber;
 
-// A single data file per topic, shared between publisher and subscriber(s)
 // Static class!
 template <typename T>
 class DataFile
@@ -86,12 +86,12 @@ public:
 
 protected:
 	static T _data; // static container for the data
-	static std::vector<Subscriber<T>*> _subscribers; // list of pointers to subscribers to this data
+	static std::vector<Subscriber<T>*> _subscribers;
 };
 template<class T>
 T DataFile<T>::_data {};
 template<class T>
-std::vector<Subscriber<T>*> DataFile<T>::_subscribers; // Reserve 5 places for subscribers to avoid allocation
+std::vector<Subscriber<T>*> DataFile<T>::_subscribers;
 
 template <typename T>
 class Subscriber
@@ -101,7 +101,6 @@ public:
 	{
 		taskENTER_CRITICAL();
 
-		// Add this subscriber to the DataFiles list
 		_file->add_subscriber(this);
 
 		taskEXIT_CRITICAL();
@@ -153,12 +152,13 @@ public:
 	void publish(T& data)
 	{
 		taskENTER_CRITICAL();
+
 		_file->set_data(data);
-		// Notify each subscriber of the updated data
 		_file->notify_subscribers();
+
 		taskEXIT_CRITICAL();
 
-		// TODO: notification / scheduling for dependant work.
+		// TODO: notification / scheduling for dependent work.
 	}
 private:
 	DataFile<T>* _file;

@@ -22,7 +22,7 @@
 
 
 #include <board_config.hpp>
-#include <PublishSubscribe.hpp>
+#include <Messenger.hpp>
 #include <DispatchQueue.hpp>
 
 void listener_task(void* args)
@@ -48,7 +48,7 @@ void listener_task(void* args)
 		if (accel_sub.updated())
 		{
 			data = accel_sub.get();
-			SYS_INFO("listener_task: got some data");
+			SYS_INFO("listener_task: got some data %d", data.x);
 			dispatcher->dispatch(func);
 		}
 		else
