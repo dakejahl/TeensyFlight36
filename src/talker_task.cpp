@@ -37,6 +37,6 @@ void talker_task(void* args)
 		data.y = 2;
 		data.z = 3;
 		accel_pub->publish(data);
-		vTaskDelay(10);
+		vTaskDelay(40);
 	}
 }

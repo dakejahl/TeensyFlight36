@@ -26,11 +26,7 @@
 
 #include <Time.hpp>
 
-#define ACCEL_RAW_DATA_S_ID 0
-#define GYRO_RAW_DATA_S_ID 1
-#define MAG_RAW_DATA_S_ID 2
-
-// Some data type
+// TODO: autogenerate these...
 struct accel_raw_data_s
 {
 	uint64_t timestamp;
@@ -56,9 +52,11 @@ struct mag_raw_data_s
 };
 
 
+// Single publisher multiple subscriber implementation
 namespace messenger
 {
 
+// A single data file per topic, shared between publisher and subscriber(s)
 template <typename T>
 class DataFile
 {
@@ -102,14 +100,15 @@ class Publisher
 public:
 	Publisher()
 	{
-		auto file = new DataFile<T>();
-		// Hold onto this address! We'll share it with the subscriber too.
-		_file = file;
+		// Create the shared data memory
+		_file = new DataFile<T>();
 	}
 
 	~Publisher()
 	{
 		// NOTE: we assume the data file is never deleted after being created at init.
+		// the consequence of this assumption is that subscribers must always check the timestamp
+		// before consuming the data.
 	}
 
 	void publish(T& data)
@@ -122,7 +121,6 @@ public:
 	}
 
 private:
-	// This data needs to be shared with subscribers.
 	DataFile<T>* _file;
 };
 

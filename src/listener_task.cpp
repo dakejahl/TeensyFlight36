@@ -54,6 +54,6 @@ void listener_task(void* args)
 			// SYS_INFO("listener_task: no data available");
 		}
 
-		vTaskDelay(1);
+		vTaskDelay(10);
 	}
 }
