@@ -71,6 +71,9 @@ public:
 	void dispatch(const fp_t& work);
 	void dispatch(fp_t&& work);
 
+	void dispatch_on_publication(const fp_t& work, unsigned interval_ms);
+	void dispatch_on_publication(fp_t&& work, unsigned interval_ms);
+
 private:
 	void dispatch_thread_handler(void);
 

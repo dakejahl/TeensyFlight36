@@ -35,14 +35,14 @@ namespace time {
 // ------ Specifications ------
 // Resolution: 0.533us
 // Overflow rate: 28.61Hz --> 34.952ms
-class SystemTimer
+class PrecisionTimer
 {
 public:
 
-	~SystemTimer();
+	~PrecisionTimer();
 
 	static void Instantiate(void);
-	static SystemTimer* Instance();
+	static PrecisionTimer* Instance();
 
 	abs_time_t get_absolute_time_us(void);
 
@@ -51,13 +51,31 @@ public:
 	void handle_timer_overflow(void);
 
 private:
-	SystemTimer(){}; // Private so that it can  not be called
-	SystemTimer(SystemTimer const&){}; // copy constructor is private
-	SystemTimer& operator=(SystemTimer const&){return *Instance();}; // assignment operator is private
+	PrecisionTimer(){}; // Private so that it can  not be called
+	PrecisionTimer(PrecisionTimer const&){}; // copy constructor is private
+	PrecisionTimer& operator=(PrecisionTimer const&){return *Instance();}; // assignment operator is private
 
-	static SystemTimer* _instance;
+	static PrecisionTimer* _instance;
 
 	abs_time_t _base_ticks = 0;
 };
 
 } // end namespace time
+
+// This timer is used to schedule items onto the DispatchQueue
+// The timer shall have a resolution of 1ms and be of high priority
+// class DispatchTimer
+// {
+// public:
+// 	~DispatchTimer();
+
+// 	static void Instantiate(void);
+// 	static DispatchTimer* Instance();
+
+// private:
+// 	DispatchTimer(){}; // Private so that it can  not be called
+// 	DispatchTimer(DispatchTimer const&){}; // copy constructor is private
+// 	DispatchTimer& operator=(DispatchTimer const&){return *Instance();}; // assignment operator is private
+
+// 	static DispatchTimer* _instance;
+// }

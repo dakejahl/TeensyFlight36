@@ -34,7 +34,7 @@ extern void talker_task(void* args);
 extern void listener_task(void* args);
 
 
-extern time::SystemTimer* SystemTimer;
+extern time::PrecisionTimer* PrecisionTimer;
 extern const uint8_t FreeRTOSDebugConfig[];
 
 extern "C" int main()
@@ -47,7 +47,7 @@ extern "C" int main()
 	}
 
 	// Init system timer
-	time::SystemTimer::Instantiate();
+	time::PrecisionTimer::Instantiate();
 
 	// LED task that tells us all is OK
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);

@@ -36,7 +36,7 @@ void led_task(void* args)
 	for(;;)
 	{
 		accel_raw_data_s data;
-		data.timestamp = time::SystemTimer::Instance()->get_absolute_time_us();
+		data.timestamp = time::PrecisionTimer::Instance()->get_absolute_time_us();
 		data.x = 3;
 		data.y = 2;
 		data.z = 1;

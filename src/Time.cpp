@@ -27,27 +27,27 @@ extern volatile uint32_t _freertos_stats_base_ticks = 0;
 namespace time {
 
 // Global static pointer used to ensure a single instance of the class.
-SystemTimer* SystemTimer::_instance = nullptr;
+PrecisionTimer* PrecisionTimer::_instance = nullptr;
 
-void SystemTimer::Instantiate(void)
+void PrecisionTimer::Instantiate(void)
 {
 	if (!_instance)
 	{
-		_instance = new SystemTimer();
+		_instance = new PrecisionTimer();
 	}
 };
 
-SystemTimer* SystemTimer::Instance()
+PrecisionTimer* PrecisionTimer::Instance()
 {
 	return _instance;
 }
 
-SystemTimer::~SystemTimer()
+PrecisionTimer::~PrecisionTimer()
 {
 	delete _instance;
 }
 
-abs_time_t SystemTimer::get_absolute_time_us(void)
+abs_time_t PrecisionTimer::get_absolute_time_us(void)
 {
 	abs_time_t current_time;
 	uint16_t tick_val;
@@ -64,7 +64,7 @@ abs_time_t SystemTimer::get_absolute_time_us(void)
 	return current_time;
 }
 
-uint64_t SystemTimer::get_ticks_since_boot(void)
+uint64_t PrecisionTimer::get_ticks_since_boot(void)
 {
 	uint16_t tick_val;
 	uint64_t total_ticks;
@@ -80,7 +80,7 @@ uint64_t SystemTimer::get_ticks_since_boot(void)
 	return total_ticks;
 }
 
-void SystemTimer::handle_timer_overflow(void)
+void PrecisionTimer::handle_timer_overflow(void)
 {
 	_base_ticks += FTM_MAX_TICKS;
 	_freertos_stats_base_ticks = _base_ticks;
@@ -95,7 +95,7 @@ extern "C" void ftm0_isr(void)
 
 	{
 		// We've overflown -- add the full scale value to the base
-		time::SystemTimer::Instance()->handle_timer_overflow();
+		time::PrecisionTimer::Instance()->handle_timer_overflow();
 	}
 
 	// Clear overflow flag -- reset happens on overflow (FTM0_MOD = 0xFFFF)

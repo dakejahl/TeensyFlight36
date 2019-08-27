@@ -78,6 +78,17 @@ void DispatchQueue::dispatch(fp_t&& work)
 	return;
 }
 
+void DispatchQueue::dispatch_on_publication(const fp_t& work, unsigned interval_ms)
+{
+	// Set up a oneshot timer to trigger a dispatch
+
+}
+
+void DispatchQueue::dispatch_on_publication(fp_t&& work, unsigned interval_ms)
+{
+
+}
+
 void DispatchQueue::dispatch_thread_handler(void)
 {
 	BaseType_t status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
@@ -94,10 +105,10 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 			SYS_INFO("Doing work");
 
-			auto start_time = time::SystemTimer::Instance()->get_absolute_time_us();
+			auto start_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
 			// Run function
 			work();
-			auto end_time = time::SystemTimer::Instance()->get_absolute_time_us();
+			auto end_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
 			auto elapsed = end_time - start_time;
 			SYS_INFO("elapsed time: %lluus", elapsed);
 
