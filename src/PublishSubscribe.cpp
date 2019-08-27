@@ -20,33 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class Publisher
-{
-public:
-
-
-};
-
-Publisher<data_type_s> myPub;
-
-
-
-
-
-
-
-
-
-int main(void)
+namespace messenger
 {
 
-	data_type_s my_data;
 
-
-	int data = sensor->read_data();
-	my_data.data = data;
-
-	myPub->publish(my_data);
-
-	return 0;
-}
+} // end namespace messenger

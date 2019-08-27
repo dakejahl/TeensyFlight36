@@ -20,49 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <FreeRTOS.h>
-#include <task.h>
 
 #include <board_config.hpp>
-#include <Time.hpp>
-#include <DispatchQueue.hpp>
+#include <PublishSubscribe.hpp>
 
-
-void init_task(void* args)
+void listener_task(void* args)
 {
+	auto accel_sub = new Subscriber<accel_raw_data_s>();
 
+	for(;;)
+	{
+		accel_raw_data_s data;
+
+		if (accel_sub->updated())
+		{
+			data = accel_sub->get();
+			SYS_INFO("listener_task: got some data");
+		}
+		else
+		{
+			SYS_INFO("listener_task: no data available");
+		}
+
+		vTaskDelay(100);
+	}
 }
-
-// void init_task(void* args)
-// {
-// 	auto start_time = time::SystemTimer::Instance()->get_absolute_time_us();
-
-// 	auto dispatcher = new DispatchQueue("hi_pri_wq");
-
-// 	auto end_time = time::SystemTimer::Instance()->get_absolute_time_us();
-// 	SYS_INFO("create dispatch_queue: %lluus", end_time - start_time);
-
-// 	auto func = []
-// 	{
-// 		volatile unsigned dummy = 0;
-// 		for (unsigned i = 0; i < 100000; ++i)
-// 		{
-// 			dummy++;
-// 		}
-// 	};
-
-// 	start_time = time::SystemTimer::Instance()->get_absolute_time_us();
-
-// 	// dispatcher->dispatch(func);
-
-// 	end_time = time::SystemTimer::Instance()->get_absolute_time_us();
-// 	SYS_INFO("dispatch: %lluus", end_time - start_time);
-
-// 	while(1)
-// 	{
-// 		// Tasks never return.
-// 		vTaskDelay(500);
-// 		dispatcher->dispatch(func);
-// 		SYS_INFO("init_task");
-// 	}
-// }
