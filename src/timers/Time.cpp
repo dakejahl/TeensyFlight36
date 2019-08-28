@@ -58,7 +58,9 @@ abs_time_t PrecisionTimer::get_absolute_time_us(void)
 
 	tick_val = FTM0_CNT;
 
-	current_time = FTM0_MICROS_PER_TICK * (_base_ticks + tick_val);
+	current_time = FTM0_PICOS_PER_TICK * (_base_ticks + tick_val);
+
+	current_time /= PICOS_PER_MICRO;
 
 	taskEXIT_CRITICAL();
 
@@ -111,12 +113,19 @@ DispatchTimer::~DispatchTimer()
 	delete _instance;
 }
 
-abs_time_t DispatchTimer::get_absolute_time_ms(void)
+abs_time_t DispatchTimer::get_absolute_time_us(void)
 {
+	abs_time_t current_time;
+	uint16_t tick_val;
+
 	// Not reentrant
 	taskENTER_CRITICAL();
 
-	abs_time_t current_time = _base_ticks;
+	tick_val = FTM1_CNT;
+
+	current_time = FTM1_PICOS_PER_TICK * (_base_ticks + tick_val);
+
+	current_time /= PICOS_PER_MICRO;
 
 	taskEXIT_CRITICAL();
 
@@ -126,12 +135,13 @@ abs_time_t DispatchTimer::get_absolute_time_ms(void)
 void DispatchTimer::handle_timer_overflow(void)
 {
 	// Overflows every millisecond so we just use this as our counter
-	_base_ticks += 1U;
+	_base_ticks += FTM1_MAX_TICKS; // each tick is 100us
 
 	// Schedule an item if it's ready
-	abs_time_t current_time_ms = _base_ticks;
+	abs_time_t current_time_us = FTM1_PICOS_PER_TICK * (_base_ticks );
+	current_time_us /= PICOS_PER_MICRO;
 	// 1 tick equals 16.6666ns
-	if (current_time_ms > _next_deadline_ms)
+	if (current_time_us > _next_deadline_us)
 	{
 		if (_dispatch_queue != nullptr)
 		{
@@ -141,9 +151,9 @@ void DispatchTimer::handle_timer_overflow(void)
 }
 
 // MUST ONLY BE CALLED WITTH INTERRUPTS DISABLED
-void DispatchTimer::set_next_deadline_ms(abs_time_t deadline_ms)
+void DispatchTimer::set_next_deadline_us(abs_time_t deadline_us)
 {
-	_next_deadline_ms = deadline_ms;
+	_next_deadline_us = deadline_us;
 }
 
 } // end namespace time

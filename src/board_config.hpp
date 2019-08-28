@@ -33,7 +33,9 @@
 #define STR_HELPER(x) #x
 #define TO_STRING(x) STR_HELPER(x)
 
-static constexpr float FTM0_MICROS_PER_TICK = 0.5333333333333333f;
+static constexpr unsigned FTM0_PICOS_PER_TICK = 533333U;
+static constexpr unsigned FTM1_PICOS_PER_TICK = 16667U;
+static constexpr unsigned PICOS_PER_MICRO = 1000000;
 
 using abs_time_t = uint64_t;
 

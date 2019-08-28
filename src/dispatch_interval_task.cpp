@@ -28,7 +28,7 @@ void dispatch_interval_task(void* args)
 	auto dispatcher = new DispatchQueue("dummy_q");
 	vTaskDelay(1000);
 
-	auto func = []
+	auto func1 = []
 	{
 		volatile unsigned dummy = 0;
 		for (unsigned i = 0; i < 10; ++i)
@@ -39,17 +39,24 @@ void dispatch_interval_task(void* args)
 		// SYS_INFO("Hey I got dispatched on an interval!");
 	};
 
-	auto udder_func = []
+	auto func2 = []
 	{
-		// SYS_INFO("jus chillin");
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 10; ++i)
+		{
+			dummy++;
+		}
+
+		SYS_INFO("Hey I got dispatched asynchronously!");
 	};
 
-	dispatcher->dispatch_on_interval(func, 10);
+
+	dispatcher->dispatch_on_interval(func1, 2);
 
 	for(;;)
 	{
 		// We do nothing...
 		vTaskDelay(1000);
-		dispatcher->dispatch(func);
+		// dispatcher->dispatch(func2);
 	}
 }

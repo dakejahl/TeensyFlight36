@@ -306,7 +306,7 @@ Notes:
 #endif
 
 #define traceMOVED_TASK_TO_READY_STATE(pxTCB)       SEGGER_SYSVIEW_OnTaskStartReady((U32)pxTCB)
-#define traceREADDED_TASK_TO_READY_STATE(pxTCB)     
+#define traceREADDED_TASK_TO_READY_STATE(pxTCB)
 
 #define traceMOVED_TASK_TO_DELAYED_LIST()           SEGGER_SYSVIEW_OnTaskStopReady((U32)pxCurrentTCB,  (1u << 2))
 #define traceMOVED_TASK_TO_OVERFLOW_DELAYED_LIST()  SEGGER_SYSVIEW_OnTaskStopReady((U32)pxCurrentTCB,  (1u << 2))

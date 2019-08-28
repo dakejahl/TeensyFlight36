@@ -25,8 +25,8 @@
 #include <board_config.hpp>
 #include <dispatch_queue/DispatchQueue.hpp>
 
-#define FTM0_MAX_TICKS 65535
-#define FTM1_MAX_TICKS 59
+#define FTM0_MAX_TICKS 65535U // modulo value
+#define FTM1_MAX_TICKS 6000U // modulo value
 
 extern volatile uint32_t _freertos_stats_base_ticks;
 
@@ -71,13 +71,13 @@ public:
 	DispatchTimer(DispatchQueue* queue);
 	~DispatchTimer();
 
-	abs_time_t get_absolute_time_ms(void);
+	abs_time_t get_absolute_time_us(void);
 
 	static void Instantiate(DispatchQueue* queue);
 	static DispatchTimer* Instance();
 
 	void handle_timer_overflow(void);
-	void set_next_deadline_ms(abs_time_t deadline_ns);
+	void set_next_deadline_us(abs_time_t deadline_us);
 
 private:
 	DispatchTimer(){}; // Private so that it can  not be called
@@ -89,7 +89,7 @@ private:
 	DispatchQueue* _dispatch_queue = nullptr;
 
 	abs_time_t _base_ticks = 0;
-	abs_time_t _next_deadline_ms = MAX_TIME;
+	abs_time_t _next_deadline_us = MAX_TIME;
 };
 
 } // end namespace time

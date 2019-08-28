@@ -49,7 +49,7 @@ struct IntervalWork
 {
 	fp_t work;
 	abs_time_t interval_ms;
-	abs_time_t next_deadline_ms;
+	abs_time_t next_deadline_us;
 };
 
 struct IntervalList

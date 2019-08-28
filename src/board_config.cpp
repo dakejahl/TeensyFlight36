@@ -46,13 +46,12 @@ extern "C" void SystemInit(void)
 
 #define FTM_PRESCALE_533_NANO_SEC 32
 #define FTM_SYS_CLK 1
-#define DEFAULT_FTM_MOD (61440 - 1)
 
 //---- PRECISION TIMER ----//
 // Frequency: 60MHz (F_BUS)
 // counter: 16bit
 // prescaler: 32
-// modulo: 65535
+// modulo: 65535 == FTM0_MAX_TICKS
 // resolution: 0.533us
 // overflow rate: 34.952ms --> 28.61Hz
 static void init_FTM0(void)
@@ -65,7 +64,7 @@ static void init_FTM0(void)
 	}
 
 	FTM0_CNT = 0x0000; //reset count to zero
-	FTM0_MOD = 0xFFFF; //max modulus = 65535 (gives count = 65,536 on roll-over)
+	FTM0_MOD = FTM0_MAX_TICKS; //max modulus = 65535 (gives count = 65,536 on roll-over)
 	// Turn the timer on and configure with our settings
 	FTM0_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
 			| FTM_SC_PS(PS_DIV_32) // set prescaler for desired resolution / overflow rate
@@ -80,9 +79,9 @@ static void init_FTM0(void)
 // Frequency: 60MHz (F_BUS)
 // counter: 16bit
 // prescaler: 1
-// modulo: 60,000
+// modulo: 6,000 == FTM1_MAX_TICKS
 // resolution: 16.6666ns
-// overflow rate: 1ms --> 1kHz
+// overflow rate: 0.1ms --> 1kHz
 static void init_FTM1(void)
 {
 	// Disable write protection to change the settings -- TODO reenable write protection?
@@ -93,7 +92,7 @@ static void init_FTM1(void)
 	}
 
 	FTM1_CNT = 0x0000; //reset count to zero
-	FTM1_MOD = 0xEA60; //max modulus = 60,000 (@60Mhz, 60,000 ticks == 1ms)
+	FTM1_MOD = FTM1_MAX_TICKS; //max modulus = 6,000 (@60Mhz, 6,000 ticks == 0.1ms)
 	// Turn the timer on and configure with our settings
 	FTM1_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
 			| FTM_SC_PS(PS_DIV_1) // set prescaler for desired resolution / overflow rate

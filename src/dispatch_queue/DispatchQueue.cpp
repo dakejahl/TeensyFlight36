@@ -101,11 +101,11 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
 	IntervalWork item;
 
-	auto now = time::DispatchTimer::Instance()->get_absolute_time_ms();
+	auto now = time::DispatchTimer::Instance()->get_absolute_time_us();
 
 	item.work = work;
 	item.interval_ms = interval_ms;
-	item.next_deadline_ms = now + interval_ms;
+	item.next_deadline_us = now + interval_ms * 1000U;
 
 	taskENTER_CRITICAL();
 
@@ -130,11 +130,11 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
 	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
 	IntervalWork item;
 
-	auto now = time::DispatchTimer::Instance()->get_absolute_time_ms();
+	auto now = time::DispatchTimer::Instance()->get_absolute_time_us();
 
 	item.work = work;
 	item.interval_ms = interval_ms;
-	item.next_deadline_ms = now + interval_ms;
+	item.next_deadline_us = now + interval_ms * 1000U;
 
 	taskENTER_CRITICAL();
 
@@ -152,15 +152,15 @@ void DispatchQueue::interval_dispatch_update_iterator(void)
 {
 	unsigned counter = 0;
 
-	abs_time_t deadline_ms = time::MAX_TIME;
+	abs_time_t deadline_us = time::MAX_TIME;
 	for (auto it = _interval_list.begin(); it != _interval_list.end(); ++it)
 	{
 		auto& item = *it;
-		auto item_deadline_ms = item.next_deadline_ms;
+		auto item_deadline_us = item.next_deadline_us;
 
-		if (item_deadline_ms < deadline_ms)
+		if (item_deadline_us < deadline_us)
 		{
-			deadline_ms = item_deadline_ms;
+			deadline_us = item_deadline_us;
 			_interval_list._next = it; // Point _next at the iterator of the next item to run.
 			// NOTE: this is unsafe if something comes and messes with our list, we must
 			// make the assumption that this will not happen.
@@ -168,7 +168,7 @@ void DispatchQueue::interval_dispatch_update_iterator(void)
 		counter++;
 	}
 
-	time::DispatchTimer::Instance()->set_next_deadline_ms(deadline_ms);
+	time::DispatchTimer::Instance()->set_next_deadline_us(deadline_us);
 }
 
 void DispatchQueue::dispatch_thread_handler(void)
@@ -189,19 +189,24 @@ void DispatchQueue::dispatch_thread_handler(void)
 				// point _next at the next ready to run item
 				auto& item = *_interval_list._next; // dereference the iterator
 				auto work = item.work;
+				_interval_item_ready = false;
+
+				taskEXIT_CRITICAL();
+
+				item.next_deadline_us = time::MAX_TIME;
+
+				work();
 
 				// Reschedule the item for the next interval
-				auto now = time::DispatchTimer::Instance()->get_absolute_time_ms();
+				taskENTER_CRITICAL();
 
-				item.next_deadline_ms = now + item.interval_ms;
+				auto now = time::DispatchTimer::Instance()->get_absolute_time_us();
 
-				_interval_item_ready = false;
+				item.next_deadline_us = now + item.interval_ms * 1000U;
 
 				interval_dispatch_update_iterator();
 
 				taskEXIT_CRITICAL();
-
-				work();
 			}
 			else
 			// Otherwise we service the async queue
