@@ -23,14 +23,16 @@
 #pragma once
 
 #include <board_config.hpp>
+#include <DispatchQueue.hpp>
 
-using abs_time_t = uint64_t;
-#define FTM_MAX_TICKS 65536
+#define FTM0_MAX_TICKS 65535
+#define FTM1_MAX_TICKS 59
 
 extern volatile uint32_t _freertos_stats_base_ticks;
 
 namespace time {
 
+static constexpr abs_time_t MAX_TIME = 0xFFFFFFFFFFFFFFFF;
 ///////////////////////////////
 // ------ Specifications ------
 // Resolution: 0.533us
@@ -60,22 +62,34 @@ private:
 	abs_time_t _base_ticks = 0;
 };
 
-} // end namespace time
-
+// WARNING: since this overflows at 1kHz it means we have up to +/- 1ms of jitter
 // This timer is used to schedule items onto the DispatchQueue
 // The timer shall have a resolution of 1ms and be of high priority
-// class DispatchTimer
-// {
-// public:
-// 	~DispatchTimer();
+class DispatchTimer
+{
+public:
+	DispatchTimer(DispatchQueue* queue);
+	~DispatchTimer();
 
-// 	static void Instantiate(void);
-// 	static DispatchTimer* Instance();
+	abs_time_t get_absolute_time_ms(void);
 
-// private:
-// 	DispatchTimer(){}; // Private so that it can  not be called
-// 	DispatchTimer(DispatchTimer const&){}; // copy constructor is private
-// 	DispatchTimer& operator=(DispatchTimer const&){return *Instance();}; // assignment operator is private
+	static void Instantiate(DispatchQueue* queue);
+	static DispatchTimer* Instance();
 
-// 	static DispatchTimer* _instance;
-// }
+	void handle_timer_overflow(void);
+	void set_next_deadline_ms(abs_time_t deadline_ns);
+
+private:
+	DispatchTimer(){}; // Private so that it can  not be called
+	DispatchTimer(DispatchTimer const&){}; // copy constructor is private
+	DispatchTimer& operator=(DispatchTimer const&){return *Instance();}; // assignment operator is private
+
+	static DispatchTimer* _instance;
+
+	DispatchQueue* _dispatch_queue = nullptr;
+
+	abs_time_t _base_ticks = 0;
+	abs_time_t _next_deadline_ms = MAX_TIME;
+};
+
+} // end namespace time

@@ -31,8 +31,10 @@
 
 #include <functional>
 #include <queue>
+#include <list>
 #include <string>
 #include <vector>
+#include <iterator>
 
 #define BOUNCE(c,m) bounce<c, decltype(&c::m), &c::m>
 
@@ -45,6 +47,24 @@ static auto bounce(void *priv, Params... params) ->
 }
 
 typedef std::function<void(void)> fp_t;
+
+struct IntervalWork
+{
+	fp_t work;
+	abs_time_t interval_ms;
+	abs_time_t next_deadline_ms;
+};
+
+struct IntervalList
+{
+	std::list<IntervalWork> _items;
+	std::list<IntervalWork>::iterator _next; // holds the iterator index for the next item to run
+
+	std::list<IntervalWork>::iterator begin() { return _items.begin(); };
+	std::list<IntervalWork>::iterator end() { return _items.end(); };
+	void push_back(const IntervalWork& value) { _items.push_back(value); };
+	void push_back(IntervalWork&& value) { _items.push_back(value); };
+};
 
 struct freertos_thread_t
 {
@@ -71,8 +91,11 @@ public:
 	void dispatch(const fp_t& work);
 	void dispatch(fp_t&& work);
 
-	void dispatch_on_publication(const fp_t& work, unsigned interval_ms);
-	void dispatch_on_publication(fp_t&& work, unsigned interval_ms);
+	void dispatch_on_interval(const fp_t& work, unsigned interval_ms);
+	void dispatch_on_interval(fp_t&& work, unsigned interval_ms);
+
+	void interval_dispatch_notify_ready(void);
+	void update_interval_dispatch_iterator(void);
 
 private:
 	void dispatch_thread_handler(void);
@@ -82,10 +105,13 @@ private:
 	std::string _name;
 	std::vector<freertos_thread_t> _threads;
 	std::queue<fp_t> _queue;
+	IntervalList _interval_list;
 
 	SemaphoreHandle_t _mutex;
 	// FreeRTOS event flags - like condition variable, used for waking queue threads
 	EventGroupHandle_t _notify_flags;
+
+	volatile bool _interval_item_ready = false;
 
 	bool _should_exit = false;
 };

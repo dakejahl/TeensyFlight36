@@ -24,11 +24,13 @@
 #include <Time.hpp>
 
 static void init_FTM0(void);
+static void init_FTM1(void);
 static void init_serial(void);
 
 extern "C" void sys_init(void)
 {
 	init_FTM0();
+	init_FTM1();
 	init_serial();
 }
 
@@ -49,6 +51,7 @@ extern "C" void sys_init(void)
 // Frequency: 60MHz (F_BUS)
 // counter: 16bit
 // prescaler: 32
+// modulo: 65535
 // resolution: 0.533us
 // overflow rate: 34.952ms --> 28.61Hz
 static void init_FTM0(void)
@@ -75,28 +78,29 @@ static void init_FTM0(void)
 //---- DISPATCH TIMER ----//
 // Frequency: 60MHz (F_BUS)
 // counter: 16bit
-// prescaler: 32
-// resolution: 0.533us
-// overflow rate: 34.952ms --> 28.61Hz
+// prescaler: 1
+// modulo: 60
+// resolution: 16.6666ns
+// overflow rate: 1ms --> 1kHz
 static void init_FTM1(void)
 {
 	// Disable write protection to change the settings -- TODO reenable write protection?
-	uint32_t mode = FTM0_FMS;
+	uint32_t mode = FTM1_FMS;
 	if (mode & FTM_FMS_WPEN)
 	{
-		FTM0_MODE |= FTM_MODE_WPDIS;
+		FTM1_MODE |= FTM_MODE_WPDIS;
 	}
 
-	FTM0_CNT = 0x0000; //reset count to zero
-	FTM0_MOD = 0xFFFF; //max modulus = 65535 (gives count = 65,536 on roll-over)
+	FTM1_CNT = 0x0000; //reset count to zero
+	FTM1_MOD = 0xEA60; //max modulus = 60,000 (@60Mhz, 60,000 ticks == 1ms)
 	// Turn the timer on and configure with our settings
-	FTM0_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
-			| FTM_SC_PS(PS_DIV_32) // set prescaler for desired resolution / overflow rate
+	FTM1_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
+			| FTM_SC_PS(PS_DIV_1) // set prescaler for desired resolution / overflow rate
 			| FTM_SC_TOIE; // enable overflow interrupt
 
-	FTM0_MODE |= FTM_MODE_FTMEN;
+	FTM1_MODE |= FTM_MODE_FTMEN;
 
-	NVIC_ENABLE_IRQ(IRQ_FTM0);
+	NVIC_ENABLE_IRQ(IRQ_FTM1);
 }
 
 static void init_serial(void)

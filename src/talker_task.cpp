@@ -31,7 +31,6 @@ void talker_task(void* args)
 
 	messenger::Publisher<accel_raw_data_s> accel_pub;
 
-
 	for(;;)
 	{
 		accel_raw_data_s data;

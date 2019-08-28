@@ -567,11 +567,11 @@ void _init_Teensyduino_internal_(void)
 	FTM3_C7SC = 0x28;
 #endif
 	// FTM0_SC = FTM_SC_CLKS(1) | FTM_SC_PS(DEFAULT_FTM_PRESCALE);
-	FTM1_CNT = 0;
-	FTM1_MOD = DEFAULT_FTM_MOD;
-	FTM1_C0SC = 0x28;
-	FTM1_C1SC = 0x28;
-	FTM1_SC = FTM_SC_CLKS(1) | FTM_SC_PS(DEFAULT_FTM_PRESCALE);
+	// FTM1_CNT = 0;
+	// FTM1_MOD = DEFAULT_FTM_MOD;
+	// FTM1_C0SC = 0x28;
+	// FTM1_C1SC = 0x28;
+	// FTM1_SC = FTM_SC_CLKS(1) | FTM_SC_PS(DEFAULT_FTM_PRESCALE);
 #if defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__MKL26Z64__)
 	FTM2_CNT = 0;
 	FTM2_MOD = DEFAULT_FTM_MOD;

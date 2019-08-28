@@ -28,6 +28,8 @@ namespace time {
 
 // Global static pointer used to ensure a single instance of the class.
 PrecisionTimer* PrecisionTimer::_instance = nullptr;
+DispatchTimer* DispatchTimer::_instance = nullptr;
+
 
 void PrecisionTimer::Instantiate(void)
 {
@@ -35,7 +37,7 @@ void PrecisionTimer::Instantiate(void)
 	{
 		_instance = new PrecisionTimer();
 	}
-};
+}
 
 PrecisionTimer* PrecisionTimer::Instance()
 {
@@ -57,7 +59,7 @@ abs_time_t PrecisionTimer::get_absolute_time_us(void)
 
 	tick_val = FTM0_CNT;
 
-	current_time = MICROS_PER_TICK * (_base_ticks + tick_val);
+	current_time = FTM0_MICROS_PER_TICK * (_base_ticks + tick_val);
 
 	taskEXIT_CRITICAL();
 
@@ -82,8 +84,67 @@ uint64_t PrecisionTimer::get_ticks_since_boot(void)
 
 void PrecisionTimer::handle_timer_overflow(void)
 {
-	_base_ticks += FTM_MAX_TICKS;
+	_base_ticks += FTM0_MAX_TICKS;
 	_freertos_stats_base_ticks = _base_ticks;
+}
+
+//---- DISPATCH TIMER ----//
+DispatchTimer::DispatchTimer(DispatchQueue* queue)
+	: _dispatch_queue(queue)
+{
+	// Nothing to do
+}
+void DispatchTimer::Instantiate(DispatchQueue* queue)
+{
+	if (!_instance)
+	{
+		_instance = new DispatchTimer(queue);
+	}
+}
+
+DispatchTimer* DispatchTimer::Instance()
+{
+	return _instance;
+}
+
+DispatchTimer::~DispatchTimer()
+{
+	delete _instance;
+}
+
+abs_time_t DispatchTimer::get_absolute_time_ms(void)
+{
+	// Not reentrant
+	taskENTER_CRITICAL();
+
+	abs_time_t current_time = _base_ticks;
+
+	taskEXIT_CRITICAL();
+
+	return current_time;
+}
+
+void DispatchTimer::handle_timer_overflow(void)
+{
+	// Overflows every millisecond so we just use this as our counter
+	_base_ticks += 1U;
+
+	// Schedule an item if it's ready
+	abs_time_t current_time_ms = _base_ticks;
+	// 1 tick equals 16.6666ns
+	if (current_time_ms > _next_deadline_ms)
+	{
+		if (_dispatch_queue != nullptr)
+		{
+			_dispatch_queue->interval_dispatch_notify_ready();
+		}
+	}
+}
+
+// MUST ONLY BE CALLED WITTH INTERRUPTS DISABLED
+void DispatchTimer::set_next_deadline_ms(abs_time_t deadline_ms)
+{
+	_next_deadline_ms = deadline_ms;
 }
 
 } // end namespace time
@@ -108,4 +169,24 @@ extern "C" void ftm0_isr(void)
 	taskEXIT_CRITICAL_FROM_ISR(saved_state);
 }
 
+// Define ISR for FlexTimer Module 1
+extern "C" void ftm1_isr(void)
+{
+	auto saved_state = taskENTER_CRITICAL_FROM_ISR();
 
+	{
+		if (time::DispatchTimer::Instance() != nullptr)
+		{
+			time::DispatchTimer::Instance()->handle_timer_overflow();
+		}
+	}
+
+	// Clear overflow flag -- reset happens on overflow (FTM0_MOD = 0xFFFF)
+	if ((FTM1_SC & FTM_SC_TOF) != 0)
+	{
+		FTM1_SC &= ~FTM_SC_TOF;
+		FTM1_CNT = 0;
+	}
+
+	taskEXIT_CRITICAL_FROM_ISR(saved_state);
+}

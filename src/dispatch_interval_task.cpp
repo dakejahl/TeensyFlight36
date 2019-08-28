@@ -20,40 +20,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
 
-#include <Arduino.h>
-#include "core_pins.h"
-#include <kinetis.h>
+#include <board_config.hpp>
+#include <Messenger.hpp>
 
-#include <FreeRTOS.h>
-#include <task.h>
 
-// Helpers for understanding my config
-#define STR_HELPER(x) #x
-#define TO_STRING(x) STR_HELPER(x)
-
-static constexpr float FTM0_MICROS_PER_TICK = 0.5333333333333333f;
-
-using abs_time_t = uint64_t;
-
-// Setup peripherals etc
-extern "C" void sys_init(void);
-
-#define _PRINTF_BUFFER_LENGTH_ 64U
-static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];
-
-#define SYS_PRINT() Serial.println(_pf_buffer_)
-#define SYS_INFO(fmt,...)                                               \
-do{                                                                     \
-	snprintf(_pf_buffer_, sizeof(_pf_buffer_), fmt, ##__VA_ARGS__);		\
-	SYS_PRINT();                                                        \
-	}while(0);
-
-enum PriorityLevel : uint8_t
+void dispatch_interval_task(void* args)
 {
-	LOWEST = 0,
-	LOW_PRI_Q = 1,
-	HI_PRI_Q = 2,
-	HIGHEST = configMAX_PRIORITIES,
-};
+	// auto accel_pub = new messenger::Publisher<accel_raw_data_s>();
+	auto dispatcher = new DispatchQueue("dummy_q");
+	vTaskDelay(1000);
+
+	auto func = []
+	{
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 1000; ++i)
+		{
+			dummy++;
+		}
+
+		SYS_INFO("Hey I got dispatched on an interval!");
+	};
+
+	auto udder_func = []
+	{
+		SYS_INFO("jus chillin");
+	};
+
+	dispatcher->dispatch_on_interval(func, 1);
+
+	for(;;)
+	{
+		// We do nothing...
+		vTaskDelay(1000);
+		dispatcher->dispatch(udder_func);
+	}
+}

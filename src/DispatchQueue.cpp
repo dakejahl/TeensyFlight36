@@ -78,15 +78,99 @@ void DispatchQueue::dispatch(fp_t&& work)
 	return;
 }
 
-void DispatchQueue::dispatch_on_publication(const fp_t& work, unsigned interval_ms)
+void DispatchQueue::interval_dispatch_notify_ready()
 {
-	// Set up a oneshot timer to trigger a dispatch
+	// Signal to the dispatcher that an interval item is ready to run
+	_interval_item_ready = true;
 
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	// Wake up worker thread
+	xEventGroupSetBitsFromISR(_notify_flags, Event::DISPATCH_WAKE, &xHigherPriorityTaskWoken);
 }
 
-void DispatchQueue::dispatch_on_publication(fp_t&& work, unsigned interval_ms)
-{
 
+void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
+{
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+
+	if (time::DispatchTimer::Instance() == nullptr)
+	{
+		// Initialize the timer if we haven't already.
+		time::DispatchTimer::Instantiate(this);
+	}
+
+	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
+	IntervalWork item;
+
+	auto now = time::DispatchTimer::Instance()->get_absolute_time_ms();
+
+	item.work = work;
+	item.interval_ms = interval_ms;
+	item.next_deadline_ms = now + interval_ms;
+
+	taskENTER_CRITICAL();
+
+	_interval_list.push_back(item);
+
+	update_interval_dispatch_iterator();
+
+	taskEXIT_CRITICAL();
+
+	xSemaphoreGiveRecursive(_mutex);
+}
+void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
+{
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+
+	if (time::DispatchTimer::Instance() == nullptr)
+	{
+		// Initialize the timer if we haven't already.
+		time::DispatchTimer::Instantiate(this);
+	}
+
+	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
+	IntervalWork item;
+
+	auto now = time::DispatchTimer::Instance()->get_absolute_time_ms();
+
+	item.work = work;
+	item.interval_ms = interval_ms;
+	item.next_deadline_ms = now + interval_ms;
+
+	taskENTER_CRITICAL();
+
+	_interval_list.push_back(std::move(item));
+
+	update_interval_dispatch_iterator();
+
+	taskEXIT_CRITICAL();
+
+	xSemaphoreGiveRecursive(_mutex);
+}
+
+// MUST ONLY BE CALLED WHEN INTERRUPTS ARE DISABLED
+void DispatchQueue::update_interval_dispatch_iterator(void)
+{
+	unsigned counter = 0;
+	// Set the next deadline for the timer
+	abs_time_t deadline_ms = time::MAX_TIME;
+	for (auto it = _interval_list.begin(); it != _interval_list.end(); ++it)
+	{
+		auto& item = *it;
+		auto item_deadline_ms = item.next_deadline_ms;
+
+		if (item_deadline_ms < deadline_ms)
+		{
+			deadline_ms = item_deadline_ms;
+			_interval_list._next = it; // Point _next at the iterator of the next item to run.
+			// NOTE: this is unsafe if something comes and messes with our list, we must
+			// make the assumption that this will not happen.
+		}
+		counter++;
+	}
+
+	time::DispatchTimer::Instance()->set_next_deadline_ms(deadline_ms);
 }
 
 void DispatchQueue::dispatch_thread_handler(void)
@@ -95,24 +179,50 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 	do
 	{
-		// Do work while the queue is not empty.
-		if(!_should_exit && !_queue.empty())
+		// Do work while the queue is not empty OR if we have an interval item ready to run
+		// TODO: clean up -- break apart and simplify logic
+		if(!_should_exit && (!_queue.empty() || _interval_item_ready))
 		{
-			auto work = std::move(_queue.front());
-			_queue.pop();
+			// First we check to see if there's an interval item ready to run
+			if (_interval_item_ready)
+			{
+				taskENTER_CRITICAL();
 
-			status = xSemaphoreGiveRecursive(_mutex);
+				// point _next at the next ready to run item
+				auto& item = *_interval_list._next; // dereference the iterator
+				auto work = item.work;
 
-			SYS_INFO("Doing work");
+				// Reschedule the item for the next interval
+				auto now = time::DispatchTimer::Instance()->get_absolute_time_ms();
 
-			auto start_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
-			// Run function
-			work();
-			auto end_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
-			auto elapsed = end_time - start_time;
-			SYS_INFO("elapsed time: %lluus", elapsed);
+				item.next_deadline_ms = now + item.interval_ms;
 
-			status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
+				_interval_item_ready = false;
+
+				update_interval_dispatch_iterator();
+
+				taskEXIT_CRITICAL();
+
+				auto start_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
+
+				work();
+
+				auto end_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
+				auto elapsed = end_time - start_time;
+			}
+			else
+			// Otherwise we service the async queue
+			{
+				auto work = std::move(_queue.front());
+				_queue.pop();
+
+				status = xSemaphoreGiveRecursive(_mutex);
+
+				// Run function
+				work();
+
+				status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
+			}
 		}
 		// Our queue is empty -- go to sleep until we have work.
 		else if(!_should_exit)

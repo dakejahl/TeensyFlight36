@@ -30,17 +30,6 @@ void listener_task(void* args)
 	// auto accel_sub = new messenger::Subscriber<accel_raw_data_s>();
 	messenger::Subscriber<accel_raw_data_s> accel_sub;
 
-	auto dispatcher = new DispatchQueue("dummy_q");
-
-	auto func = []
-	{
-		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 1000; ++i)
-		{
-			dummy++;
-		}
-	};
-
 	for(;;)
 	{
 		accel_raw_data_s data;
@@ -49,7 +38,6 @@ void listener_task(void* args)
 		{
 			data = accel_sub.get();
 			SYS_INFO("listener_task: got some data %d", data.x);
-			dispatcher->dispatch(func);
 		}
 		else
 		{
