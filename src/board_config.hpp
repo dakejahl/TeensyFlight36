@@ -35,7 +35,8 @@
 
 static constexpr unsigned FTM0_PICOS_PER_TICK = 533333U;
 static constexpr unsigned FTM1_PICOS_PER_TICK = 16667U;
-static constexpr unsigned PICOS_PER_MICRO = 1000000;
+static constexpr unsigned PICOS_PER_MICRO = 1000000U;
+static constexpr unsigned MICROS_PER_MILLI = 1000U;
 
 using abs_time_t = uint64_t;
 
