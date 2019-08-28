@@ -13,3 +13,4 @@
 ## Other
 - Thread aware debug with MCUXpresso (done)
 - Segger SystemView (done)
+![Image description](systemview.png)
