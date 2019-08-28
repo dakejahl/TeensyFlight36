@@ -42,7 +42,7 @@ extern "C" int main()
 	time::PrecisionTimer::Instantiate();
 
 	// Initialize SystemView
-	// SEGGER_SYSVIEW_Conf();
+	SEGGER_SYSVIEW_Conf();
 
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 	xTaskCreate(talker_task, "talker", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);

@@ -200,4 +200,4 @@ number of times the LED would otherwise have been toggled. */
 #endif /* FREERTOS_CONFIG_H */
 
 // TODO: #ifdef DEBUG
-// #include "SEGGER_SYSVIEW_FreeRTOS.h"
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
