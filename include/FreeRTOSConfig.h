@@ -99,6 +99,7 @@ turn the tick off. */
 #define configUSE_RECURSIVE_MUTEXES				1
 #define configUSE_APPLICATION_TASK_TAG			0
 #define configUSE_COUNTING_SEMAPHORES			1
+#define configUSE_TASK_NOTIFICATIONS            1
 
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         0    // change from 0

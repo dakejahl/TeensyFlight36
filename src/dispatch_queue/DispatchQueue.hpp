@@ -63,25 +63,13 @@ struct IntervalList
 	void push_back(IntervalWork&& value) { _items.push_back(value); };
 };
 
-struct freertos_thread_t
-{
-	TaskHandle_t thread;
-	std::string name;
-};
-
-enum Event : uint8_t
-{
-	DISPATCH_WAKE = 0x01,
-	DISPATCH_EXIT = 0x02,
-};
-
 //-------------------- Impl --------------------//
 
 class DispatchQueue
 {
 public:
 	DispatchQueue(const std::string name, const size_t stack_size = 1024,
-		const PriorityLevel priority = ::LOW_PRI_Q, const uint8_t num_threads = 1);
+		const PriorityLevel priority = ::LOW_PRI_Q);
 
 	~DispatchQueue(void);
 
@@ -97,15 +85,14 @@ public:
 private:
 	void dispatch_thread_handler(void);
 
-	void join_worker_threads(void);
+	void join_worker_thread(void);
 
 	std::string _name;
-	std::vector<freertos_thread_t> _threads; // thread pool -- defaults to one
 	std::queue<fp_t> _queue; // holds async items
 	IntervalList _interval_list; // holds interval items
 
+	TaskHandle_t _task_handle;
 	SemaphoreHandle_t _mutex;
-	EventGroupHandle_t _notify_flags;
 
 	volatile bool _interval_item_ready = false;
 

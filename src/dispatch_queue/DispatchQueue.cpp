@@ -25,55 +25,41 @@
 #include <timers/Time.hpp>
 
 DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
-							const PriorityLevel priority, const uint8_t num_threads)
+							const PriorityLevel priority)
 	: _name(name)
-	, _threads(num_threads)
 {
-	// NOTE: if a task successfully ‘takes’ the same mutex 5 times then
-	// the mutex will not be available to any other task until it has
-	// also ‘given’ the mutex back exactly five times.
-	_mutex = xSemaphoreCreateRecursiveMutex(); // cannot be used in ISR.
-	_notify_flags = xEventGroupCreate();
+	_mutex = xSemaphoreCreateRecursiveMutex();
 
-	// Initialize our thread(s)
-	for(size_t i = 0; i < _threads.size(); i++)
-	{
-		// TODO: get std::to_string() to work.
-		char buf[sizeof(size_t)];
-		itoa(i,buf, 10);
-		_threads[i].name = std::string("Dispatch Thread #" + std::string(buf));
+	SYS_INFO("DispatchQueue: %s", _name.c_str());
 
-		SYS_INFO(_threads[i].name.c_str());
-
-		xTaskCreate(reinterpret_cast<void(*)(void*)>(
-					BOUNCE(DispatchQueue, dispatch_thread_handler)),
-					_threads[i].name.c_str(),
-					stack_size,
-					reinterpret_cast<void*>(this), // pass in the "this" pointer as pvParameters...why?
-					priority,
-					&_threads[i].thread); // pass the TaskHandle in...why?
-	}
+	xTaskCreate(reinterpret_cast<void(*)(void*)>(
+				BOUNCE(DispatchQueue, dispatch_thread_handler)),
+				_name.c_str(),
+				stack_size,
+				reinterpret_cast<void*>(this), // pass in the "this" pointer as pvParameters...why?
+				priority,
+				&_task_handle);
 }
 
 void DispatchQueue::dispatch(const fp_t& work)
 {
-	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 	_queue.push(work);
 	xSemaphoreGiveRecursive(_mutex);
 
 	// Wake up worker thread
-	xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
+	xTaskNotifyGive(_task_handle);
 	return;
 }
 
 void DispatchQueue::dispatch(fp_t&& work)
 {
-	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 	_queue.push(std::move(work));
 	xSemaphoreGiveRecursive(_mutex);
 
 	// Wake up worker thread
-	xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
+	xTaskNotifyGive(_task_handle);
 	return;
 }
 
@@ -85,16 +71,20 @@ void DispatchQueue::interval_dispatch_notify_ready()
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 	// Wake up worker thread
-	xEventGroupSetBitsFromISR(_notify_flags, Event::DISPATCH_WAKE, &xHigherPriorityTaskWoken);
+	vTaskNotifyGiveFromISR(_task_handle, &xHigherPriorityTaskWoken);
+
+	// If xHigherPriorityTaskWoken is now set to pdTRUE then a context switch
+	// should be performed to ensure the interrupt returns directly to the highest
+	// priority task.
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 {
-	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
 	if (time::DispatchTimer::Instance() == nullptr)
 	{
-		// Initialize the timer if we haven't already.
 		time::DispatchTimer::Instantiate(this);
 	}
 
@@ -105,7 +95,7 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 
 	item.work = work;
 	item.interval_ms = interval_ms;
-	item.next_deadline_us = now + interval_ms * 1000U;
+	item.next_deadline_us = now + interval_ms * MICROS_PER_MILLI;
 
 	taskENTER_CRITICAL();
 
@@ -119,7 +109,7 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 }
 void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
 {
-	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
 	if (time::DispatchTimer::Instance() == nullptr)
 	{
@@ -134,7 +124,7 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
 
 	item.work = work;
 	item.interval_ms = interval_ms;
-	item.next_deadline_us = now + interval_ms * 1000U;
+	item.next_deadline_us = now + interval_ms * MICROS_PER_MILLI;
 
 	taskENTER_CRITICAL();
 
@@ -173,7 +163,7 @@ void DispatchQueue::interval_dispatch_update_iterator(void)
 
 void DispatchQueue::dispatch_thread_handler(void)
 {
-	BaseType_t status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
+	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
 	do
 	{
@@ -186,23 +176,23 @@ void DispatchQueue::dispatch_thread_handler(void)
 			{
 				taskENTER_CRITICAL();
 
+				auto start_time = time::DispatchTimer::Instance()->get_absolute_time_us();
+
 				// point _next at the next ready to run item
 				auto& item = *_interval_list._next; // dereference the iterator
 				auto work = item.work;
 				_interval_item_ready = false;
+				item.next_deadline_us = time::MAX_TIME; // to prevent race conditions
 
 				taskEXIT_CRITICAL();
-
-				item.next_deadline_us = time::MAX_TIME;
 
 				work();
 
 				// Reschedule the item for the next interval
 				taskENTER_CRITICAL();
 
-				auto now = time::DispatchTimer::Instance()->get_absolute_time_us();
-
-				item.next_deadline_us = now + item.interval_ms * 1000U;
+				// Reschedule based on entrance time -- ensure interval precision
+				item.next_deadline_us = start_time + item.interval_ms * MICROS_PER_MILLI;
 
 				interval_dispatch_update_iterator();
 
@@ -214,24 +204,24 @@ void DispatchQueue::dispatch_thread_handler(void)
 				auto work = std::move(_queue.front());
 				_queue.pop();
 
-				status = xSemaphoreGiveRecursive(_mutex);
+				xSemaphoreGiveRecursive(_mutex);
 
 				// Run function
 				work();
 
-				status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
+				xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 			}
 		}
 		// Our queue is empty -- go to sleep until we have work.
 		else if(!_should_exit)
 		{
-			status = xSemaphoreGiveRecursive(_mutex);
+			xSemaphoreGiveRecursive(_mutex);
 
 			// Wait for new work - clear flags on exit
-			xEventGroupWaitBits(_notify_flags, Event::DISPATCH_WAKE, pdTRUE, pdFALSE, portMAX_DELAY);
+			ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 			// We are awake! Time to do some work...
-			status = xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
+			xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 		}
 		else
 		{
@@ -241,11 +231,7 @@ void DispatchQueue::dispatch_thread_handler(void)
 	} while (!_should_exit);
 
 	// We were holding the mutex after we woke up
-	status = xSemaphoreGiveRecursive(_mutex);
-
-	// Inidcate to DTOR that thread is cleaned up
-	status = xEventGroupSetBits(_notify_flags, Event::DISPATCH_EXIT);
-	(void)status;
+	xSemaphoreGiveRecursive(_mutex);
 
 	// NOTE: The idle task is responsible for freeing the RTOS kernel allocated
 	// memory from tasks that have been deleted. It is therefore important that
@@ -262,30 +248,24 @@ DispatchQueue::~DispatchQueue(void)
 {
 	_should_exit = true;
 
-	join_worker_threads();
+	join_worker_thread();
 
-    // Cleanup event flags and mutex
-    vEventGroupDelete(_notify_flags);
+    // Cleanup mutex
     vSemaphoreDelete(_mutex);
 }
 
-void DispatchQueue::join_worker_threads(void)
+void DispatchQueue::join_worker_thread(void)
 {
-	for (size_t i = 0; i < _threads.size(); ++i) {
-		eTaskState state;
+	eTaskState state;
 
-		// We continually loop sending the exit signal until each thread has died
-		do {
-			// Signal wake - check exit flag
-			xEventGroupSetBits(_notify_flags, Event::DISPATCH_WAKE);
+	do {
+		// Keep signalling the task to wake up as long as it has not died
+		xTaskNotifyGive(_task_handle);
 
-			// Wait until a thread signals exit. Timeout is acceptable.
-			xEventGroupWaitBits(_notify_flags, Event::DISPATCH_EXIT, pdTRUE, pdFALSE, pdMS_TO_TICKS(10)); // wait 10 ms
+		// Give it some time...
+		vTaskDelay(10);
 
-			// If not dead, keeping looping/signalling
-			state = eTaskGetState(_threads[i].thread);
-		} while (state != eDeleted);
-
-		_threads[i].name.clear();
-	}
+		// If not dead, keeping looping/signalling
+		state = eTaskGetState(_task_handle);
+	} while (state != eDeleted);
 }
