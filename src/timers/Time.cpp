@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Time.hpp>
+#include <timers/Time.hpp>
 
 extern volatile uint32_t _freertos_stats_base_ticks = 0;
 

@@ -23,7 +23,7 @@
 #pragma once
 
 #include <board_config.hpp>
-#include <DispatchQueue.hpp>
+#include <dispatch_queue/DispatchQueue.hpp>
 
 #define FTM0_MAX_TICKS 65535
 #define FTM1_MAX_TICKS 59
