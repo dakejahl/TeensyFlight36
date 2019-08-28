@@ -62,7 +62,7 @@ private:
 	abs_time_t _base_ticks = 0;
 };
 
-// WARNING: since this overflows at 1kHz it means we have up to +/- 1ms of jitter
+// TODO: WARNING: since this overflows at 1kHz it means we have up to +/- 1ms of jitter
 // This timer is used to schedule items onto the DispatchQueue
 // The timer shall have a resolution of 1ms and be of high priority
 class DispatchTimer

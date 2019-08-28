@@ -24,7 +24,6 @@
 
 #include <Time.hpp>
 
-// TODO: implement assert()
 DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 							const PriorityLevel priority, const uint8_t num_threads)
 	: _name(name)
@@ -89,7 +88,6 @@ void DispatchQueue::interval_dispatch_notify_ready()
 	xEventGroupSetBitsFromISR(_notify_flags, Event::DISPATCH_WAKE, &xHigherPriorityTaskWoken);
 }
 
-
 void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY/*Blocking...*/);
@@ -113,7 +111,7 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 
 	_interval_list.push_back(item);
 
-	update_interval_dispatch_iterator();
+	interval_dispatch_update_iterator();
 
 	taskEXIT_CRITICAL();
 
@@ -142,7 +140,7 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
 
 	_interval_list.push_back(std::move(item));
 
-	update_interval_dispatch_iterator();
+	interval_dispatch_update_iterator();
 
 	taskEXIT_CRITICAL();
 
@@ -150,10 +148,10 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
 }
 
 // MUST ONLY BE CALLED WHEN INTERRUPTS ARE DISABLED
-void DispatchQueue::update_interval_dispatch_iterator(void)
+void DispatchQueue::interval_dispatch_update_iterator(void)
 {
 	unsigned counter = 0;
-	// Set the next deadline for the timer
+
 	abs_time_t deadline_ms = time::MAX_TIME;
 	for (auto it = _interval_list.begin(); it != _interval_list.end(); ++it)
 	{
@@ -199,7 +197,7 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 				_interval_item_ready = false;
 
-				update_interval_dispatch_iterator();
+				interval_dispatch_update_iterator();
 
 				taskEXIT_CRITICAL();
 

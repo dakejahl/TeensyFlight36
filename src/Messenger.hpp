@@ -138,17 +138,6 @@ template <typename T>
 class Publisher
 {
 public:
-	Publisher()
-	{
-	}
-
-	~Publisher()
-	{
-		// NOTE: we assume the data file is never deleted after being created at init.
-		// the consequence of this assumption is that subscribers must always check the timestamp
-		// before consuming the data.
-	}
-
 	void publish(T& data)
 	{
 		taskENTER_CRITICAL();

@@ -27,7 +27,8 @@ static void init_FTM0(void);
 static void init_FTM1(void);
 static void init_serial(void);
 
-extern "C" void sys_init(void)
+// CMSIS compliance or something...
+extern "C" void SystemInit(void)
 {
 	init_FTM0();
 	init_FTM1();
@@ -79,7 +80,7 @@ static void init_FTM0(void)
 // Frequency: 60MHz (F_BUS)
 // counter: 16bit
 // prescaler: 1
-// modulo: 60
+// modulo: 60,000
 // resolution: 16.6666ns
 // overflow rate: 1ms --> 1kHz
 static void init_FTM1(void)
@@ -110,7 +111,6 @@ static void init_serial(void)
 	SYS_INFO("\n---------- App ----------\n");
 }
 
-//TODO: this doesn't work... :(
 // So that we know if we've blown a stack
 extern "C" void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName )
 {
@@ -119,9 +119,7 @@ extern "C" void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *
 
 	while (1)
 	{
+		// TODO: This has literally never worked
 		digitalWrite(13, HIGH);
-		// delay_NoSysTick(100);
-		// digitalWrite(13, LOW);
-		// delay_NoSysTick(100);
 	}
 }

@@ -20,15 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include <board_config.hpp>
 #include <Messenger.hpp>
 
-
 void talker_task(void* args)
 {
-	// auto accel_pub = new messenger::Publisher<accel_raw_data_s>();
-
 	messenger::Publisher<accel_raw_data_s> accel_pub;
 
 	for(;;)

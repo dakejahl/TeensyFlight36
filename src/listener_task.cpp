@@ -20,14 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include <board_config.hpp>
 #include <Messenger.hpp>
 #include <DispatchQueue.hpp>
 
 void listener_task(void* args)
 {
-	// auto accel_sub = new messenger::Subscriber<accel_raw_data_s>();
 	messenger::Subscriber<accel_raw_data_s> accel_sub;
 
 	for(;;)

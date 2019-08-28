@@ -69,7 +69,7 @@ extern unsigned long _estack;
 
 
 extern int main (void);
-extern void sys_init(void);
+extern void SystemInit(void);
 void ResetHandler(void);
 void _init_Teensyduino_internal_(void) __attribute__((noinline));
 void __libc_init_array(void);
@@ -929,7 +929,7 @@ void ResetHandler(void)
 	_init_Teensyduino_internal_();
 
 	// Jake:
-	sys_init();
+	SystemInit();
 
 #if defined(KINETISK)
 	// RTC initialization

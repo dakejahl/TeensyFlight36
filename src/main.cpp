@@ -23,12 +23,6 @@
 #include <board_config.hpp>
 #include <Time.hpp>
 
-// Let's test our assumptions.
-// All of these should hold true, otherwise compilation fails.
-static_assert(F_CPU == 180000000, "F_CPU is not 180MHz");
-static_assert(configTICK_RATE_HZ == 1000, "SYSTICK is not 1KHz");
-
-
 extern void led_task(void* args);
 extern void talker_task(void* args);
 extern void listener_task(void* args);
@@ -39,17 +33,14 @@ extern const uint8_t FreeRTOSDebugConfig[];
 
 extern "C" int main()
 {
-	// FreeRTOSDebugConfig[0] = 0xFF;
-	// SHOULD NEVER BE ZERO!!!
 	if (FreeRTOSDebugConfig[0] == 0)
 	{ /* just use it, so the linker cannot remove FreeRTOSDebugConfig[] */
 		for(;;); /* FreeRTOSDebugConfig[0] should always be non-zero, so this should never happen */
 	}
 
-	// Init system timer
+	// TODO: move to proper place
 	time::PrecisionTimer::Instantiate();
 
-	// LED task that tells us all is OK
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 	xTaskCreate(talker_task, "talker", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 	xTaskCreate(listener_task, "listener", configMINIMAL_STACK_SIZE * 3, NULL, 3, NULL);
@@ -62,7 +53,6 @@ extern "C" int main()
 	return 0;
 }
 
-// The ONLY place Serial.* gets used
 extern "C" void vApplicationIdleHook(void)
 {
 	// Add shell here

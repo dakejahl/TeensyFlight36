@@ -30,7 +30,6 @@ namespace time {
 PrecisionTimer* PrecisionTimer::_instance = nullptr;
 DispatchTimer* DispatchTimer::_instance = nullptr;
 
-
 void PrecisionTimer::Instantiate(void)
 {
 	if (!_instance)

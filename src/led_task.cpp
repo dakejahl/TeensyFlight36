@@ -20,10 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include <board_config.hpp>
 #include <Messenger.hpp>
-
 
 #define LED_PIN 13
 

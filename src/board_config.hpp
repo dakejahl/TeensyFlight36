@@ -38,7 +38,7 @@ static constexpr float FTM0_MICROS_PER_TICK = 0.5333333333333333f;
 using abs_time_t = uint64_t;
 
 // Setup peripherals etc
-extern "C" void sys_init(void);
+extern "C" void SystemInit(void);
 
 #define _PRINTF_BUFFER_LENGTH_ 64U
 static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];

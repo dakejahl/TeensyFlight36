@@ -24,8 +24,6 @@
 
 #include <board_config.hpp>
 
-#include <FreeRTOS.h>
-#include <task.h>
 #include <event_groups.h>
 #include <semphr.h>
 
@@ -34,7 +32,6 @@
 #include <list>
 #include <string>
 #include <vector>
-#include <iterator>
 
 #define BOUNCE(c,m) bounce<c, decltype(&c::m), &c::m>
 
@@ -95,7 +92,7 @@ public:
 	void dispatch_on_interval(fp_t&& work, unsigned interval_ms);
 
 	void interval_dispatch_notify_ready(void);
-	void update_interval_dispatch_iterator(void);
+	void interval_dispatch_update_iterator(void);
 
 private:
 	void dispatch_thread_handler(void);
@@ -103,12 +100,11 @@ private:
 	void join_worker_threads(void);
 
 	std::string _name;
-	std::vector<freertos_thread_t> _threads;
-	std::queue<fp_t> _queue;
-	IntervalList _interval_list;
+	std::vector<freertos_thread_t> _threads; // thread pool -- defaults to one
+	std::queue<fp_t> _queue; // holds async items
+	IntervalList _interval_list; // holds interval items
 
 	SemaphoreHandle_t _mutex;
-	// FreeRTOS event flags - like condition variable, used for waking queue threads
 	EventGroupHandle_t _notify_flags;
 
 	volatile bool _interval_item_ready = false;

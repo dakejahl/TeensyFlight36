@@ -20,14 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include <board_config.hpp>
 #include <Messenger.hpp>
 
-
 void dispatch_interval_task(void* args)
 {
-	// auto accel_pub = new messenger::Publisher<accel_raw_data_s>();
 	auto dispatcher = new DispatchQueue("dummy_q");
 	vTaskDelay(1000);
 
