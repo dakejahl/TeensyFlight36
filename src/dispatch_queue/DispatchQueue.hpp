@@ -76,8 +76,8 @@ public:
 	void dispatch(const fp_t& work);
 	void dispatch(fp_t&& work);
 
-	void dispatch_on_interval(const fp_t& work, unsigned interval_ms);
-	void dispatch_on_interval(fp_t&& work, unsigned interval_ms);
+	void dispatch_on_interval(const fp_t& work, abs_time_t interval_ms);
+	void dispatch_on_interval(fp_t&& work, abs_time_t interval_ms);
 
 	void interval_dispatch_notify_ready(void);
 	void interval_dispatch_update_iterator(void);

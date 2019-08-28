@@ -48,8 +48,6 @@ public:
 
 	abs_time_t get_absolute_time_us(void);
 
-	abs_time_t get_ticks_since_boot(void);
-
 	void handle_timer_overflow(void);
 
 private:

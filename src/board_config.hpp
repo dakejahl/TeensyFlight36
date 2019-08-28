@@ -33,12 +33,12 @@
 #define STR_HELPER(x) #x
 #define TO_STRING(x) STR_HELPER(x)
 
-static constexpr unsigned FTM0_PICOS_PER_TICK = 533333U;
-static constexpr unsigned FTM1_PICOS_PER_TICK = 16667U;
-static constexpr unsigned PICOS_PER_MICRO = 1000000U;
-static constexpr unsigned MICROS_PER_MILLI = 1000U;
-
 using abs_time_t = uint64_t;
+
+static constexpr abs_time_t FTM0_PICOS_PER_TICK = 533333LLU;
+static constexpr abs_time_t FTM1_PICOS_PER_TICK = 16667LLU;
+static constexpr abs_time_t PICOS_PER_MICRO = 1000000LLU;
+static constexpr abs_time_t MICROS_PER_MILLI = 1000LLU;
 
 // Setup peripherals etc
 extern "C" void SystemInit(void);

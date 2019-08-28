@@ -50,8 +50,8 @@ void dispatch_interval_task(void* args)
 		SYS_INFO("Hey I got dispatched asynchronously!");
 	};
 
-
-	dispatcher->dispatch_on_interval(func1, 2);
+	abs_time_t interval = 2;
+	dispatcher->dispatch_on_interval(func1, interval);
 
 	for(;;)
 	{

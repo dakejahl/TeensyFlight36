@@ -79,7 +79,7 @@ void DispatchQueue::interval_dispatch_notify_ready()
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
+void DispatchQueue::dispatch_on_interval(const fp_t& work, abs_time_t interval_ms)
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
@@ -107,7 +107,7 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, unsigned interval_ms)
 
 	xSemaphoreGiveRecursive(_mutex);
 }
-void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
+void DispatchQueue::dispatch_on_interval(fp_t&& work, abs_time_t interval_ms)
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
@@ -140,8 +140,6 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, unsigned interval_ms)
 // MUST ONLY BE CALLED WHEN INTERRUPTS ARE DISABLED
 void DispatchQueue::interval_dispatch_update_iterator(void)
 {
-	unsigned counter = 0;
-
 	abs_time_t deadline_us = time::MAX_TIME;
 	for (auto it = _interval_list.begin(); it != _interval_list.end(); ++it)
 	{
@@ -155,7 +153,6 @@ void DispatchQueue::interval_dispatch_update_iterator(void)
 			// NOTE: this is unsafe if something comes and messes with our list, we must
 			// make the assumption that this will not happen.
 		}
-		counter++;
 	}
 
 	time::DispatchTimer::Instance()->set_next_deadline_us(deadline_us);
@@ -164,6 +161,8 @@ void DispatchQueue::interval_dispatch_update_iterator(void)
 void DispatchQueue::dispatch_thread_handler(void)
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
+
+	abs_time_t start_time = time::DispatchTimer::Instance()->get_absolute_time_us();
 
 	do
 	{
@@ -176,22 +175,20 @@ void DispatchQueue::dispatch_thread_handler(void)
 			{
 				taskENTER_CRITICAL();
 
-				auto start_time = time::DispatchTimer::Instance()->get_absolute_time_us();
-
 				// point _next at the next ready to run item
 				auto& item = *_interval_list._next; // dereference the iterator
 				auto work = item.work;
 				_interval_item_ready = false;
-				item.next_deadline_us = time::MAX_TIME; // to prevent race conditions
+				time::DispatchTimer::Instance()->set_next_deadline_us(time::MAX_TIME); // to prevent race conditions
 
 				taskEXIT_CRITICAL();
 
 				work();
 
-				// Reschedule the item for the next interval
+				// NOTE: Reschedule the item for the next interval only after work has completed
 				taskENTER_CRITICAL();
 
-				// Reschedule based on entrance time -- ensure interval precision
+				// Reschedule based on entrance time to ensure interval precision
 				item.next_deadline_us = start_time + item.interval_ms * MICROS_PER_MILLI;
 
 				interval_dispatch_update_iterator();
@@ -219,6 +216,9 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 			// Wait for new work - clear flags on exit
 			ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+			// Get start time such that we can reschedule accurately
+			start_time = time::DispatchTimer::Instance()->get_absolute_time_us();
 
 			// We are awake! Time to do some work...
 			xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);

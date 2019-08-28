@@ -22,7 +22,7 @@
 
 #include <timers/Time.hpp>
 
-extern volatile uint32_t _freertos_stats_base_ticks = 0;
+volatile uint32_t _freertos_stats_base_ticks = 0;
 
 namespace time {
 
@@ -65,22 +65,6 @@ abs_time_t PrecisionTimer::get_absolute_time_us(void)
 	taskEXIT_CRITICAL();
 
 	return current_time;
-}
-
-uint64_t PrecisionTimer::get_ticks_since_boot(void)
-{
-	uint16_t tick_val;
-	uint64_t total_ticks;
-
-	taskENTER_CRITICAL();
-
-	tick_val = FTM0_CNT;
-
-	total_ticks = _base_ticks + tick_val;
-
-	taskEXIT_CRITICAL();
-
-	return total_ticks;
 }
 
 void PrecisionTimer::handle_timer_overflow(void)
@@ -134,14 +118,16 @@ abs_time_t DispatchTimer::get_absolute_time_us(void)
 
 void DispatchTimer::handle_timer_overflow(void)
 {
-	// Overflows every millisecond so we just use this as our counter
-	_base_ticks += FTM1_MAX_TICKS; // each tick is 100us
+	_base_ticks += FTM1_MAX_TICKS; // NOTE: each overflow is 100us
+
+	// Convert to picoseconds.
+	abs_time_t current_time_ps = FTM1_PICOS_PER_TICK * (_base_ticks + FTM1_CNT);
+	// Convert to microseconds and handle rounding error.
+	abs_time_t current_time_us = (current_time_ps + PICOS_PER_MICRO) / PICOS_PER_MICRO;
 
 	// Schedule an item if it's ready
-	abs_time_t current_time_us = FTM1_PICOS_PER_TICK * (_base_ticks );
-	current_time_us /= PICOS_PER_MICRO;
-	// 1 tick equals 16.6666ns
-	if (current_time_us > _next_deadline_us)
+	// TODO: this has 100us jitter (always runs 100us slow)
+	if (current_time_us >= _next_deadline_us)
 	{
 		if (_dispatch_queue != nullptr)
 		{
@@ -164,11 +150,10 @@ extern "C" void ftm0_isr(void)
 	auto saved_state = taskENTER_CRITICAL_FROM_ISR();
 
 	{
-		// We've overflown -- add the full scale value to the base
 		time::PrecisionTimer::Instance()->handle_timer_overflow();
 	}
 
-	// Clear overflow flag -- reset happens on overflow (FTM0_MOD = 0xFFFF)
+	// Clear overflow flag
 	if ((FTM0_SC & FTM_SC_TOF) != 0)
 	{
 		FTM0_SC &= ~FTM_SC_TOF;
@@ -191,7 +176,7 @@ extern "C" void ftm1_isr(void)
 		}
 	}
 
-	// Clear overflow flag -- reset happens on overflow (FTM0_MOD = 0xFFFF)
+	// Clear overflow flag
 	if ((FTM1_SC & FTM_SC_TOF) != 0)
 	{
 		FTM1_SC &= ~FTM_SC_TOF;
