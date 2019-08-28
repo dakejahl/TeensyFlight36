@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include <board_config.hpp>
-#include <Time.hpp>
+#include <timers/Time.hpp>
 
 extern void led_task(void* args);
 extern void talker_task(void* args);
@@ -40,6 +40,9 @@ extern "C" int main()
 
 	// TODO: move to proper place
 	time::PrecisionTimer::Instantiate();
+
+	// Initialize SystemView
+	SEGGER_SYSVIEW_Conf();
 
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 	xTaskCreate(talker_task, "talker", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);

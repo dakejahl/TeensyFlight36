@@ -22,7 +22,7 @@
 
 #include <board_config.hpp>
 #include <Messenger.hpp>
-#include <DispatchQueue.hpp>
+#include <dispatch_queue/DispatchQueue.hpp>
 
 void listener_task(void* args)
 {

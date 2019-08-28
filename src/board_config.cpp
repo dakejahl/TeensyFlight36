@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include <board_config.hpp>
-#include <Time.hpp>
+#include <timers/Time.hpp>
 
 static void init_FTM0(void);
 static void init_FTM1(void);

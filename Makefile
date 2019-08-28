@@ -20,7 +20,7 @@ OPTIONS = -DUSB_SERIAL -DLAYOUT_US_ENGLISH
 BUILDDIR = $(abspath $(CURDIR)/build)
 INCLUDE_DIR = $(abspath $(CURDIR)/include)
 SOURCE_DIR = $(abspath $(CURDIR)/src)
-MODULES = $(abspath $(SOURCE_DIR)/dispatch_queue)
+
 
 #************************************************************************
 # Location of Teensyduino utilities, Toolchain, and Arduino Libraries.
@@ -35,18 +35,22 @@ TEENSY_TOOLS = $(CURDIR)/tools/tool-teensy
 # path location for Teensy 3 core
 TEENSYCOREPATH = teensy3
 
-# path location for Arduino libraries
-LIBRARYPATH = lib
-
 # CMSIS_LIB_ARM = $(abspath $(CURDIR)/CMSIS/DSP/Lib/GCC/)
 
 # path location for the arm-none-eabi compiler -- use the same one as for PX4
-# COMPILERPATH = /home/jake/gcc-arm-none-eabi-7-2017-q4-major/bin/
 COMPILERPATH = $(abspath $(TOOLSPATH)/toolchain-gccarmnoneeabi/bin)
 
 # path location for FreeRTOS directory structure
 FREERTOSPATH = freertos
 FREERTOSPORT = portable/GCC/ARM_CM4F
+
+DISPATCH_QUEUE = src/dispatch_queue
+TIMERS = src/timers
+
+SEGGER_SYS_VIEW_FREERTOS_CONFIG = segger_system_view/FreeRTOSV10/Config
+SEGGER_SYS_VIEW_FREERTOS = segger_system_view/FreeRTOSV10/
+SEGGER_SYSVIEW_CONFIG = segger_system_view/Config
+SEGGER_SYSVIEW = segger_system_view/SEGGER
 
 #************************************************************************
 # Settings below this point usually do not need to be edited
@@ -57,13 +61,13 @@ CPPFLAGS = -Wall -g -O0 -mthumb -ffunction-sections -fdata-sections -nostdlib
 CPPFLAGS += -DTEENSYDUINO=$(TEENSYDUINO) -DF_CPU=$(TEENSY_CORE_SPEED) -MMD $(OPTIONS)
 CPPFLAGS += -I$(FREERTOSPATH)/include -I$(FREERTOSPATH)/$(FREERTOSPORT)/
 CPPFLAGS += -I$(SOURCE_DIR) -I$(TEENSYCOREPATH) -I$(INCLUDE_DIR)
-CPPFLAGS += -I$(MODULES)
+CPPFLAGS += -I$(DISPATCH_QUEUE)
+CPPFLAGS += -I$(TIMERS)
+CPPFLAGS += -I$(SEGGER_SYS_VIEW_FREERTOS_CONFIG) -I$(SEGGER_SYS_VIEW_FREERTOS)
+CPPFLAGS += -I$(SEGGER_SYSVIEW_CONFIG) -I$(SEGGER_SYSVIEW)
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
-
-# compiler options for C only
-CFLAGS =
 
 # linker options
 LDFLAGS = -O0 -Wl,--gc-sections -mthumb
@@ -77,10 +81,6 @@ CPPFLAGS += -D__MK66FX1M0__ -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LDSCRIPT = $(TEENSYCOREPATH)/mk66fx1m0.ld
 LDFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -T$(LDSCRIPT)
 
-
-# Only used to ifdef out the teensy3/main.cpp
-# CPPFLAGS += -DUSING_MAKEFILE
-
 # names for the compiler programs
 CC = $(abspath $(COMPILERPATH))/arm-none-eabi-gcc
 CXX = $(abspath $(COMPILERPATH))/arm-none-eabi-g++
@@ -88,10 +88,10 @@ OBJCOPY = $(abspath $(COMPILERPATH))/arm-none-eabi-objcopy
 SIZE = $(abspath $(COMPILERPATH))/arm-none-eabi-size
 
 # automatically create lists of the sources and objects
-LC_FILES := $(wildcard $(LIBRARYPATH)/*/*.c)
-LCPP_FILES := $(wildcard $(LIBRARYPATH)/*/*.cpp)
 TC_FILES := $(wildcard $(TEENSYCOREPATH)/*.c)
 TCPP_FILES := $(wildcard $(TEENSYCOREPATH)/*.cpp)
+DP_Q_FILES := $(wildcard $(DISPATCH_QUEUE)/*.cpp)
+TIMER_FILES := $(wildcard $(TIMERS)/*.cpp)
 
 C_FILES := $(wildcard src/*.c)
 CPP_FILES := $(wildcard src/*.cpp)
@@ -99,10 +99,17 @@ CPP_FILES := $(wildcard src/*.cpp)
 FREERTOS_FILES = $(wildcard $(FREERTOSPATH)/*.c)
 FREERTOS_FILES += $(wildcard $(FREERTOSPATH)/$(FREERTOSPORT)/*.c)
 
-# include paths for libraries
-L_INC := $(foreach lib,$(filter %/, $(wildcard $(LIBRARYPATH)/*/)), -I$(lib))
+# TODO: move to cmake... or figure out a better way to do this...
+SYS_VIEW_FILES = $(wildcard $(SEGGER_SYSVIEW_CONFIG)/*.c)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYSVIEW)/*.c)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYS_VIEW_FREERTOS_CONFIG)/*.c)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYS_VIEW_FREERTOS)/*.c)
+SYS_VIEW_FILES_ASM = $(wildcard $(SEGGER_SYSVIEW)/*.S)
 
-SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(LC_FILES:.c=.o) $(LCPP_FILES:.cpp=.o) $(FREERTOS_FILES:.c=.o)
+# include paths for libraries
+# L_INC := $(foreach lib,$(filter %/, $(wildcard $(LIBRARYPATH)/*/)), -I$(lib))
+
+SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(LCPP_FILES:.cpp=.o) $(FREERTOS_FILES:.c=.o) $(SYS_VIEW_FILES:.c=.o) $(SYS_VIEW_FILES_ASM:.S=.o)
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
 all: hex
@@ -129,10 +136,10 @@ $(BUILDDIR)/%.o: %.cpp
 	@mkdir -p "$(dir $@)"
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c "$<"
 
-$(BUILDDIR)/%.o: %.ino
+$(BUILDDIR)/%.o: %.S
 	@echo "[CXX]\t$<"
 	@mkdir -p "$(dir $@)"
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -x c++ -include Arduino.h -c "$<"
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c "$<"
 
 $(TARGET).elf: $(OBJS) $(LDSCRIPT)
 	@echo "[LD]\t$@"

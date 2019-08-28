@@ -31,25 +31,25 @@ void dispatch_interval_task(void* args)
 	auto func = []
 	{
 		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 1000; ++i)
+		for (unsigned i = 0; i < 10; ++i)
 		{
 			dummy++;
 		}
 
-		SYS_INFO("Hey I got dispatched on an interval!");
+		// SYS_INFO("Hey I got dispatched on an interval!");
 	};
 
 	auto udder_func = []
 	{
-		SYS_INFO("jus chillin");
+		// SYS_INFO("jus chillin");
 	};
 
-	dispatcher->dispatch_on_interval(func, 1);
+	dispatcher->dispatch_on_interval(func, 10);
 
 	for(;;)
 	{
 		// We do nothing...
 		vTaskDelay(1000);
-		dispatcher->dispatch(udder_func);
+		dispatcher->dispatch(func);
 	}
 }

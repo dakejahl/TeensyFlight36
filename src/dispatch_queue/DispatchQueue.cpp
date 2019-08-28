@@ -22,7 +22,7 @@
 
 #include "DispatchQueue.hpp"
 
-#include <Time.hpp>
+#include <timers/Time.hpp>
 
 DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 							const PriorityLevel priority, const uint8_t num_threads)
@@ -201,12 +201,7 @@ void DispatchQueue::dispatch_thread_handler(void)
 
 				taskEXIT_CRITICAL();
 
-				auto start_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
-
 				work();
-
-				auto end_time = time::PrecisionTimer::Instance()->get_absolute_time_us();
-				auto elapsed = end_time - start_time;
 			}
 			else
 			// Otherwise we service the async queue
