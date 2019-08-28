@@ -172,7 +172,6 @@ extern "C" void ftm0_isr(void)
 	if ((FTM0_SC & FTM_SC_TOF) != 0)
 	{
 		FTM0_SC &= ~FTM_SC_TOF;
-		FTM0_CNT = 0;
 	}
 
 	taskEXIT_CRITICAL_FROM_ISR(saved_state);
@@ -182,6 +181,8 @@ extern "C" void ftm0_isr(void)
 extern "C" void ftm1_isr(void)
 {
 	auto saved_state = taskENTER_CRITICAL_FROM_ISR();
+
+	SEGGER_SYSVIEW_RecordEnterISR();
 
 	{
 		if (time::DispatchTimer::Instance() != nullptr)
@@ -194,8 +195,9 @@ extern "C" void ftm1_isr(void)
 	if ((FTM1_SC & FTM_SC_TOF) != 0)
 	{
 		FTM1_SC &= ~FTM_SC_TOF;
-		FTM1_CNT = 0;
 	}
+
+	SEGGER_SYSVIEW_RecordExitISR();
 
 	taskEXIT_CRITICAL_FROM_ISR(saved_state);
 }
