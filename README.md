@@ -1,7 +1,8 @@
 ## What?
 - Dispatch queue
 	- Async work
-	- Serialized work (protect a resource)
+	- Interval work
+	- Serialize your work (protect a resource)
 	- smaller footprint and faster execution (shared stack / context)
 	
 - Pub / Sub
@@ -10,5 +11,5 @@
  
  
 ## Other
-- Thread aware debug with MCUXpresso
-- Segger SystemView
+- Thread aware debug with MCUXpresso (done)
+- Segger SystemView (done)
