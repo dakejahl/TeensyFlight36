@@ -29,6 +29,8 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
+#include <spi4teensy3.hpp>
+
 // Helpers for understanding my config
 #define STR_HELPER(x) #x
 #define TO_STRING(x) STR_HELPER(x)

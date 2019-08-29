@@ -33,6 +33,7 @@ extern "C" void SystemInit(void)
 	init_FTM0();
 	init_FTM1();
 	init_serial();
+	spi4teensy3::init();
 }
 
 #define PS_DIV_1 0b000

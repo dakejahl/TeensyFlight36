@@ -23,10 +23,10 @@
 #include <board_config.hpp>
 #include <Messenger.hpp>
 
-void dispatch_interval_task(void* args)
+void spi_task(void* args)
 {
 	auto dispatcher = new DispatchQueue("dummy_q");
-	vTaskDelay(1000);
+	// vTaskDelay(1000);
 
 	auto func1 = []
 	{
@@ -36,27 +36,14 @@ void dispatch_interval_task(void* args)
 			dummy++;
 		}
 
-		// SYS_INFO("Hey I got dispatched on an interval!");
+		SYS_INFO("Hey I got dispatched on an interval!");
 	};
 
-	auto func2 = []
-	{
-		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 10; ++i)
-		{
-			dummy++;
-		}
+	dispatcher->dispatch_on_interval(func1, 1000);
 
-		SYS_INFO("Hey I got dispatched asynchronously!");
-	};
-
-	abs_time_t interval = 2;
-	dispatcher->dispatch_on_interval(func1, interval);
-
+	// Do some spi stuff
 	for(;;)
 	{
-		// We do nothing...
 		vTaskDelay(1000);
-		// dispatcher->dispatch(func2);
 	}
 }
