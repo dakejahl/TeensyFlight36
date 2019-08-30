@@ -137,9 +137,14 @@ void DispatchTimer::handle_timer_overflow(void)
 }
 
 // MUST ONLY BE CALLED WITTH INTERRUPTS DISABLED
-void DispatchTimer::set_next_deadline_us(abs_time_t deadline_us)
+void DispatchTimer::schedule_next_deadline_us(abs_time_t deadline_us)
 {
 	_next_deadline_us = deadline_us;
+}
+
+void DispatchTimer::disable_scheduling(void)
+{
+	schedule_next_deadline_us(time::MAX_TIME);
 }
 
 } // end namespace time

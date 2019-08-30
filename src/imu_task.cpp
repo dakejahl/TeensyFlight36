@@ -41,7 +41,8 @@ void imu_task(void* args)
 		// SYS_INFO("Hey I got dispatched on an interval!");
 	};
 
-	dispatcher->dispatch_on_interval(func1, 1000);
+	dispatcher->dispatch_on_interval(func1, 5);
+	dispatcher->dispatch_on_interval(func1, 10);
 
 	auto mpu9250 = new Mpu9250();
 

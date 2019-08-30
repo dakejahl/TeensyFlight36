@@ -80,7 +80,7 @@ public:
 	void dispatch_on_interval(fp_t&& work, abs_time_t interval_ms);
 
 	void interval_dispatch_notify_ready(void);
-	void interval_dispatch_update_iterator(void);
+	void interval_dispatch_invoke_scheduler(void);
 
 private:
 	void dispatch_thread_handler(void);

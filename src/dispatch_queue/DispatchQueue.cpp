@@ -95,13 +95,13 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, abs_time_t interval_m
 
 	item.work = work;
 	item.interval_ms = interval_ms;
-	item.next_deadline_us = now + interval_ms * MICROS_PER_MILLI;
+	item.next_deadline_us = now;
 
 	taskENTER_CRITICAL();
 
 	_interval_list.push_back(item);
 
-	interval_dispatch_update_iterator();
+	interval_dispatch_invoke_scheduler();
 
 	taskEXIT_CRITICAL();
 
@@ -124,13 +124,13 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, abs_time_t interval_ms)
 
 	item.work = work;
 	item.interval_ms = interval_ms;
-	item.next_deadline_us = now + interval_ms * MICROS_PER_MILLI;
+	item.next_deadline_us = now;
 
 	taskENTER_CRITICAL();
 
 	_interval_list.push_back(std::move(item));
 
-	interval_dispatch_update_iterator();
+	interval_dispatch_invoke_scheduler();
 
 	taskEXIT_CRITICAL();
 
@@ -138,7 +138,7 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, abs_time_t interval_ms)
 }
 
 // MUST ONLY BE CALLED WHEN INTERRUPTS ARE DISABLED
-void DispatchQueue::interval_dispatch_update_iterator(void)
+void DispatchQueue::interval_dispatch_invoke_scheduler(void)
 {
 	abs_time_t deadline_us = time::MAX_TIME;
 	for (auto it = _interval_list.begin(); it != _interval_list.end(); ++it)
@@ -153,9 +153,21 @@ void DispatchQueue::interval_dispatch_update_iterator(void)
 			// NOTE: this is unsafe if something comes and messes with our list, we must
 			// make the assumption that this will not happen.
 		}
-	}
 
-	time::DispatchTimer::Instance()->set_next_deadline_us(deadline_us);
+		// Check if we need to reschedule immediately
+		auto current_time_us = time::DispatchTimer::Instance()->get_absolute_time_us();
+
+		if (current_time_us >= deadline_us)
+		{
+			// Flag as ready
+			_interval_item_ready = true;
+		}
+		// All ready to run items have been run. Reenable DispatchTimer scheduling and set the next deadline.
+		else
+		{
+			time::DispatchTimer::Instance()->schedule_next_deadline_us(deadline_us);
+		}
+	}
 }
 
 void DispatchQueue::dispatch_thread_handler(void)
@@ -179,7 +191,11 @@ void DispatchQueue::dispatch_thread_handler(void)
 				auto& item = *_interval_list._next; // dereference the iterator
 				auto work = item.work;
 				_interval_item_ready = false;
-				time::DispatchTimer::Instance()->set_next_deadline_us(time::MAX_TIME); // to prevent race conditions
+
+				// NOTE: This line right here effectively disables scheduling from the DispatchTimer. Scheduling
+				// will be reenabled once all the ready to run interval items become blocked again. See interval_dispatch_invoke_scheduler().
+				// TODO: make this logic less shitty... this is quite hard to see...
+				time::DispatchTimer::Instance()->disable_scheduling(); // to prevent race conditions
 
 				taskEXIT_CRITICAL();
 
@@ -191,7 +207,7 @@ void DispatchQueue::dispatch_thread_handler(void)
 				// Reschedule based on entrance time to ensure interval precision
 				item.next_deadline_us = start_time + item.interval_ms * MICROS_PER_MILLI;
 
-				interval_dispatch_update_iterator();
+				interval_dispatch_invoke_scheduler();
 
 				taskEXIT_CRITICAL();
 			}

@@ -75,7 +75,8 @@ public:
 	static DispatchTimer* Instance();
 
 	void handle_timer_overflow(void);
-	void set_next_deadline_us(abs_time_t deadline_us);
+	void schedule_next_deadline_us(abs_time_t deadline_us);
+	void disable_scheduling(void);
 
 private:
 	DispatchTimer(){}; // Private so that it can  not be called
