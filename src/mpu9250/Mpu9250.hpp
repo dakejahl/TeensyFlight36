@@ -22,18 +22,29 @@
 
 #include <Spi.hpp>
 
-static constexpr uint8_t MPU9250_SPI_CS = 10;
-static constexpr uint8_t MPU9250_SPI_BUS = 0;
-static constexpr uint8_t MPU9250_SPI_FREQ = 8000000;
+namespace mpu9250_spi
+{
+static constexpr uint8_t CS = 10;
+static constexpr uint8_t BUS = 0;
+static constexpr unsigned FREQ = 8000000;
+} // end namespace mpu9250_spi
 
 namespace address
 {
+// Testing
 static constexpr uint8_t WHOAMI = 0x75; // 0111 0101
+// Power management
+static constexpr uint8_t PWR_MGMT_1 = 0x6B;
+static constexpr uint8_t PWR_MGMT_2 = 0x6C;
+
 } // end namespace register
 
 namespace value
 {
+	// Testing
 	static constexpr uint8_t WHOAMI = 0x71;
+	// Power management
+	static constexpr uint8_t CLK_SEL_AUTO = 0x01;
 }
 
 class Mpu9250
@@ -43,12 +54,13 @@ public:
 	Mpu9250()
 	{
 		// Initialize the SPI interface
-		_interface = new interface::Spi(MPU9250_SPI_BUS, MPU9250_SPI_FREQ, MPU9250_SPI_CS);
+		_interface = new interface::Spi(mpu9250_spi::BUS, mpu9250_spi::FREQ, mpu9250_spi::CS);
 	}
 
 	bool probe(void);
 
 	uint8_t read_register(uint8_t reg);
+	void write_register(uint8_t addr, uint8_t val);
 
 private:
 

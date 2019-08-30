@@ -45,20 +45,26 @@ void imu_task(void* args)
 
 	auto mpu9250 = new Mpu9250();
 
-	vTaskDelay(100);
+	// Check to ensure device is alive
+	bool alive = mpu9250->probe();
+
+	if (alive)
+	{
+		SYS_INFO("mpu9250 is ALIVE");
+	}
+	else
+	{
+		SYS_INFO("... not alive ...");
+	}
+
+	// Configure the device for correct operation
+	mpu9250->write_register(address::PWR_MGMT_1, value::CLK_SEL_AUTO);
 
 	for(;;)
 	{
-		bool alive = mpu9250->probe();
 
-		if (alive)
-		{
-			SYS_INFO("yay!");
-		}
-		else
-		{
-			SYS_INFO("aww :(");
-		}
+
+
 
 		vTaskDelay(1000);
 	}

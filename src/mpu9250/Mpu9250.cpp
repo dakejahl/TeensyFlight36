@@ -30,7 +30,7 @@ bool Mpu9250::probe(void)
 	SYS_INFO("whoami: %d", whoami);
 
 	// The whoami is 0x71
-	if (value::WHOAMI == 0x71)
+	if (whoami == value::WHOAMI)
 	{
 		return true;
 	}
@@ -46,4 +46,11 @@ uint8_t Mpu9250::read_register(uint8_t reg)
 	_interface->transfer(&send_buf, 1, &recv_buf, 1);
 
 	return recv_buf;
+}
+
+void Mpu9250::write_register(uint8_t addr, uint8_t val)
+{
+	uint8_t send_buf[2] = {addr, val};
+
+	_interface->transfer(send_buf, 2, nullptr, 0);
 }
