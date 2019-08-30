@@ -88,19 +88,12 @@ void imu_task(void* args)
 		{
 			mpu9250->collect_sensor_data(&sensor_data);
 
-			// int16_t accel_z = 0;
-			// uint8_t msb = mpu9250->read_register(address::ACCEL_ZOUT_H);
-			// uint8_t lsb = mpu9250->read_register(address::ACCEL_ZOUT_L);
-
-			// uint8_t* ptr = static_cast<uint8_t*>((void*)&accel_z);
-			// ptr[0] = msb;
-			// ptr[1] = lsb;
-
 			// Convert data to real world values
 			// TODO: calibration
 			#define TEMP_CALIB_OFFSET 0
-			// float temperature = (sensor_data.temp - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
-			// SYS_INFO("temperature_raw: %d", sensor_data.temp);
+			float temperature = (sensor_data.temp - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+			// SYS_INFO("raw_temperature: %d", sensor_data.temp);
+			// SYS_INFO("temperature: %f\n", temperature);
 
 			#define ACCEL_CALIB_OFFSET 0
 			#define ACCEL_CALIB_SCALE 1
@@ -109,9 +102,15 @@ void imu_task(void* args)
 			static constexpr float TICK_PER_G = 2048;
 			static constexpr float ACCEL_SCALE_FACTOR = CONSTANTS_ONE_G / TICK_PER_G;
 
-			// value (m/s^2) = (sensor_data.gyro_x / TICK_PER_G) * CONSTANTS_ONE_G
 			float accel_z = ((sensor_data.accel_z * ACCEL_SCALE_FACTOR) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
-			SYS_INFO("accel_z_raw: %f", accel_z);
+			// SYS_INFO("raw_accel_z: %d", sensor_data.accel_z);
+			// SYS_INFO("accel_z: %f\n", accel_z);
+
+			float gyro_x = ((sensor_data.gyro_x * ACCEL_SCALE_FACTOR) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+			// SYS_INFO("raw_gyro_x: %d", sensor_data.gyro_x);
+			// SYS_INFO("gyro_x: %f", gyro_x);
+			// SYS_INFO("--- --- --- --- --- --- ---");git st
+
 		}
 		else
 		{
@@ -119,6 +118,8 @@ void imu_task(void* args)
 			SYS_INFO("mpu9250 data was not available: %u", early_counter);
 		}
 
-		vTaskDelay(50);
+		// WARNING: since we sample at 1kHz, we must not check the registers at 1kHz otherwise we will be too early
+		// NOTE: Spamming read requests when data is not ready fucks with the sensor and causes a long data blackout (~20ms?)
+		vTaskDelay(2); // 500Hz seems solid for now
 	}
 }

@@ -55,7 +55,8 @@ static constexpr uint8_t ACCEL_YOUT_H = 61;
 static constexpr uint8_t ACCEL_YOUT_L = 62;
 static constexpr uint8_t ACCEL_ZOUT_H = 63;
 static constexpr uint8_t ACCEL_ZOUT_L = 64;
-
+static constexpr uint8_t TEMP_OUT_H = 65;
+static constexpr uint8_t TEMP_OUT_L = 66;
 
 // User control
 static constexpr uint8_t USER_CTRL = 106;
@@ -85,12 +86,14 @@ static constexpr uint8_t INT_DISABLE = 0x00; // Disable I2C Slave module and put
 // Sample rate divider
 static constexpr uint8_t SMPLRT_DIV_NONE  = 0x00; // NOTE: This register is only effective when DLPF is being used.
 // Config
-static constexpr uint8_t CONFIG_NO_DLPF_GYRO_3600Hz = 0b000000010; // Gyro specs --> 32kHz sample rate    Bandwidth: 3600Hz    Delay: 0.11ms
+static constexpr uint8_t CONFIG_DLPF_GYRO_92Hz = 0b000000010; // DLPF enabled: 1kHz sample rate    Bandwidth: 92Hz    Delay: 3.9ms
 // Gyro
-static constexpr uint8_t GYRO_NO_DLPF_2000_DPS = 0b00011010;
+static constexpr uint8_t GYRO_NO_DLPF_2000_DPS_3600HzBW = 0b00011010;
+static constexpr uint8_t GYRO_DLPF_2000_DPS = 0b00011000;
 // Accel
 static constexpr uint8_t ACCEL_16_G = 0b00011000; // +/- 16g
-static constexpr uint8_t ACCEL_NO_DLPF_4kHz = 0b00001000; // Accel specs --> 4kHz sample rate    Bandwidth: 1046Hz    Delay: 0.503ms
+static constexpr uint8_t ACCEL_NO_DLPF_4kHz = 0b00001000; // DLPF disabled: 4kHz sample rate    Bandwidth: 1046Hz    Delay: 0.503ms
+static constexpr uint8_t ACCEL_DLPF_1kHz = 0b00000011; // DLPF enabled: 1kHz sample rate    Bandwidth: 44.8Hz    Delay: 4.88ms
 // Measure
 static constexpr uint8_t RAW_DATA_RDY_INT = 0b00000001;
 

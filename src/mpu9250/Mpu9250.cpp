@@ -60,7 +60,7 @@ void Mpu9250::initialize_registers(void)
 	write_register(address::PWR_MGMT_2, value::ENABLE_ACCEL_GYRO);
 
 	// Configuration
-	write_register(address::CONFIG, value::CONFIG_NO_DLPF_GYRO_3600Hz);
+	write_register(address::CONFIG, value::CONFIG_DLPF_GYRO_92Hz);
 
 	// Sample rate divider
 	write_register(address::SMPLRT_DIV, value::SMPLRT_DIV_NONE);
@@ -72,9 +72,9 @@ void Mpu9250::initialize_registers(void)
 	write_register(address::INT_ENABLE, value::INT_DISABLE);
 
 	// Sensors
-	write_register(address::GYRO_CONFIG, value::GYRO_NO_DLPF_2000_DPS);
+	write_register(address::GYRO_CONFIG, value::GYRO_DLPF_2000_DPS);
 	write_register(address::ACCEL_CONFIG, value::ACCEL_16_G);
-	write_register(address::ACCEL_CONFIG_2, value::ACCEL_NO_DLPF_4kHz);
+	write_register(address::ACCEL_CONFIG_2, value::ACCEL_DLPF_1kHz);
 }
 
 bool Mpu9250::validate_registers(void)
@@ -92,7 +92,7 @@ bool Mpu9250::validate_registers(void)
 
 	// Configuration
 	reg_val = read_register(address::CONFIG);
-	if (reg_val != value::CONFIG_NO_DLPF_GYRO_3600Hz)
+	if (reg_val != value::CONFIG_DLPF_GYRO_92Hz)
 		return false;
 
 	// Sample rate divider
@@ -107,7 +107,7 @@ bool Mpu9250::validate_registers(void)
 
 	// Sensors
 	reg_val = read_register(address::GYRO_CONFIG);
-	if (reg_val != value::GYRO_NO_DLPF_2000_DPS)
+	if (reg_val != value::GYRO_DLPF_2000_DPS)
 		return false;
 
 	reg_val = read_register(address::ACCEL_CONFIG);
@@ -115,7 +115,7 @@ bool Mpu9250::validate_registers(void)
 		return false;
 
 	reg_val = read_register(address::ACCEL_CONFIG_2);
-	if (reg_val != value::ACCEL_NO_DLPF_4kHz)
+	if (reg_val != value::ACCEL_DLPF_1kHz)
 		return false;
 
 	return true;
@@ -139,17 +139,18 @@ void Mpu9250::collect_sensor_data(void* data)
 	{
 		// Start at base address and increment over all registers we are interested in.
 		uint8_t val = read_register(address::ACCEL_XOUT_H + i);
-		byte_data[i] = val;
-		// // We need to reorder the LSB and MSB for each axis pair
-		// bool at_new_half_word = i % 2;
-		// if (at_new_half_word)
-		// {
-		// 	byte_data[i + 1] = val;
-		// }
-		// else
-		// {
-		// 	byte_data[i] = val;
-		// }
+
+		// We need to reorder the LSB and MSB for each axis pair
+		bool at_new_half_word = !(i % 2);
+
+		if (at_new_half_word)
+		{
+			byte_data[i + 1] = val;
+		}
+		else
+		{
+			byte_data[i - 1] = val;
+		}
 	}
 
 }
