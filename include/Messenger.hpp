@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
 #include <vector>
 #include <string>
 #include <atomic>
@@ -27,30 +29,23 @@
 #include <timers/Time.hpp>
 
 // TODO: autogenerate these...
-struct accel_raw_data_s
+struct __attribute__((__packed__)) accel_raw_data_s
 {
 	uint64_t timestamp;
-	uint16_t x;
-	uint16_t y;
-	uint16_t z;
+	float temperature;
+	float x;
+	float y;
+	float z;
 };
 
-struct gyro_raw_data_s
+struct __attribute__((__packed__)) gyro_raw_data_s
 {
 	uint64_t timestamp;
-	uint16_t x;
-	uint16_t y;
-	uint16_t z;
+	float temperature;
+	float x;
+	float y;
+	float z;
 };
-
-struct mag_raw_data_s
-{
-	uint64_t timestamp;
-	uint16_t x;
-	uint16_t y;
-	uint16_t z;
-};
-
 
 // Multiple publisher multiple subscriber implementation
 // with a (SHARED!) data file.

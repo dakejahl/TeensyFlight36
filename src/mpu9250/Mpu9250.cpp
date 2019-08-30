@@ -126,9 +126,9 @@ bool Mpu9250::new_data_available(void)
 	return read_register(address::INT_STATUS) == value::RAW_DATA_RDY_INT;
 }
 
-void Mpu9250::collect_sensor_data(void* data)
+void Mpu9250::collect_sensor_data(void)
 {
-	uint8_t* byte_data = reinterpret_cast<uint8_t*>(data);
+	uint8_t* byte_data = reinterpret_cast<uint8_t*>(&_sensor_data);
 
 	// Accel (xyz)   temp(c)   Gyro(xyz)
 	static constexpr size_t num_axis = 7;
@@ -153,4 +153,56 @@ void Mpu9250::collect_sensor_data(void* data)
 		}
 	}
 
+}
+
+void Mpu9250::publish_accel_data(abs_time_t& timestamp)
+{
+	// Convert the raw data
+	float x = ((_sensor_data.accel_x * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+	float y = ((_sensor_data.accel_y * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+	float z = ((_sensor_data.accel_z * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+
+	// Stuff the message
+	accel_raw_data_s data;
+
+	data.timestamp = timestamp;
+	data.x = x;
+	data.y = y;
+	data.z = z;
+	data.temperature = temp;
+
+	_accel_pub.publish(data);
+}
+
+void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
+{
+	// Convert the raw data
+	float x = ((_sensor_data.gyro_x * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float y = ((_sensor_data.gyro_y * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float z = ((_sensor_data.gyro_z * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+
+	// Stuff the message
+	gyro_raw_data_s data;
+
+	data.timestamp = timestamp;
+	data.x = x;
+	data.y = y;
+	data.z = z;
+	data.temperature = temp;
+
+	_gyro_pub.publish(data);
+}
+
+void Mpu9250::print_formatted_data(void)
+{
+	float accel_z = ((_sensor_data.accel_z * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+	float gyro_x = ((_sensor_data.gyro_x * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float temperature = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+
+	SYS_INFO("accel_z: %f", accel_z);
+	SYS_INFO("gyro_x: %f", gyro_x);
+	SYS_INFO("temperature: %f", temperature);
+	SYS_INFO("--- --- --- --- --- --- ---");
 }
