@@ -44,12 +44,25 @@ static constexpr uint8_t ACCEL_CONFIG = 28;
 static constexpr uint8_t ACCEL_CONFIG_2 = 29;
 
 // Interrupts
+static constexpr uint8_t INT_PIN_BYPASS_ENABLE_CONFIG = 55; // NOTE: unused -- defaults to "Interrupt status is cleared only by reading INT_STATUS register"
 static constexpr uint8_t INT_ENABLE = 56;
+
+// Measure
+static constexpr uint8_t INT_STATUS = 58;
+static constexpr uint8_t ACCEL_XOUT_H = 59;
+static constexpr uint8_t ACCEL_XOUT_L = 60;
+static constexpr uint8_t ACCEL_YOUT_H = 61;
+static constexpr uint8_t ACCEL_YOUT_L = 62;
+static constexpr uint8_t ACCEL_ZOUT_H = 63;
+static constexpr uint8_t ACCEL_ZOUT_L = 64;
+
+
+// User control
+static constexpr uint8_t USER_CTRL = 106;
 
 // Power management
 static constexpr uint8_t PWR_MGMT_1 = 107;
 static constexpr uint8_t PWR_MGMT_2 = 108;
-static constexpr uint8_t USER_CTRL = 106;
 
 // Testing
 static constexpr uint8_t WHOAMI = 117; // 0111 0101
@@ -78,6 +91,8 @@ static constexpr uint8_t GYRO_NO_DLPF_2000_DPS = 0b00011010;
 // Accel
 static constexpr uint8_t ACCEL_16_G = 0b00011000; // +/- 16g
 static constexpr uint8_t ACCEL_NO_DLPF_4kHz = 0b00001000; // Accel specs --> 4kHz sample rate    Bandwidth: 1046Hz    Delay: 0.503ms
+// Measure
+static constexpr uint8_t RAW_DATA_RDY_INT = 0b00000001;
 
 } // end namespace value
 
@@ -99,6 +114,10 @@ public:
 
 	uint8_t read_register(uint8_t reg);
 	void write_register(uint8_t addr, uint8_t val);
+
+	void collect_sensor_data(void* data);
+
+	bool new_data_available(void);
 
 private:
 

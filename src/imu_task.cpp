@@ -50,6 +50,7 @@ void imu_task(void* args)
 
 	// Configure register settings
 	mpu9250->initialize_registers();
+
 	// Check that the configuration is correct
 	bool registers_okay = mpu9250->validate_registers();
 
@@ -66,12 +67,58 @@ void imu_task(void* args)
 		SYS_INFO("... not alive ...");
 	}
 
+	static unsigned early_counter = 0;
+
+	struct __attribute__((__packed__))
+	{
+		int16_t		accel_x;
+		int16_t		accel_y;
+		int16_t		accel_z;
+		int16_t		temp;
+		int16_t		gyro_x;
+		int16_t		gyro_y;
+		int16_t		gyro_z;
+		int16_t		padding;
+	} sensor_data;
+
 	for(;;)
 	{
+		// Only read sensor when there is new data available
+		if (mpu9250->new_data_available())
+		{
+			mpu9250->collect_sensor_data(&sensor_data);
 
+			// int16_t accel_z = 0;
+			// uint8_t msb = mpu9250->read_register(address::ACCEL_ZOUT_H);
+			// uint8_t lsb = mpu9250->read_register(address::ACCEL_ZOUT_L);
 
+			// uint8_t* ptr = static_cast<uint8_t*>((void*)&accel_z);
+			// ptr[0] = msb;
+			// ptr[1] = lsb;
 
+			// Convert data to real world values
+			// TODO: calibration
+			#define TEMP_CALIB_OFFSET 0
+			// float temperature = (sensor_data.temp - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+			// SYS_INFO("temperature_raw: %d", sensor_data.temp);
 
-		vTaskDelay(1000);
+			#define ACCEL_CALIB_OFFSET 0
+			#define ACCEL_CALIB_SCALE 1
+
+			static constexpr float CONSTANTS_ONE_G = 9.80665f; // m/s^2
+			static constexpr float TICK_PER_G = 2048;
+			static constexpr float ACCEL_SCALE_FACTOR = CONSTANTS_ONE_G / TICK_PER_G;
+
+			// value (m/s^2) = (sensor_data.gyro_x / TICK_PER_G) * CONSTANTS_ONE_G
+			float accel_z = ((sensor_data.accel_z * ACCEL_SCALE_FACTOR) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+			SYS_INFO("accel_z_raw: %f", accel_z);
+		}
+		else
+		{
+			early_counter++;
+			SYS_INFO("mpu9250 data was not available: %u", early_counter);
+		}
+
+		vTaskDelay(50);
 	}
 }

@@ -120,3 +120,36 @@ bool Mpu9250::validate_registers(void)
 
 	return true;
 }
+
+bool Mpu9250::new_data_available(void)
+{
+	return read_register(address::INT_STATUS) == value::RAW_DATA_RDY_INT;
+}
+
+void Mpu9250::collect_sensor_data(void* data)
+{
+	uint8_t* byte_data = reinterpret_cast<uint8_t*>(data);
+
+	// Accel (xyz)   temp(c)   Gyro(xyz)
+	static constexpr size_t num_axis = 7;
+	static constexpr size_t bytes_per_axis = 2;
+	static constexpr size_t bytes_to_read = num_axis + bytes_per_axis;
+
+	for (size_t i = 0; i < bytes_to_read; i++)
+	{
+		// Start at base address and increment over all registers we are interested in.
+		uint8_t val = read_register(address::ACCEL_XOUT_H + i);
+		byte_data[i] = val;
+		// // We need to reorder the LSB and MSB for each axis pair
+		// bool at_new_half_word = i % 2;
+		// if (at_new_half_word)
+		// {
+		// 	byte_data[i + 1] = val;
+		// }
+		// else
+		// {
+		// 	byte_data[i] = val;
+		// }
+	}
+
+}
