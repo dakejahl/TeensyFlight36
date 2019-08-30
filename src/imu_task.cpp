@@ -48,17 +48,23 @@ void imu_task(void* args)
 	// Check to ensure device is alive
 	bool alive = mpu9250->probe();
 
-	if (alive)
+	// Configure register settings
+	mpu9250->initialize_registers();
+	// Check that the configuration is correct
+	bool registers_okay = mpu9250->validate_registers();
+
+	if (alive && registers_okay)
 	{
-		SYS_INFO("mpu9250 is ALIVE");
+		SYS_INFO("mpu9250 is ALIVE and registers are set!");
+	}
+	else if (alive)
+	{
+		SYS_INFO("... alive but registers fucked up ...");
 	}
 	else
 	{
 		SYS_INFO("... not alive ...");
 	}
-
-	// Configure the device for correct operation
-	mpu9250->write_register(address::PWR_MGMT_1, value::CLK_SEL_AUTO);
 
 	for(;;)
 	{

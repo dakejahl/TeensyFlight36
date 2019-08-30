@@ -118,7 +118,7 @@ extern volatile uint32_t _freertos_stats_base_ticks;
 #define configUSE_TRACE_FACILITY                1
 #define configUSE_STATS_FORMATTING_FUNCTIONS    1
 
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() void
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() { /* Do nothing... */ }
 #define portGET_RUN_TIME_COUNTER_VALUE() _freertos_stats_base_ticks + (*(volatile uint32_t *)0x40038004)
 
 // RTOS aware debugging

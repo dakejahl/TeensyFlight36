@@ -465,7 +465,7 @@ extern void usb_init(void);
 
 // Jake:
 // F_TIMER == F_BUS == 60MHz ... we are on a KINETIS K MCU (MK66F)
-#pragma message "F_TIMER: " TO_STRING(F_TIMER)
+// #pragma message "F_TIMER: " TO_STRING(F_TIMER)
 
 #if F_TIMER == 128000000
 #define DEFAULT_FTM_MOD (65536 - 1)
@@ -526,7 +526,7 @@ extern void usb_init(void);
 #define DEFAULT_FTM_PRESCALE 0
 #endif
 
-#pragma message "DEFAULT_FTM_MOD: " TO_STRING(DEFAULT_FTM_MOD)
+// #pragma message "DEFAULT_FTM_MOD: " TO_STRING(DEFAULT_FTM_MOD)
 
 //void init_pins(void)
 __attribute__((noinline))
