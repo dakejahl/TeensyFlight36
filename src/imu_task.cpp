@@ -81,6 +81,10 @@ void imu_task(void* args)
 		int16_t		padding;
 	} sensor_data;
 
+	// Set up our publisher
+	messenger::Publisher<accel_raw_data_s> accel_pub;
+	messenger::Publisher<gyro_raw_data_s> gyro_pub;
+
 	for(;;)
 	{
 		// Only read sensor when there is new data available
@@ -88,29 +92,43 @@ void imu_task(void* args)
 		{
 			mpu9250->collect_sensor_data(&sensor_data);
 
-			// Convert data to real world values
 			// TODO: calibration
 			#define TEMP_CALIB_OFFSET 0
-			float temperature = (sensor_data.temp - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
-			// SYS_INFO("raw_temperature: %d", sensor_data.temp);
-			// SYS_INFO("temperature: %f\n", temperature);
-
 			#define ACCEL_CALIB_OFFSET 0
 			#define ACCEL_CALIB_SCALE 1
+			#define GYRO_CALIB_OFFSET 0
+			#define GYRO_CALIB_SCALE 1
 
-			static constexpr float CONSTANTS_ONE_G = 9.80665f; // m/s^2
-			static constexpr float TICK_PER_G = 2048;
-			static constexpr float ACCEL_SCALE_FACTOR = CONSTANTS_ONE_G / TICK_PER_G;
+			// Accel conversion
+			static constexpr double CONSTANTS_ONE_G = 9.80665; // m/s^2
+			static constexpr double TICK_PER_G = 2048.0;
+			static constexpr float ACCEL_M_S2_PER_TICK = CONSTANTS_ONE_G / TICK_PER_G;
 
-			float accel_z = ((sensor_data.accel_z * ACCEL_SCALE_FACTOR) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+			// Gyro conversion
+			static constexpr double GYRO_FULL_SCALE_DPS = 2000.0;
+			static constexpr double GYRO_FULL_SCALE_RAD_S = 2000.0 / (180.0 / M_PI);
+			static constexpr unsigned TICKS = 65535;
+			static constexpr float RAD_S_PER_TICK = 2 * GYRO_FULL_SCALE_RAD_S / TICKS; // times 2 since +/- FS
+
+			// Apply accel conversion
+			float accel_x = ((sensor_data.accel_x * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+			float accel_y = ((sensor_data.accel_y * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+			float accel_z = ((sensor_data.accel_z * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
 			// SYS_INFO("raw_accel_z: %d", sensor_data.accel_z);
-			// SYS_INFO("accel_z: %f\n", accel_z);
+			SYS_INFO("accel_z: %f", accel_z);
 
-			float gyro_x = ((sensor_data.gyro_x * ACCEL_SCALE_FACTOR) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+			// Apply gyro conversion
+			float gyro_x = ((sensor_data.gyro_x * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+			float gyro_y = ((sensor_data.gyro_y * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+			float gyro_z = ((sensor_data.gyro_z * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
 			// SYS_INFO("raw_gyro_x: %d", sensor_data.gyro_x);
-			// SYS_INFO("gyro_x: %f", gyro_x);
-			// SYS_INFO("--- --- --- --- --- --- ---");git st
+			SYS_INFO("gyro_x: %f", gyro_x);
 
+			// Apply temp conversion -- see datasheet
+			float temperature = (sensor_data.temp - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+			// SYS_INFO("raw_temperature: %d", sensor_data.temp);
+			SYS_INFO("temperature: %f", temperature);
+			SYS_INFO("--- --- --- --- --- --- ---");
 		}
 		else
 		{
@@ -120,6 +138,6 @@ void imu_task(void* args)
 
 		// WARNING: since we sample at 1kHz, we must not check the registers at 1kHz otherwise we will be too early
 		// NOTE: Spamming read requests when data is not ready fucks with the sensor and causes a long data blackout (~20ms?)
-		vTaskDelay(2); // 500Hz seems solid for now
+		vTaskDelay(100); // 500Hz seems solid for now
 	}
 }
