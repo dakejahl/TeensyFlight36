@@ -47,6 +47,7 @@ FREERTOSPORT = portable/GCC/ARM_CM4F
 DISPATCH_QUEUE = src/dispatch_queue
 TIMERS = src/timers
 SPI = src/spi
+MPU9250 = src/mpu9250
 
 SEGGER_SYS_VIEW_FREERTOS_CONFIG = segger_system_view/FreeRTOSV10/Config
 SEGGER_SYS_VIEW_FREERTOS = segger_system_view/FreeRTOSV10/
@@ -65,6 +66,7 @@ CPPFLAGS += -I$(SOURCE_DIR) -I$(TEENSYCOREPATH) -I$(INCLUDE_DIR)
 CPPFLAGS += -I$(DISPATCH_QUEUE)
 CPPFLAGS += -I$(TIMERS)
 CPPFLAGS += -I$(SPI)
+CPPFLAGS += -I$(MPU9250)
 CPPFLAGS += -I$(SEGGER_SYS_VIEW_FREERTOS_CONFIG) -I$(SEGGER_SYS_VIEW_FREERTOS)
 CPPFLAGS += -I$(SEGGER_SYSVIEW_CONFIG) -I$(SEGGER_SYSVIEW)
 
@@ -95,6 +97,7 @@ TCPP_FILES := $(wildcard $(TEENSYCOREPATH)/*.cpp)
 DP_Q_FILES := $(wildcard $(DISPATCH_QUEUE)/*.cpp)
 TIMER_FILES := $(wildcard $(TIMERS)/*.cpp)
 SPI_FILES := $(wildcard $(SPI)/*.cpp)
+MPU9250_FILES := $(wildcard $(MPU9250)/*.cpp)
 
 C_FILES := $(wildcard src/*.c)
 CPP_FILES := $(wildcard src/*.cpp)
@@ -112,7 +115,7 @@ SYS_VIEW_FILES_ASM = $(wildcard $(SEGGER_SYSVIEW)/*.S)
 # include paths for libraries
 # L_INC := $(foreach lib,$(filter %/, $(wildcard $(LIBRARYPATH)/*/)), -I$(lib))
 
-SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(LCPP_FILES:.cpp=.o) $(FREERTOS_FILES:.c=.o) $(SYS_VIEW_FILES:.c=.o) $(SYS_VIEW_FILES_ASM:.S=.o)
+SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(MPU9250_FILES:.cpp=.o) $(LCPP_FILES:.cpp=.o) $(FREERTOS_FILES:.c=.o) $(SYS_VIEW_FILES:.c=.o) $(SYS_VIEW_FILES_ASM:.S=.o)
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
 all: hex

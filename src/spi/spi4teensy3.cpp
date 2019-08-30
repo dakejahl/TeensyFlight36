@@ -109,17 +109,27 @@ namespace spi4teensy3 {
         /**
          * Generic initialization. Maximum speed, cpol and cpha 0.
          */
-        void init() {
+        void init(uint8_t bus, unsigned frequency)
+        {
+                // TODO:
+                (void)bus;
+                (void)frequency;
+
                 SIM_SCGC6 |= SIM_SCGC6_SPI0;
+
                 // I think PORT_PCR_MUX(2) sets the pin to the secondary function
                 CORE_PIN11_CONFIG = PORT_PCR_DSE | PORT_PCR_MUX(2);
                 CORE_PIN12_CONFIG = PORT_PCR_MUX(2);
+
                 // CORE_PIN13_CONFIG = PORT_PCR_DSE | PORT_PCR_MUX(2); // We don't want to kill LED...
+
                 // We will instead use secondary function on pin14 for SCK0
                 CORE_PIN14_CONFIG = PORT_PCR_DSE | PORT_PCR_MUX(2);
 
                 // SPI_CTAR_DBR, SPI_CTAR_BR(0), SPI_CTAR_BR(1)
-                ctar0 = SPI_CTAR_DBR;
+                // ctar0 = SPI_CTAR_BR(1); // 1/8 speed
+                ctar0 = SPI_CTAR_PBR(1) | SPI_CTAR_BR(6); // 1/128 speed
+                // ctar0 = SPI_CTAR_DBR;
                 ctar1 = ctar0;
                 ctar0 |= SPI_CTAR_FMSZ(7);
                 ctar1 |= SPI_CTAR_FMSZ(15);
@@ -133,57 +143,12 @@ namespace spi4teensy3 {
          * @param cpol SPI Polarity
          * @param cpha SPI Phase
          */
-        void init(uint8_t cpol, uint8_t cpha) {
-                init();
-                ctar0 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
-                ctar1 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
-                updatectars();
-        }
-
-        /**
-         * Initialization with cpol and cpha 0, speed is configurable.
-         *
-         * @param SPI speed [0-7]
-         */
-        void init(uint8_t speed) {
-                init();
-                // Default 1/2 speed
-                uint32_t ctar = SPI_CTAR_DBR;
-                switch(speed) {
-                        case 1: // 1/4
-                                ctar = 0;
-                                break;
-                        case 2: // 1/8
-                                ctar = SPI_CTAR_BR(1);
-
-                                break;
-                        case 3: // 1/12
-                                ctar = SPI_CTAR_BR(2);
-                                break;
-
-                        case 4: // 1/16
-                                ctar = SPI_CTAR_BR(3);
-                                break;
-
-                        case 5: // 1/32
-                                ctar = SPI_CTAR_PBR(1) | SPI_CTAR_BR(4);
-                                break;
-
-                        case 6: // 1/64
-                                ctar = SPI_CTAR_PBR(1) | SPI_CTAR_BR(5);
-                                break;
-
-                        case 7: //1/128
-                                ctar = SPI_CTAR_PBR(1) | SPI_CTAR_BR(6);
-                                // fall thru
-                        default:
-                                // default 1/2 speed, this is the maximum.
-                                break;
-                }
-                ctar0 = ctar | SPI_CTAR_FMSZ(7);
-                ctar1 = ctar | SPI_CTAR_FMSZ(15);
-                updatectars();
-        }
+        // void init(uint8_t cpol, uint8_t cpha) {
+        //         init();
+        //         ctar0 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
+        //         ctar1 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
+        //         updatectars();
+        // }
 
         /**
          * Initialization with speed, cpol, and cpha configurable.
@@ -192,12 +157,12 @@ namespace spi4teensy3 {
          * @param cpol SPI Polarity
          * @param cpha SPI Phase
          */
-        void init(uint8_t speed, uint8_t cpol, uint8_t cpha) {
-                init(speed);
-                ctar0 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
-                ctar1 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
-                updatectars();
-        }
+        // void init(uint8_t speed, uint8_t cpol, uint8_t cpha) {
+        //         init(speed);
+        //         ctar0 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
+        //         ctar1 |= (cpol == 0 ? 0 : SPI_CTAR_CPOL) | (cpha == 0 ? 0 : SPI_CTAR_CPHA);
+        //         updatectars();
+        // }
 
         /**
          * Send 1 byte.

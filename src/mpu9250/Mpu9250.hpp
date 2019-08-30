@@ -20,30 +20,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
+#include <Spi.hpp>
 
-#define LED_PIN 13
+static constexpr uint8_t MPU9250_SPI_CS = 10;
+static constexpr uint8_t MPU9250_SPI_BUS = 0;
+static constexpr uint8_t MPU9250_SPI_FREQ = 8000000;
 
-void led_task(void* args)
+namespace address
 {
-	pinMode(LED_PIN, OUTPUT);
+static constexpr uint8_t WHOAMI = 0x75; // 0111 0101
+} // end namespace register
 
-	messenger::Publisher<accel_raw_data_s> accel_pub;
-
-	for(;;)
-	{
-		accel_raw_data_s data;
-		data.timestamp = time::PrecisionTimer::Instance()->get_absolute_time_us();
-		data.x = 3;
-		data.y = 2;
-		data.z = 1;
-		accel_pub.publish(data);
-
-		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(100);
-		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(100);
-		// SYS_INFO("led_task");
-	}
+namespace value
+{
+	static constexpr uint8_t WHOAMI = 0x71;
 }
+
+class Mpu9250
+{
+public:
+
+	Mpu9250()
+	{
+		// Initialize the SPI interface
+		_interface = new interface::Spi(MPU9250_SPI_BUS, MPU9250_SPI_FREQ, MPU9250_SPI_CS);
+	}
+
+	bool probe(void);
+
+	uint8_t read_register(uint8_t reg);
+
+private:
+
+	interface::Spi* _interface;
+
+};

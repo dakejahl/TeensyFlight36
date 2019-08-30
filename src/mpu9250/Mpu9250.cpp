@@ -21,29 +21,29 @@
 // SOFTWARE.
 
 #include <board_config.hpp>
-#include <Messenger.hpp>
+#include <Mpu9250.hpp>
 
-void spi_task(void* args)
+bool Mpu9250::probe(void)
 {
-	auto dispatcher = new DispatchQueue("dummy_q");
-	// vTaskDelay(1000);
+	uint8_t whoami = read_register(address::WHOAMI);
 
-	auto func1 = []
+	SYS_INFO("whoami: %d", whoami);
+
+	// The whoami is 0x71
+	if (value::WHOAMI == 0x71)
 	{
-		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 10; ++i)
-		{
-			dummy++;
-		}
-
-		SYS_INFO("Hey I got dispatched on an interval!");
-	};
-
-	dispatcher->dispatch_on_interval(func1, 1000);
-
-	// Do some spi stuff
-	for(;;)
-	{
-		vTaskDelay(1000);
+		return true;
 	}
+
+	return false;
+}
+
+uint8_t Mpu9250::read_register(uint8_t reg)
+{
+	uint8_t send_buf = reg | 1<<7;
+	uint8_t recv_buf = 0;
+
+	_interface->transfer(&send_buf, 1, &recv_buf, 1);
+
+	return recv_buf;
 }

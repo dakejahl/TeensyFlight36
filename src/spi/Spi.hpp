@@ -20,30 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
+#pragma once
 
-#define LED_PIN 13
+#include <core_pins.h>
+#include <spi4teensy3.hpp>
 
-void led_task(void* args)
+namespace interface
 {
-	pinMode(LED_PIN, OUTPUT);
 
-	messenger::Publisher<accel_raw_data_s> accel_pub;
+class Spi
+{
+public:
 
-	for(;;)
-	{
-		accel_raw_data_s data;
-		data.timestamp = time::PrecisionTimer::Instance()->get_absolute_time_us();
-		data.x = 3;
-		data.y = 2;
-		data.z = 1;
-		accel_pub.publish(data);
+	Spi(uint8_t bus, unsigned frequency, uint8_t chip_select);
 
-		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(100);
-		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(100);
-		// SYS_INFO("led_task");
-	}
-}
+	void transfer(uint8_t* send_buf, size_t ssize, uint8_t* recv_buf, size_t rsize);
+
+	void assert_chip_select(void) { digitalWrite(_chip_select, LOW); };
+	void deassert_chip_select(void){ digitalWrite(_chip_select, HIGH); };
+
+private:
+	// ----- Instance ----- //
+	void send_byte(uint8_t byte);
+	uint8_t receive_byte(void);
+
+	uint8_t _chip_select = 0;
+
+	// ----- Static ----- //
+	// TODO: implement support for more than SPI_0. Right now the spi4teensy3 lib just
+	// initializes SPI_0
+	// Configures registers to correctly initialize SPI_0
+	static void spi_bus_init(uint8_t bus, unsigned frequency);
+
+	static uint8_t _spi_bus_init_mask;
+
+};
+
+} // end namespace interface

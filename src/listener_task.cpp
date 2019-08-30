@@ -35,11 +35,11 @@ void listener_task(void* args)
 		if (accel_sub.updated())
 		{
 			data = accel_sub.get();
-			SYS_INFO("listener_task: got some data %d", data.x);
+			// SYS_INFO("listener_task: got some data %d", data.x);
 		}
 		else
 		{
-			SYS_INFO("listener_task: no data available");
+			// SYS_INFO("listener_task: no data available");
 		}
 
 		vTaskDelay(100);

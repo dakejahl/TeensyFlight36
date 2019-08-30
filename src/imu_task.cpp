@@ -23,27 +23,43 @@
 #include <board_config.hpp>
 #include <Messenger.hpp>
 
-#define LED_PIN 13
+#include <Mpu9250.hpp>
 
-void led_task(void* args)
+void imu_task(void* args)
 {
-	pinMode(LED_PIN, OUTPUT);
+	auto dispatcher = new DispatchQueue("dummy_q");
+	// vTaskDelay(1000);
 
-	messenger::Publisher<accel_raw_data_s> accel_pub;
+	auto func1 = []
+	{
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 10; ++i)
+		{
+			dummy++;
+		}
+
+		// SYS_INFO("Hey I got dispatched on an interval!");
+	};
+
+	dispatcher->dispatch_on_interval(func1, 1000);
+
+	auto mpu9250 = new Mpu9250();
+
+	vTaskDelay(100);
 
 	for(;;)
 	{
-		accel_raw_data_s data;
-		data.timestamp = time::PrecisionTimer::Instance()->get_absolute_time_us();
-		data.x = 3;
-		data.y = 2;
-		data.z = 1;
-		accel_pub.publish(data);
+		bool alive = mpu9250->probe();
 
-		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(100);
-		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(100);
-		// SYS_INFO("led_task");
+		if (alive)
+		{
+			SYS_INFO("yay!");
+		}
+		else
+		{
+			SYS_INFO("aww :(");
+		}
+
+		vTaskDelay(1000);
 	}
 }
