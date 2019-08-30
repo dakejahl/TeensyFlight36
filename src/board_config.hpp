@@ -46,11 +46,10 @@ static constexpr abs_time_t MICROS_PER_MILLI = 1000LLU;
 extern "C" void SystemInit(void);
 
 #define _PRINTF_BUFFER_LENGTH_ 64U
-static char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];
-
 #define SYS_PRINT() Serial.println(_pf_buffer_)
 #define SYS_INFO(fmt,...)                                               \
 do{                                                                     \
+	char _pf_buffer_[_PRINTF_BUFFER_LENGTH_];							\
 	snprintf(_pf_buffer_, sizeof(_pf_buffer_), fmt, ##__VA_ARGS__);		\
 	SYS_PRINT();                                                        \
 	}while(0);
