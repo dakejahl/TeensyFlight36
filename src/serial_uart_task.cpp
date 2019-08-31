@@ -22,19 +22,38 @@
 
 #include <board_config.hpp>
 #include <Messenger.hpp>
+#include <Sbus.hpp>
 
-void talker_task(void* args)
+// TODO:
+struct input_rc_s
 {
-	messenger::Publisher<accel_raw_data_s> accel_pub;
+	uint64_t timestamp;
+	uint64_t timestamp_last_signal;
+	uint32_t channel_count;
+	int32_t rssi;
+	uint16_t rc_lost_frame_count;
+	uint16_t rc_total_frame_count;
+	uint16_t rc_ppm_frame_length;
+	uint16_t values[18];
+	bool rc_failsafe;
+	bool rc_lost;
+	uint8_t input_source;
+	uint8_t _padding0[3]; // required for logger
+};
+
+void serial_uart_task(void* args)
+{
+	auto sbus = new interface::Sbus();
 
 	for(;;)
 	{
-		accel_raw_data_s data;
-		data.timestamp = time::PrecisionTimer::Instance()->get_absolute_time_us();
-		data.x = 1;
-		data.y = 2;
-		data.z = 3;
-		accel_pub.publish(data);
-		vTaskDelay(500);
+		if (Serial1.available())
+		{
+			sbus->collect_data();
+			// TODO: publish data
+		}
+
+		// TODO: implement scheduling with uart0_status_isr
+		vTaskDelay(2);
 	}
 }

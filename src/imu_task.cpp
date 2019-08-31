@@ -47,7 +47,12 @@ void imu_task(void* args)
 	auto mpu9250 = new Mpu9250();
 
 	// Check to ensure device is alive
-	bool alive = mpu9250->probe();
+	bool alive = false;
+	while (!alive)
+	{
+		vTaskDelay(500); // 500Hz seems solid for now
+		alive = mpu9250->probe();
+	}
 
 	// Configure register settings
 	mpu9250->initialize_registers();
@@ -70,9 +75,6 @@ void imu_task(void* args)
 
 	static unsigned early_counter = 0;
 
-
-	// Set up our publisher
-
 	for(;;)
 	{
 		// Only read sensor when there is new data available
@@ -85,7 +87,7 @@ void imu_task(void* args)
 			mpu9250->publish_accel_data(time);
 			mpu9250->publish_gyro_data(time);
 
-			mpu9250->print_formatted_data();
+			// mpu9250->print_formatted_data();
 		}
 		else
 		{

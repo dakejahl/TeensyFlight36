@@ -192,7 +192,8 @@ void serial_format(uint32_t format)
 #endif
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(KINETISL)
 	// For T3.5/T3.6/TLC See about turning on 2 stop bit mode
-	if ( format & 0x100) {
+	// if ( format & 0x100) {
+	if (1) { // TODO: fix this hack -- this is to support SBUS on UART0 with 2 stop bits
 		uint8_t bdl = UART0_BDL;
 		UART0_BDH |= UART_BDH_SBNS;		// Turn on 2 stop bits - was turned off by set baud
 		UART0_BDL = bdl;		// Says BDH not acted on until BDL is written
@@ -584,6 +585,7 @@ void uart0_status_isr(void)
 		if (UART0_S1 & UART_S1_TDRE) UART0_C2 = C2_TX_COMPLETING;
 	}
 #else
+	// Data above watermark
 	if (UART0_S1 & UART_S1_RDRF) {
 		if (use9Bits && (UART0_C3 & 0x80)) {
 			n = UART0_D | 0x100;
@@ -596,6 +598,9 @@ void uart0_status_isr(void)
 			rx_buffer[head] = n;
 			rx_buffer_head = head;
 		}
+
+		// Signal wakeup to blocked uart thread
+		// do_stuff()
 	}
 	c = UART0_C2;
 	if ((c & UART_C2_TIE) && (UART0_S1 & UART_S1_TDRE)) {

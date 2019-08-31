@@ -24,7 +24,7 @@
 #include <timers/Time.hpp>
 
 extern void led_task(void* args);
-extern void talker_task(void* args);
+extern void serial_uart_task(void* args);
 extern void listener_task(void* args);
 extern void imu_task(void* args);
 
@@ -47,10 +47,11 @@ extern "C" int main()
 	// SEGGER_SYSVIEW_DisableEvents(apiID_OFFSET + apiID_XQUEUEGENERICRECEIVE);
 	// SEGGER_SYSVIEW_DisableEvents(apiID_OFFSET + apiID_XQUEUEGENERICSENDFROMISR);
 
-	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
-	xTaskCreate(talker_task, "talker", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
-	xTaskCreate(listener_task, "listener", configMINIMAL_STACK_SIZE * 3, NULL, 3, NULL);
-	xTaskCreate(imu_task, "imu_task", configMINIMAL_STACK_SIZE * 5, NULL, 3, NULL);
+	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel::LOWEST, NULL);
+	xTaskCreate(serial_uart_task, "uart", configMINIMAL_STACK_SIZE * 2, NULL, PriorityLevel::HIGHEST, NULL);
+
+	xTaskCreate(listener_task, "listener", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::HIGHEST, NULL);
+	xTaskCreate(imu_task, "imu_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::HIGHEST, NULL);
 
 	vTaskStartScheduler();
 
