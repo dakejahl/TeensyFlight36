@@ -3,9 +3,9 @@
 Challenging my ability to learn, improve, and produce practical high quality embedded systems and software.
 
 ## Features
-- Makefile
+- Makefile + SWD GDB upload and debug
 - FreeRTOS
-- BSP is essentially cores/teensy3
+- BSP is essentially `cores/teensy3`
 - C++ Dispatch queue for asynchronous and interval scheduling
 - Publish / Subscribe communication framework (very light weight)
 - Timers -- PrecisionTimer and DispatchTimer
