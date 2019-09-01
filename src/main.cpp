@@ -34,20 +34,13 @@ extern const uint8_t FreeRTOSDebugConfig[];
 
 extern "C" int main()
 {
-	if (FreeRTOSDebugConfig[0] == 0)
-	{ /* just use it, so the linker cannot remove FreeRTOSDebugConfig[] */
-		for(;;); /* FreeRTOSDebugConfig[0] should always be non-zero, so this should never happen */
-	}
-
-	// TODO: move to proper place
+	// Used for time keeping
 	time::PrecisionTimer::Instantiate();
 
 	// Initialize SystemView
 	SEGGER_SYSVIEW_Conf();
 
-	// SEGGER_SYSVIEW_DisableEvents(apiID_OFFSET + apiID_XQUEUEGENERICRECEIVE);
-	// SEGGER_SYSVIEW_DisableEvents(apiID_OFFSET + apiID_XQUEUEGENERICSENDFROMISR);
-
+	// SystemView will mark unintrumented work as "idle", which is very misleading! Keep this in here.
 	xTaskCreate(sanity_idle_task, "sanity_idle_task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel::LOWEST, NULL);
 
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel::LOWEST+1, NULL);

@@ -20,35 +20,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "new.hpp"
+#pragma once
 
-void* operator new(size_t size)
-{
-  return pvPortMalloc(size);
-}
+#include <stdlib.h>
+#include <FreeRTOS.h>
 
-void* operator new[](size_t size)
-{
-  return pvPortMalloc(size);
-}
+void* operator new(size_t size);
+void* operator new[](size_t size);
+void operator delete(void* ptr);
+void operator delete[](void * ptr);
+void operator delete(void* ptr, size_t size);
+void operator delete[](void* ptr, size_t size);
 
-void operator delete(void* ptr)
-{
-  vPortFree(ptr);
-}
+__extension__ typedef int __guard __attribute__((mode (__DI__)));
 
-void operator delete[](void* ptr)
-{
-  vPortFree(ptr);
-}
+extern "C" int __cxa_guard_acquire(__guard*);
+extern "C" void __cxa_guard_release (__guard*);
+extern "C" void __cxa_guard_abort (__guard*);
+extern "C" void __cxa_pure_virtual(void);
 
-void operator delete(void* ptr, size_t size)
-{
-  vPortFree(ptr);
-}
-
-void operator delete[](void* ptr, size_t size)
-{
-  vPortFree(ptr);
-}
 

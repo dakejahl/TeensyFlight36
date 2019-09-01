@@ -73,6 +73,7 @@ static void init_FTM0(void)
 	FTM0_MODE |= FTM_MODE_FTMEN;
 
 	NVIC_ENABLE_IRQ(IRQ_FTM0);
+
 }
 
 //---- DISPATCH TIMER ----//
