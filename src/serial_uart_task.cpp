@@ -24,23 +24,6 @@
 #include <Messenger.hpp>
 #include <Sbus.hpp>
 
-// TODO:
-struct input_rc_s
-{
-	uint64_t timestamp;
-	uint64_t timestamp_last_signal;
-	uint32_t channel_count;
-	int32_t rssi;
-	uint16_t rc_lost_frame_count;
-	uint16_t rc_total_frame_count;
-	uint16_t rc_ppm_frame_length;
-	uint16_t values[18];
-	bool rc_failsafe;
-	bool rc_lost;
-	uint8_t input_source;
-	uint8_t _padding0[3]; // required for logger
-};
-
 void serial_uart_task(void* args)
 {
 	auto handle = xTaskGetCurrentTaskHandle();
@@ -51,5 +34,10 @@ void serial_uart_task(void* args)
 		// TODO: make sbus task less stupid
 		// The vTaskDelay() call is inside of the class....
 		sbus->collect_data();
+
+		abs_time_t time = time::PrecisionTimer::Instance()->get_absolute_time_us();
+		sbus->publish_data(time);
+
+		sbus->print_data();
 	}
 }

@@ -84,7 +84,7 @@ public:
 	void write_register(uint8_t addr, uint8_t val);
 
 	bool new_data_available(void);
-	void collect_sensor_data(void);
+	void collect_data(void);
 
 	void publish_accel_data(abs_time_t& timestamp);
 	void publish_gyro_data(abs_time_t& timestamp);

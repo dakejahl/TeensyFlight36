@@ -24,10 +24,14 @@
 
 #include <board_config.hpp>
 #include <Uart.hpp>
+#include <Messenger.hpp>
 
 namespace interface
 {
 // define range mapping here, -+100% -> 1000..2000
+static constexpr unsigned SBUS_FRAME_SIZE = 25;
+static constexpr unsigned RC_NUMBER_CHANNELS = 16;
+
 static constexpr float SBUS_RANGE_MIN = 200.0f;
 static constexpr float SBUS_RANGE_MAX = 1800.0f;
 static constexpr float SBUS_TARGET_MIN = 1000.0f;
@@ -44,12 +48,25 @@ public:
 
 	void collect_data(void);
 
+	void publish_data(abs_time_t& timestamp);
+
 	void interrupt_callback(void);
+
+	void print_data(void);
 
 private:
 
+	uint8_t _sbus_frame[SBUS_FRAME_SIZE] = {};
+	int _lost_frames = 0;
+	bool _rc_failsafe = false;
+	bool _rc_lost = false;
+
+	int _channels_data[RC_NUMBER_CHANNELS] = {};
+
 	interface::Uart* _uart;
 	TaskHandle_t _task_handle; // handle of the task that owns this interface
+
+	messenger::Publisher<rc_input_s> _rc_pub;
 };
 
 } // end namespace interface

@@ -80,7 +80,7 @@ void imu_task(void* args)
 		// Only read sensor when there is new data available
 		if (mpu9250->new_data_available())
 		{
-			mpu9250->collect_sensor_data();
+			mpu9250->collect_data();
 
 			abs_time_t time = time::PrecisionTimer::Instance()->get_absolute_time_us();
 

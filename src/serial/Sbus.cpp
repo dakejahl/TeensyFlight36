@@ -62,11 +62,6 @@ void Sbus::interrupt_callback(void)
 
 void Sbus::collect_data(void)
 {
-	uint8_t sbus_frame[25] = {};
-
-	// error counter to count the lost frame
-	int error_count = 0;
-
 	while (1)
 	{
 		int bytes_read = 0;
@@ -74,60 +69,77 @@ void Sbus::collect_data(void)
 		// We break from this loop in 2 conditions:
 		// 1. We get 25 bytes of data
 		// 2. We have no more data to process
-		for (size_t i = 0; _uart->data_available() && (i < sizeof(sbus_frame)/sizeof(sbus_frame[0])); i++)
+		for (size_t i = 0; _uart->data_available() && (i < sizeof(_sbus_frame)/sizeof(_sbus_frame[0])); i++)
 		{
-			sbus_frame[i] = _uart->read();
+			_sbus_frame[i] = _uart->read();
 			bytes_read++;
 		}
 
 		// If we got all 25 bytes -- we move forward
-		if (25 == bytes_read)
+		if (bytes_read == SBUS_FRAME_SIZE)
 		{
 			// Notice: most sbus rx device support sbus1
-			if (0x0f == sbus_frame[0] && 0x00 == sbus_frame[24])
+			if (0x0f == _sbus_frame[0] && 0x00 == _sbus_frame[24])
 			{
 				break;
 			}
 		}
-
-		++error_count;
-
-		vTaskDelay(5);
+		// Otherwise we increment the error counter and try again
+		else
+		{
+			++_lost_frames;
+			vTaskDelay(5);
+		}
 	}
 
 	 // Parse SBUS and convert to PWM
-	int channels_data[16];
-	channels_data[0] = (uint16_t)(((sbus_frame[1] | sbus_frame[2] << 8) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[1] = (uint16_t)(((sbus_frame[2] >> 3 | sbus_frame[3] << 5) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[2] = (uint16_t)(((sbus_frame[3] >> 6 | sbus_frame[4] << 2 | sbus_frame[5] << 10) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[3] = (uint16_t)(((sbus_frame[5] >> 1 | sbus_frame[6] << 7) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[4] = (uint16_t)(((sbus_frame[6] >> 4 | sbus_frame[7] << 4) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[5] = (uint16_t)(((sbus_frame[7] >> 7 | sbus_frame[8] << 1 | sbus_frame[9] << 9) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[6] = (uint16_t)(((sbus_frame[9] >> 2 | sbus_frame[10] << 6) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[7] = (uint16_t)(((sbus_frame[10] >> 5 | sbus_frame[11] << 3) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET; // & the other 8 + 2 channels if you need them
-	channels_data[8] = (uint16_t)(((sbus_frame[12] | sbus_frame[13] << 8) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[9] = (uint16_t)(((sbus_frame[13] >> 3 | sbus_frame[14] << 5) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[10] = (uint16_t)(((sbus_frame[14] >> 6 | sbus_frame[15] << 2 | sbus_frame[16] << 10) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[11] = (uint16_t)(((sbus_frame[16] >> 1 | sbus_frame[17] << 7) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[12] = (uint16_t)(((sbus_frame[17] >> 4 | sbus_frame[18] << 4) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[13] = (uint16_t)(((sbus_frame[18] >> 7 | sbus_frame[19] << 1 | sbus_frame[20] << 9) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[14] = (uint16_t)(((sbus_frame[20] >> 2 | sbus_frame[21] << 6) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
-	channels_data[15] = (uint16_t)(((sbus_frame[21] >> 5 | sbus_frame[22] << 3) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[0] = (uint16_t)(((_sbus_frame[1] | _sbus_frame[2] << 8) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[1] = (uint16_t)(((_sbus_frame[2] >> 3 | _sbus_frame[3] << 5) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[2] = (uint16_t)(((_sbus_frame[3] >> 6 | _sbus_frame[4] << 2 | _sbus_frame[5] << 10) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[3] = (uint16_t)(((_sbus_frame[5] >> 1 | _sbus_frame[6] << 7) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[4] = (uint16_t)(((_sbus_frame[6] >> 4 | _sbus_frame[7] << 4) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[5] = (uint16_t)(((_sbus_frame[7] >> 7 | _sbus_frame[8] << 1 | _sbus_frame[9] << 9) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[6] = (uint16_t)(((_sbus_frame[9] >> 2 | _sbus_frame[10] << 6) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[7] = (uint16_t)(((_sbus_frame[10] >> 5 | _sbus_frame[11] << 3) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET; // & the other 8 + 2 channels if you need them
+	_channels_data[8] = (uint16_t)(((_sbus_frame[12] | _sbus_frame[13] << 8) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[9] = (uint16_t)(((_sbus_frame[13] >> 3 | _sbus_frame[14] << 5) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[10] = (uint16_t)(((_sbus_frame[14] >> 6 | _sbus_frame[15] << 2 | _sbus_frame[16] << 10) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[11] = (uint16_t)(((_sbus_frame[16] >> 1 | _sbus_frame[17] << 7) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[12] = (uint16_t)(((_sbus_frame[17] >> 4 | _sbus_frame[18] << 4) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[13] = (uint16_t)(((_sbus_frame[18] >> 7 | _sbus_frame[19] << 1 | _sbus_frame[20] << 9) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[14] = (uint16_t)(((_sbus_frame[20] >> 2 | _sbus_frame[21] << 6) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
+	_channels_data[15] = (uint16_t)(((_sbus_frame[21] >> 5 | _sbus_frame[22] << 3) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
 
+	_rc_failsafe = (_sbus_frame[23] & (1 << 3)) ? true : false;
+	_rc_lost = (_sbus_frame[23] & (1 << 2)) ? true : false;
+}
 
-	// DEBUGGING
-	auto print_data = [channels_data, error_count]
+void Sbus::publish_data(abs_time_t& timestamp)
+{
+	rc_input_s data;
+	data.timestamp = timestamp;
+	data.lost_frame_count = _lost_frames;
+	data.rc_failsafe = _rc_failsafe;
+	data.rc_lost = _rc_lost;
+
+	for (size_t i = 0; i < RC_NUMBER_CHANNELS; i++)
 	{
-		for (size_t i = 0; i < sizeof(channels_data)/sizeof(channels_data[0]); i++)
-		{
-			SYS_INFO("channels_data[%d]: %d", i, channels_data[i]);
-		}
-		SYS_INFO("errors: %d", error_count);
-		SYS_INFO("--- --- --- --- --- ---");
-	};
+		data.channel_values[i] = _channels_data[i];
+	}
 
-	// print_data();
+	_rc_pub.publish(data);
+}
 
+void Sbus::print_data(void)
+{
+	SYS_INFO("failsafe: %d", _rc_failsafe);
+	SYS_INFO("rc_lost: %d", _rc_lost);
+
+	for (size_t i = 0; i < RC_NUMBER_CHANNELS; i++)
+	{
+		SYS_INFO("channels_data[%d]: %d", i, _channels_data[i]);
+	}
+	SYS_INFO("--- --- --- --- --- ---");
 }
 
 } // end namespace interface

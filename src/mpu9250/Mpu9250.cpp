@@ -126,7 +126,7 @@ bool Mpu9250::new_data_available(void)
 	return read_register(address::INT_STATUS) == value::RAW_DATA_RDY_INT;
 }
 
-void Mpu9250::collect_sensor_data(void)
+void Mpu9250::collect_data(void)
 {
 	uint8_t* byte_data = reinterpret_cast<uint8_t*>(&_sensor_data);
 
