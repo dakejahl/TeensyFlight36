@@ -63,7 +63,7 @@ private:
 
 	int _channels_data[RC_NUMBER_CHANNELS] = {};
 
-	interface::Uart* _uart;
+	interface::Uart0* _uart;
 	TaskHandle_t _task_handle; // handle of the task that owns this interface
 
 	messenger::Publisher<rc_input_s> _rc_pub;

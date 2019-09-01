@@ -30,33 +30,46 @@ namespace interface
 
 static constexpr uint8_t MAX_UARTS = 1;
 
-class Uart
+template <typename T>
+class UartBase
+{
+public:
+	~UartBase()
+	{
+		delete _instance;
+	}
+
+	static T* Instantiate(uint8_t uart, unsigned baud, unsigned format)
+	{
+		if (_instance == nullptr)
+		{
+			_instance = new T(uart, baud, format);
+		}
+
+		return _instance;
+	}
+
+	static T* Instance()
+	{
+		return _instance;
+	}
+
+private:
+	// friend T;
+	static T* _instance;
+};
+
+class Uart0 : public UartBase<Uart0>
 {
 public:
 
-	Uart(uint8_t uart_number, unsigned baud, unsigned format); // Private so that it can  not be called
+	Uart0(uint8_t uart0_number, unsigned baud, unsigned format) { Serial1.begin(baud, format); };
 
-	~Uart()
-	{
-		for (size_t i = 0; i < MAX_UARTS; i++)
-		{
-			if (&_instances[i] != nullptr)
-			{
-				delete &_instances[i];
-			}
-		}
-	}
-
-	static Uart* Instantiate(uint8_t uart_number, unsigned baud, unsigned format);
-
-	static Uart* Instance(uint8_t uart);
+	~Uart0();
 
 	bool data_available(void);
 
 	uint8_t read(void);
-
-	// void register_interrupt_callback(const fp_t& cb);
-	// void register_interrupt_callback(fp_t&& cb);
 
 	template <typename T>
 	void register_interrupt_callback(T* obj)
@@ -65,20 +78,16 @@ public:
 		_callback_registered = true;
 	}
 
-
 	bool interrupt_callback_registered(void) { return _callback_registered; };
 
 	void callback(void) { _callback(); };
 
-
 private:
-	// Uart(Uart const&){}; // copy constructor is private
-
-	static Uart* _instances[MAX_UARTS];
-
-	// TODO: this means one callback for all the UARTs... honestly this whole call heirachy for uarts is kinda dumb
 	fp_t _callback;
 	volatile bool _callback_registered = false;
 };
+
+template<typename T>
+T* UartBase<T>::_instance = nullptr;
 
 } // end namespace interface

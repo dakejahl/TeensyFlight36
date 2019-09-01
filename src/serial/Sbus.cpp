@@ -43,7 +43,7 @@ Sbus::Sbus(TaskHandle_t& handle)
 	// 8 data bits
 	// 1 even parity bit
 	// 2 stop bits
-	_uart = Uart::Instantiate(UART_BUS_0, BAUD_100k, SERIAL_8E1_RXINV);
+	_uart = Uart0::Instantiate(UART_BUS_0, BAUD_100k, SERIAL_8E1_RXINV);
 
 	_uart->register_interrupt_callback<Sbus>(this);
 

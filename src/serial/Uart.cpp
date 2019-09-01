@@ -26,7 +26,7 @@ extern "C" void uart0_isr_hook(void)
 {
 	auto saved_state = taskENTER_CRITICAL_FROM_ISR();
 
-	interface::Uart* instance = interface::Uart::Instance(0);
+	interface::Uart0* instance = interface::Uart0::Instance();
 	if (instance != nullptr)
 	{
 		// Notify the task using this UART that data is ready
@@ -43,57 +43,15 @@ extern "C" void uart0_isr_hook(void)
 namespace interface
 {
 
-Uart* Uart::Instantiate(uint8_t uart, unsigned baud, unsigned format)
-{
-	if (_instances[uart] == nullptr)
-	{
-		_instances[uart] = new Uart(uart, baud, format);
-	}
-
-	return _instances[uart];
-}
-
-Uart* Uart::Instance(uint8_t uart)
-{
-	switch (uart)
-	{
-		case 0:
-			return _instances[uart];
-			break;
-
-		default:
-			// TODO: support other uarts
-			break;
-	}
-
-	return nullptr;
-}
-
-Uart::Uart(uint8_t uart, unsigned baud, unsigned format)
-{
-	switch (uart)
-	{
-		case 0:
-			// comes out to 8.333kB/s (interrupt per byte would make that 8.33kHz interrupt which is okayish)
-			Serial1.begin(baud, format); // TODO: fix hack inside of serial1.c (hardcodes 2 stop bits on UART)
-			break;
-
-		default:
-			// TODO: support other uarts
-			break;
-	}
-}
-
-uint8_t Uart::read(void)
+uint8_t Uart0::read(void)
 {
 	return Serial1.read();
 }
 
-bool Uart::data_available(void)
+bool Uart0::data_available(void)
 {
 	return Serial1.available();
 }
 
-Uart* Uart::_instances[MAX_UARTS];
 
 } // end namespace interface
