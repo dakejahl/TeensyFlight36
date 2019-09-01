@@ -22,37 +22,63 @@
 
 #pragma once
 
-#include <core_pins.h>
-#include <spi4teensy3.hpp>
+#include  <board_config.hpp>
+#include <functional>
 
 namespace interface
 {
 
-class Spi
+static constexpr uint8_t MAX_UARTS = 1;
+
+class Uart
 {
 public:
 
-	Spi(uint8_t bus, unsigned frequency, uint8_t chip_select);
+	Uart(uint8_t uart_number, unsigned baud, unsigned format); // Private so that it can  not be called
 
-	void transfer(uint8_t* send_buf, size_t ssize, uint8_t* recv_buf, size_t rsize);
+	~Uart()
+	{
+		for (size_t i = 0; i < MAX_UARTS; i++)
+		{
+			if (&_instances[i] != nullptr)
+			{
+				delete &_instances[i];
+			}
+		}
+	}
 
-	void assert_chip_select(void) { digitalWrite(_chip_select, LOW); };
-	void deassert_chip_select(void){ digitalWrite(_chip_select, HIGH); };
+	static Uart* Instantiate(uint8_t uart_number, unsigned baud, unsigned format);
+
+	static Uart* Instance(uint8_t uart);
+
+	bool data_available(void);
+
+	uint8_t read(void);
+
+	// void register_interrupt_callback(const fp_t& cb);
+	// void register_interrupt_callback(fp_t&& cb);
+
+	template <typename T>
+	void register_interrupt_callback(T* obj)
+	{
+		_callback = std::bind(&T::interrupt_callback, obj);
+		_callback_registered = true;
+	}
+
+
+	bool interrupt_callback_registered(void) { return _callback_registered; };
+
+	void callback(void) { _callback(); };
+
 
 private:
-	// ----- Instance ----- //
-	void send_byte(uint8_t byte);
-	uint8_t receive_byte(void);
+	// Uart(Uart const&){}; // copy constructor is private
 
-	uint8_t _chip_select = 0;
+	static Uart* _instances[MAX_UARTS];
 
-	// ----- Static ----- //
-	// TODO: implement support for more than SPI_0. Right now the spi4teensy3 lib just
-	// initializes SPI_0
-	// Configures registers to correctly initialize SPI_0
-	static void spi_bus_init(uint8_t bus, unsigned frequency);
-
-	static uint8_t _spi_bus_init_mask;
+	// TODO: this means one callback for all the UARTs... honestly this whole call heirachy for uarts is kinda dumb
+	fp_t _callback;
+	volatile bool _callback_registered = false;
 };
 
 } // end namespace interface

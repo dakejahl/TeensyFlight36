@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include <Arduino.h>
 #include "core_pins.h"
 #include <kinetis.h>
@@ -30,6 +32,18 @@
 #include <task.h>
 
 #include <spi4teensy3.hpp>
+
+#define BOUNCE(c,m) bounce<c, decltype(&c::m), &c::m>
+
+// Bounce for C++ --> C function callbacks
+template<class T, class Method, Method m, class ...Params>
+static auto bounce(void *priv, Params... params) ->
+		decltype(((*reinterpret_cast<T *>(priv)).*m)(params...))
+{
+	return ((*reinterpret_cast<T *>(priv)).*m)(params...);
+}
+
+typedef std::function<void(void)> fp_t;
 
 // Helpers for understanding my config
 #define STR_HELPER(x) #x

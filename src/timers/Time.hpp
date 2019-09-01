@@ -66,7 +66,6 @@ private:
 class DispatchTimer
 {
 public:
-	DispatchTimer(DispatchQueue* queue);
 	~DispatchTimer();
 
 	abs_time_t get_absolute_time_us(void);
@@ -79,7 +78,7 @@ public:
 	void disable_scheduling(void);
 
 private:
-	DispatchTimer(){}; // Private so that it can  not be called
+	DispatchTimer(DispatchQueue* queue); // Private so that it can  not be called
 	DispatchTimer(DispatchTimer const&){}; // copy constructor is private
 	DispatchTimer& operator=(DispatchTimer const&){return *Instance();}; // assignment operator is private
 

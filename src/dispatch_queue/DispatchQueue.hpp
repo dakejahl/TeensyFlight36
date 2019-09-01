@@ -27,23 +27,10 @@
 #include <event_groups.h>
 #include <semphr.h>
 
-#include <functional>
 #include <queue>
 #include <list>
 #include <string>
 #include <vector>
-
-#define BOUNCE(c,m) bounce<c, decltype(&c::m), &c::m>
-
-// Bounce for C++ --> C function callbacks
-template<class T, class Method, Method m, class ...Params>
-static auto bounce(void *priv, Params... params) ->
-		decltype(((*reinterpret_cast<T *>(priv)).*m)(params...))
-{
-	return ((*reinterpret_cast<T *>(priv)).*m)(params...);
-}
-
-typedef std::function<void(void)> fp_t;
 
 struct IntervalWork
 {

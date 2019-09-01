@@ -47,3 +47,14 @@ void led_task(void* args)
 		// SYS_INFO("led_task");
 	}
 }
+
+void sanity_idle_task(void* args)
+{
+	while(1)
+	{
+		for (unsigned i = 0;  i < 100000; )
+		{
+			i++;
+		}
+	}
+}

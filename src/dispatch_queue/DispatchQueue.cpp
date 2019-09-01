@@ -28,6 +28,9 @@ DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 							const PriorityLevel priority)
 	: _name(name)
 {
+	// Intialize dispatch timer for interval work
+	time::DispatchTimer::Instantiate(this);
+
 	_mutex = xSemaphoreCreateRecursiveMutex();
 
 	SYS_INFO("DispatchQueue: %s", _name.c_str());
@@ -83,11 +86,6 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, abs_time_t interval_m
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
-	if (time::DispatchTimer::Instance() == nullptr)
-	{
-		time::DispatchTimer::Instantiate(this);
-	}
-
 	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
 	IntervalWork item;
 
@@ -110,12 +108,6 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, abs_time_t interval_m
 void DispatchQueue::dispatch_on_interval(fp_t&& work, abs_time_t interval_ms)
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
-
-	if (time::DispatchTimer::Instance() == nullptr)
-	{
-		// Initialize the timer if we haven't already.
-		time::DispatchTimer::Instantiate(this);
-	}
 
 	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
 	IntervalWork item;

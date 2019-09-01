@@ -43,17 +43,13 @@ struct input_rc_s
 
 void serial_uart_task(void* args)
 {
-	auto sbus = new interface::Sbus();
+	auto handle = xTaskGetCurrentTaskHandle();
+	auto sbus = new interface::Sbus(handle);
 
 	for(;;)
 	{
-		if (Serial1.available())
-		{
-			sbus->collect_data();
-			// TODO: publish data
-		}
-
-		// TODO: implement scheduling with uart0_status_isr
-		vTaskDelay(2);
+		// TODO: make sbus task less stupid
+		// The vTaskDelay() call is inside of the class....
+		sbus->collect_data();
 	}
 }

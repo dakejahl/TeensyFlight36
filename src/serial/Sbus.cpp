@@ -25,8 +25,17 @@
 namespace interface
 {
 
-Sbus::Sbus()
+static constexpr uint8_t UART_BUS_0 = 0;
+static constexpr unsigned BAUD_100k = 100000;
+
+Sbus::Sbus(TaskHandle_t& handle)
+	: _task_handle(handle)
 {
+	// Interrupts need to be disabled while we configure the uart isr
+	taskENTER_CRITICAL();
+
+	NVIC_DISABLE_IRQ(IRQ_UART0_STATUS);
+
 	// Configure UART0 as 8E2
 	// 100'000 baud rate
 	// invert RX signalling (SBUS)
@@ -34,9 +43,21 @@ Sbus::Sbus()
 	// 8 data bits
 	// 1 even parity bit
 	// 2 stop bits
+	_uart = Uart::Instantiate(UART_BUS_0, BAUD_100k, SERIAL_8E1_RXINV);
 
-	// comes out to 8.333kB/s (interrupt per byte would make that 8.33kHz interrupt which is okayish)
-	Serial1.begin(100000, SERIAL_8E1_RXINV); // TODO: fix hack inside of serial1.c (hardcodes 2 stop bits on UART0)
+	_uart->register_interrupt_callback<Sbus>(this);
+
+	// WARNING: FreeRTOS is like "if your priority is higher (lower number) than 80 .. then fuck you"
+	NVIC_SET_PRIORITY(IRQ_UART0_STATUS, 240); // Cortex-M4: 0,16,32,48,64,80,96,112,128,144,160,176,192,208,224,240
+
+	NVIC_ENABLE_IRQ(IRQ_UART0_STATUS); // only enable the interrupt after everything is configured correctly
+
+	taskEXIT_CRITICAL();
+}
+
+void Sbus::interrupt_callback(void)
+{
+	//  We do not need this functionality at the momemt
 }
 
 void Sbus::collect_data(void)
@@ -45,16 +66,17 @@ void Sbus::collect_data(void)
 
 	// error counter to count the lost frame
 	int error_count = 0;
+
 	while (1)
 	{
 		int bytes_read = 0;
 
-		// We break from this loop in 2 contions:
+		// We break from this loop in 2 conditions:
 		// 1. We get 25 bytes of data
 		// 2. We have no more data to process
-		for (size_t i = 0; Serial1.available() && (i < sizeof(sbus_frame)/sizeof(sbus_frame[0])); i++)
+		for (size_t i = 0; _uart->data_available() && (i < sizeof(sbus_frame)/sizeof(sbus_frame[0])); i++)
 		{
-			sbus_frame[i] = Serial1.read();
+			sbus_frame[i] = _uart->read();
 			bytes_read++;
 		}
 
@@ -92,16 +114,20 @@ void Sbus::collect_data(void)
 	channels_data[14] = (uint16_t)(((sbus_frame[20] >> 2 | sbus_frame[21] << 6) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
 	channels_data[15] = (uint16_t)(((sbus_frame[21] >> 5 | sbus_frame[22] << 3) & 0x07FF) * SBUS_SCALE_FACTOR + .5f) + SBUS_SCALE_OFFSET;
 
-	print_formatted_data(channels_data, 16);
-}
 
-void Sbus::print_formatted_data(int* buffer, size_t size)
-{
-	for (size_t i = 0; i < size; i++)
+	// DEBUGGING
+	auto print_data = [channels_data, error_count]
 	{
-		SYS_INFO("channels_data[%d]: %d", i, buffer[i]);
-	}
-	SYS_INFO("--- --- --- --- --- ---")
+		for (size_t i = 0; i < sizeof(channels_data)/sizeof(channels_data[0]); i++)
+		{
+			SYS_INFO("channels_data[%d]: %d", i, channels_data[i]);
+		}
+		SYS_INFO("errors: %d", error_count);
+		SYS_INFO("--- --- --- --- --- ---");
+	};
+
+	// print_data();
+
 }
 
 } // end namespace interface

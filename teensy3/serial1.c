@@ -165,7 +165,8 @@ void serial_begin(uint32_t divisor)
 	UART0_C1 = 0;
 #endif
 	UART0_C2 = C2_TX_INACTIVE;
-	NVIC_SET_PRIORITY(IRQ_UART0_STATUS, IRQ_PRIORITY);
+	// NVIC_SET_PRIORITY(IRQ_UART0_STATUS, IRQ_PRIORITY);
+	NVIC_SET_PRIORITY(IRQ_UART0_STATUS, IRQ_PRIORITY + 1);
 	NVIC_ENABLE_IRQ(IRQ_UART0_STATUS);
 }
 
@@ -513,8 +514,12 @@ void serial_clear(void)
 //   LIN break detect		    UART_S2_LBKDIF
 //   RxD pin active edge	    UART_S2_RXEDGIF
 
+extern void uart0_isr_hook(void); // our hook in application space to call OS stuff
+
 void uart0_status_isr(void)
 {
+	SEGGER_SYSVIEW_RecordEnterISR();
+
 	uint32_t head, tail, n;
 	uint8_t c;
 #ifdef HAS_KINETISK_UART0_FIFO
@@ -584,44 +589,46 @@ void uart0_status_isr(void)
 		tx_buffer_tail = tail;
 		if (UART0_S1 & UART_S1_TDRE) UART0_C2 = C2_TX_COMPLETING;
 	}
+	// Why do we have an ifdef else for HAS_KINETISK_UART0_FIFO...?
 #else
-	// Data above watermark
-	if (UART0_S1 & UART_S1_RDRF) {
-		if (use9Bits && (UART0_C3 & 0x80)) {
-			n = UART0_D | 0x100;
-		} else {
-			n = UART0_D;
-		}
-		head = rx_buffer_head + 1;
-		if (head >= SERIAL1_RX_BUFFER_SIZE) head = 0;
-		if (head != rx_buffer_tail) {
-			rx_buffer[head] = n;
-			rx_buffer_head = head;
-		}
-
-		// Signal wakeup to blocked uart thread
-		// do_stuff()
-	}
-	c = UART0_C2;
-	if ((c & UART_C2_TIE) && (UART0_S1 & UART_S1_TDRE)) {
-		head = tx_buffer_head;
-		tail = tx_buffer_tail;
-		if (head == tail) {
-			UART0_C2 = C2_TX_COMPLETING;
-		} else {
-			if (++tail >= SERIAL1_TX_BUFFER_SIZE) tail = 0;
-			n = tx_buffer[tail];
-			if (use9Bits) UART0_C3 = (UART0_C3 & ~0x40) | ((n & 0x100) >> 2);
-			UART0_D = n;
-			tx_buffer_tail = tail;
-		}
-	}
+	// if (UART0_S1 & UART_S1_RDRF) {
+	// 	if (use9Bits && (UART0_C3 & 0x80)) {
+	// 		n = UART0_D | 0x100;
+	// 	} else {
+	// 		n = UART0_D;
+	// 	}
+	// 	head = rx_buffer_head + 1;
+	// 	if (head >= SERIAL1_RX_BUFFER_SIZE) head = 0;
+	// 	if (head != rx_buffer_tail) {
+	// 		rx_buffer[head] = n;
+	// 		rx_buffer_head = head;
+	// 	}
+	// }
+	// c = UART0_C2;
+	// if ((c & UART_C2_TIE) && (UART0_S1 & UART_S1_TDRE)) {
+	// 	head = tx_buffer_head;
+	// 	tail = tx_buffer_tail;
+	// 	if (head == tail) {
+	// 		UART0_C2 = C2_TX_COMPLETING;
+	// 	} else {
+	// 		if (++tail >= SERIAL1_TX_BUFFER_SIZE) tail = 0;
+	// 		n = tx_buffer[tail];
+	// 		if (use9Bits) UART0_C3 = (UART0_C3 & ~0x40) | ((n & 0x100) >> 2);
+	// 		UART0_D = n;
+	// 		tx_buffer_tail = tail;
+	// 	}
+	// }
 #endif
 	if ((c & UART_C2_TCIE) && (UART0_S1 & UART_S1_TC)) {
 		transmitting = 0;
 		if (transmit_pin) transmit_deassert();
 		UART0_C2 = C2_TX_INACTIVE;
 	}
+
+	// Tell UART0 thread it's time to wake up
+	uart0_isr_hook();
+
+	SEGGER_SYSVIEW_RecordExitISR();
 }
 
 

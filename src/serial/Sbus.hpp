@@ -23,6 +23,7 @@
 #pragma once
 
 #include <board_config.hpp>
+#include <Uart.hpp>
 
 namespace interface
 {
@@ -39,13 +40,16 @@ class Sbus
 {
 public:
 
-	Sbus();
+	Sbus(TaskHandle_t& handle);
 
 	void collect_data(void);
 
-	void print_formatted_data(int* buffer, size_t size);
+	void interrupt_callback(void);
 
 private:
+
+	interface::Uart* _uart;
+	TaskHandle_t _task_handle; // handle of the task that owns this interface
 };
 
 } // end namespace interface
