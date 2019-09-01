@@ -1,4 +1,5 @@
-![Image description](teensyflight.png)
+![Image description](teensyflight.png =250)
+
 ## What?
 - Dispatch queue
 	- Async work
