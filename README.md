@@ -14,7 +14,7 @@ Challenging my ability to learn, improve, and produce practical high quality emb
 
 
 ## Debugging -- SWD: JLink + GDB + MCUXpresso
-Now this is a hardware hack. I soldered the reset line on the companion microcontroller (KL08) to ground, this holds the KL08 in reset and thus prevents its activity on the SWD lines. This project is a no-go without the ability to debug, so setting this up was one of the first problems tackled.
+Now this is a hardware hack. I soldered the reset line on the companion microcontroller (KL02) to ground, this holds the KL02 in reset and thus prevents its activity on the SWD lines. This project is a no-go without the ability to debug, so setting this up was one of the first problems tackled.
 https://mcuoneclipse.com/2017/04/29/modifying-the-teensy-3-5-and-3-6-for-arm-swd-debugging/
 ### Thread aware debug with MCUXpresso
 Pretty neat little GUI in MCUXpresso. I ended up implementing the debug support when  I got stuck for a few hours on a program crash. It ended up being a stack overflow that I didn't suspect because I didn't know that the `stack_overflow_hook()` is not reliable!! :(
