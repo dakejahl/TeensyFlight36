@@ -25,3 +25,11 @@ Anyways, check out your stack usage
 This piece of software is amazing. I learn so much from reviewing the information preseneted in this GUI. Your program can be instrumented as much or as little as you'd like! This is used to verify timing as well as scheduling characteristics. This was a little bit of effort to integrate into the build but definitely worth it. As checked-in (9/1/19) it is ready to go with the click of a button! With the JLink hooked up: Target --> Start Recording.
 ![Image description](systemview.png)
 
+
+***Thank you to...***
+
+The PX4 team, you guys rock https://github.com/PX4/Firmware
+Phillip Johnston https://embeddedartistry.com/
+Erich Styger https://mcuoneclipse.com/
+Paul Stoffregen https://www.pjrc.com/store/teensy36.html
+
