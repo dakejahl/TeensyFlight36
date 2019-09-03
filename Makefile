@@ -52,10 +52,12 @@ SERIAL = src/serial
 TASKS = src/tasks
 BOARD = src/board
 
-SEGGER_SYS_VIEW_FREERTOS_CONFIG = segger_system_view/FreeRTOSV10/Config
-SEGGER_SYS_VIEW_FREERTOS = segger_system_view/FreeRTOSV10/
-SEGGER_SYSVIEW_CONFIG = segger_system_view/Config
 SEGGER_SYSVIEW = segger_system_view/SEGGER
+SEGGER_SYSVIEW_CONFIG = segger_system_view/Config
+
+SEGGER_SYSVIEW_FREERTOS = segger_system_view/FreeRTOSV10/
+SEGGER_SYSVIEW_FREERTOS_CONFIG = segger_system_view/FreeRTOSV10/Config
+
 
 #************************************************************************
 # Settings below this point usually do not need to be edited
@@ -73,8 +75,8 @@ CPPFLAGS += -I$(MPU9250)
 CPPFLAGS += -I$(SERIAL)
 CPPFLAGS += -I$(TASKS)
 CPPFLAGS += -I$(BOARD)
-CPPFLAGS += -I$(SEGGER_SYS_VIEW_FREERTOS_CONFIG) -I$(SEGGER_SYS_VIEW_FREERTOS)
-CPPFLAGS += -I$(SEGGER_SYSVIEW_CONFIG) -I$(SEGGER_SYSVIEW)
+CPPFLAGS += -I$(SEGGER_SYSVIEW_FREERTOS) -I$(SEGGER_SYSVIEW_FREERTOS_CONFIG)
+CPPFLAGS += -I$(SEGGER_SYSVIEW) -I$(SEGGER_SYSVIEW_CONFIG)
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
@@ -90,6 +92,8 @@ LIBS = -lm -lstdc++
 CPPFLAGS += -D__MK66FX1M0__ -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LDSCRIPT = $(TEENSYCOREPATH)/mk66fx1m0.ld
 LDFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -T$(LDSCRIPT)
+
+LDFLAGS += -LCMSIS/DSP/Lib/GCC -Llibarm_cortexM4lf_math.a
 
 # names for the compiler programs
 CC = $(abspath $(COMPILERPATH))/arm-none-eabi-gcc
@@ -115,16 +119,25 @@ FREERTOS_FILES = $(wildcard $(FREERTOSPATH)/*.c)
 FREERTOS_FILES += $(wildcard $(FREERTOSPATH)/$(FREERTOSPORT)/*.c)
 
 # TODO: move to cmake... or figure out a better way to do this...
-SYS_VIEW_FILES = $(wildcard $(SEGGER_SYSVIEW_CONFIG)/*.c)
-SYS_VIEW_FILES += $(wildcard $(SEGGER_SYSVIEW)/*.c)
-SYS_VIEW_FILES += $(wildcard $(SEGGER_SYS_VIEW_FREERTOS_CONFIG)/*.c)
-SYS_VIEW_FILES += $(wildcard $(SEGGER_SYS_VIEW_FREERTOS)/*.c)
 SYS_VIEW_FILES_ASM = $(wildcard $(SEGGER_SYSVIEW)/*.S)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYSVIEW)/*.c)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYSVIEW_CONFIG)/*.c)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYSVIEW_FREERTOS)/*.c)
+SYS_VIEW_FILES += $(wildcard $(SEGGER_SYSVIEW_FREERTOS_CONFIG)/*.c)
 
 # include paths for libraries
 # L_INC := $(foreach lib,$(filter %/, $(wildcard $(LIBRARYPATH)/*/)), -I$(lib))
 
-SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(MPU9250_FILES:.cpp=.o) $(SERIAL_FILES:.cpp=.o) $(TASKS_FILES:.cpp=.o) $(BOARD_FILES:.cpp=.o) $(LCPP_FILES:.cpp=.o) $(FREERTOS_FILES:.c=.o) $(SYS_VIEW_FILES:.c=.o) $(SYS_VIEW_FILES_ASM:.S=.o)
+# anything in src/, teensy3 C/C++ files
+SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+SOURCES += $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o)
+# All my home grown stuff
+SOURCES += $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(MPU9250_FILES:.cpp=.o)
+SOURCES += $(SERIAL_FILES:.cpp=.o) $(TASKS_FILES:.cpp=.o) $(BOARD_FILES:.cpp=.o)
+# Amazon pathed version of FreeRTOS w/ Segger SystemView
+SOURCES += $(FREERTOS_FILES:.c=.o)
+SOURCES += $(SYS_VIEW_FILES:.c=.o) $(SYS_VIEW_FILES_ASM:.S=.o)
+
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
 all: hex
