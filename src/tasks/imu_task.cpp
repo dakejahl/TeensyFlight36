@@ -22,35 +22,19 @@
 
 #include <board_config.hpp>
 #include <Messenger.hpp>
-
+#include <DispatchQueue.hpp>
 #include <Mpu9250.hpp>
 
 void imu_task(void* args)
 {
-	auto dispatcher = new DispatchQueue("dummy_q");
-	// vTaskDelay(1000);
-
-	auto func1 = []
-	{
-		volatile unsigned dummy = 0;
-		for (unsigned i = 0; i < 10; ++i)
-		{
-			dummy++;
-		}
-
-		// SYS_INFO("Hey I got dispatched on an interval!");
-	};
-
-	dispatcher->dispatch_on_interval(func1, 5);
-	dispatcher->dispatch_on_interval(func1, 10);
-
 	auto mpu9250 = new Mpu9250();
 
 	// Check to ensure device is alive
 	bool alive = false;
 	while (!alive)
 	{
-		vTaskDelay(500); // 500Hz seems solid for now
+		// Just spin until the device is alive
+		vTaskDelay(500);
 		alive = mpu9250->probe();
 	}
 
@@ -82,7 +66,7 @@ void imu_task(void* args)
 		{
 			mpu9250->collect_data();
 
-			abs_time_t time = time::PrecisionTimer::Instance()->get_absolute_time_us();
+			abs_time_t time = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
 			mpu9250->publish_accel_data(time);
 			mpu9250->publish_gyro_data(time);

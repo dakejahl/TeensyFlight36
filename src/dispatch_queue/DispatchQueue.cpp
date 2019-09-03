@@ -22,15 +22,11 @@
 
 #include "DispatchQueue.hpp"
 
-#include <timers/Time.hpp>
 
 DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 							const PriorityLevel priority)
 	: _name(name)
 {
-	// Intialize dispatch timer for interval work
-	time::DispatchTimer::Instantiate(this);
-
 	_mutex = xSemaphoreCreateRecursiveMutex();
 
 	SYS_INFO("DispatchQueue: %s", _name.c_str());
@@ -42,6 +38,9 @@ DispatchQueue::DispatchQueue(const std::string name, const size_t stack_size,
 				reinterpret_cast<void*>(this), // pass in the "this" pointer as pvParameters...why?
 				priority,
 				&_task_handle);
+
+	// Intialize dispatch timer for interval work -- must come after the DispatchQueue task handle has been created!
+	_interval_dispatcher = new IntervalDispatchQueue(this);
 }
 
 void DispatchQueue::dispatch(const fp_t& work)
@@ -89,7 +88,7 @@ void DispatchQueue::dispatch_on_interval(const fp_t& work, abs_time_t interval_m
 	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
 	IntervalWork item;
 
-	auto now = time::DispatchTimer::Instance()->get_absolute_time_us();
+	auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
 	item.work = work;
 	item.interval_ms = interval_ms;
@@ -112,7 +111,7 @@ void DispatchQueue::dispatch_on_interval(fp_t&& work, abs_time_t interval_ms)
 	// Push item into an interval queue -- must disable interrupts since this is shared w/ timer isr.
 	IntervalWork item;
 
-	auto now = time::DispatchTimer::Instance()->get_absolute_time_us();
+	auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
 	item.work = work;
 	item.interval_ms = interval_ms;
@@ -147,17 +146,17 @@ void DispatchQueue::interval_dispatch_invoke_scheduler(void)
 		}
 
 		// Check if we need to reschedule immediately
-		auto current_time_us = time::DispatchTimer::Instance()->get_absolute_time_us();
+		auto current_time_us = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
 		if (current_time_us >= deadline_us)
 		{
 			// Flag as ready
 			_interval_item_ready = true;
 		}
-		// All ready to run items have been run. Reenable DispatchTimer scheduling and set the next deadline.
+		// All ready to run items have been run. Reenable IntervalDispatchQueue scheduling and set the next deadline.
 		else
 		{
-			time::DispatchTimer::Instance()->schedule_next_deadline_us(deadline_us);
+			_interval_dispatcher->schedule_next_deadline_us(deadline_us);
 		}
 	}
 }
@@ -166,7 +165,7 @@ void DispatchQueue::dispatch_thread_handler(void)
 {
 	xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
 
-	abs_time_t start_time = time::DispatchTimer::Instance()->get_absolute_time_us();
+	abs_time_t start_time = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
 	do
 	{
@@ -184,10 +183,10 @@ void DispatchQueue::dispatch_thread_handler(void)
 				auto work = item.work;
 				_interval_item_ready = false;
 
-				// NOTE: This line right here effectively disables scheduling from the DispatchTimer. Scheduling
+				// NOTE: This line right here effectively disables scheduling from the IntervalDispatchQueue. Scheduling
 				// will be reenabled once all the ready to run interval items become blocked again. See interval_dispatch_invoke_scheduler().
 				// TODO: make this logic less shitty... this is quite hard to see...
-				time::DispatchTimer::Instance()->disable_scheduling(); // to prevent race conditions
+				_interval_dispatcher->disable_scheduling(); // to prevent race conditions
 
 				taskEXIT_CRITICAL();
 
@@ -226,7 +225,7 @@ void DispatchQueue::dispatch_thread_handler(void)
 			ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 			// Get start time such that we can reschedule accurately
-			start_time = time::DispatchTimer::Instance()->get_absolute_time_us();
+			start_time = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
 			// We are awake! Time to do some work...
 			xSemaphoreTakeRecursive(_mutex, portMAX_DELAY);
@@ -276,4 +275,49 @@ void DispatchQueue::join_worker_thread(void)
 		// If not dead, keeping looping/signalling
 		state = eTaskGetState(_task_handle);
 	} while (state != eDeleted);
+}
+
+//----- INTERVAL DISPATCHER -----//
+
+IntervalDispatchQueue::IntervalDispatchQueue(DispatchQueue* dispatcher)
+	: _dispatcher(dispatcher)
+{
+	taskENTER_CRITICAL();
+
+	if (time::HighPrecisionTimer::Instance() == nullptr)
+	{
+		time::HighPrecisionTimer::Instantiate();
+	}
+
+	// Register the scheduling callback with the timer instance
+	time::HighPrecisionTimer::Instance()->register_overflow_callback<IntervalDispatchQueue>(this);
+
+	taskEXIT_CRITICAL();
+}
+
+void IntervalDispatchQueue::timer_overflow_callback(void)
+{
+	// Notify the dispatcher that an interval item is ready to run
+	if (_dispatcher != nullptr)
+	{
+		auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us_from_isr();
+		if (now >= _next_deadline_us)
+		{
+			_dispatcher->interval_dispatch_notify_ready();
+		}
+	}
+}
+
+void IntervalDispatchQueue::schedule_next_deadline_us(abs_time_t deadline_us)
+{
+	taskENTER_CRITICAL();
+
+	_next_deadline_us = deadline_us;
+
+	taskEXIT_CRITICAL();
+}
+
+void IntervalDispatchQueue::disable_scheduling(void)
+{
+	schedule_next_deadline_us(time::MAX_TIME);
 }

@@ -28,22 +28,24 @@ extern void serial_uart_task(void* args);
 extern void listener_task(void* args);
 extern void imu_task(void* args);
 extern void sanity_idle_task(void* args);
+extern void dispatch_test_task(void* args);
 
-extern time::PrecisionTimer* PrecisionTimer;
 extern const uint8_t FreeRTOSDebugConfig[];
 
 extern "C" int main()
 {
-	// Used for time keeping
-	time::PrecisionTimer::Instantiate();
+	// Used for time keeping and interval dispatching
+	time::HighPrecisionTimer::Instantiate();
 
 	// Initialize SystemView
 	SEGGER_SYSVIEW_Conf();
 
 	// SystemView will mark unintrumented work as "idle", which is very misleading! Keep this in here.
 	xTaskCreate(sanity_idle_task, "sanity_idle_task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel::LOWEST, NULL);
+	xTaskCreate(dispatch_test_task, "dispatch_test_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::LOWEST+1, NULL);
 
-	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE, NULL, PriorityLevel::LOWEST+1, NULL);
+
+	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::LOWEST+1, NULL);
 	xTaskCreate(listener_task, "listener", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::LOWEST+1, NULL);
 
 	xTaskCreate(serial_uart_task, "uart", configMINIMAL_STACK_SIZE * 4, NULL, PriorityLevel::HIGHEST, NULL);

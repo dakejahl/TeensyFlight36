@@ -8,7 +8,7 @@ Challenging my ability to learn, improve, and produce practical high quality emb
 - BSP is essentially `cores/teensy3`
 - C++ Dispatch queue for asynchronous and interval scheduling
 - Publish / Subscribe communication framework (very light weight)
-- Timers -- PrecisionTimer and DispatchTimer
+- Timers -- HighPrecisionTimer
 - MPU9250 @ 500Hz gyro / accel on 1MHz SPI
 - FrSky XM+ mini on UART SBUS
 

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <board_config.hpp>
+#include <timers/Time.hpp>
 
 #include <event_groups.h>
 #include <semphr.h>
@@ -52,6 +53,8 @@ struct IntervalList
 
 //-------------------- Impl --------------------//
 
+class IntervalDispatchQueue;
+
 class DispatchQueue
 {
 public:
@@ -78,10 +81,28 @@ private:
 	std::queue<fp_t> _queue; // holds async items
 	IntervalList _interval_list; // holds interval items
 
+	IntervalDispatchQueue* _interval_dispatcher;
+
 	TaskHandle_t _task_handle;
 	SemaphoreHandle_t _mutex;
 
 	volatile bool _interval_item_ready = false;
 
 	bool _should_exit = false;
+};
+
+class IntervalDispatchQueue
+{
+public:
+	IntervalDispatchQueue(DispatchQueue* dispatcher);
+
+	void schedule_next_deadline_us(abs_time_t deadline_us);
+	void disable_scheduling(void);
+	void timer_overflow_callback(void);
+private:
+
+	abs_time_t _next_deadline_us = time::MAX_TIME;
+
+	static IntervalDispatchQueue* _instance;
+	DispatchQueue* _dispatcher = nullptr;
 };

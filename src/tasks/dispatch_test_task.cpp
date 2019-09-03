@@ -21,23 +21,28 @@
 // SOFTWARE.
 
 #include <board_config.hpp>
-#include <Messenger.hpp>
-#include <Sbus.hpp>
+#include <DispatchQueue.hpp>
 
-void serial_uart_task(void* args)
+void dispatch_test_task(void* args)
 {
-	auto handle = xTaskGetCurrentTaskHandle();
-	auto sbus = new interface::Sbus(handle);
+	auto dispatcher = new DispatchQueue("dummy_q");
+
+	auto func1 = []
+	{
+		volatile unsigned dummy = 0;
+		for (unsigned i = 0; i < 10; ++i)
+		{
+			dummy++;
+		}
+
+		SYS_INFO("Hey I got dispatched on an interval!");
+	};
+
+	dispatcher->dispatch_on_interval(func1, 3000);
 
 	for(;;)
 	{
-		// TODO: make sbus task less stupid
-		// The vTaskDelay() call is inside of the class....
-		sbus->collect_data();
-
-		abs_time_t time = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
-		sbus->publish_data(time);
-
-		sbus->print_data();
+		// do nothing
+		vTaskDelay(1000);
 	}
 }

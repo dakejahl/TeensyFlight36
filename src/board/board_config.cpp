@@ -24,14 +24,12 @@
 #include <timers/Time.hpp>
 
 static void init_FTM0(void);
-static void init_FTM1(void);
 static void init_serial(void);
 
 // CMSIS compliance or something...
 extern "C" void SystemInit(void)
 {
 	init_FTM0();
-	init_FTM1();
 	init_serial();
 }
 
@@ -47,61 +45,32 @@ extern "C" void SystemInit(void)
 #define FTM_PRESCALE_533_NANO_SEC 32
 #define FTM_SYS_CLK 1
 
-//---- PRECISION TIMER ----//
+//---- HIGH PRECISION / DISPATCH SCHEDULING ----//
 // Frequency: 60MHz (F_BUS)
 // counter: 16bit
-// prescaler: 32
-// modulo: 65535 == FTM0_MAX_TICKS
-// resolution: 0.533us
-// overflow rate: 34.952ms --> 28.61Hz
+// prescaler: 1
+// modulo: 6,000 == FTM1_MAX_TICKS
+// resolution: 16.6666ns
+// overflow rate: 0.1ms --> 10kHz
 static void init_FTM0(void)
 {
 	// Disable write protection to change the settings -- TODO reenable write protection?
-	uint32_t mode = FTM0_FMS;
+	uint32_t mode = FTM1_FMS;
 	if (mode & FTM_FMS_WPEN)
 	{
 		FTM0_MODE |= FTM_MODE_WPDIS;
 	}
 
 	FTM0_CNT = 0x0000; //reset count to zero
-	FTM0_MOD = FTM0_MAX_TICKS; //max modulus = 65535 (gives count = 65,536 on roll-over)
+	FTM0_MOD = FTM0_MAX_TICKS; //max modulus = 6,000 (@60Mhz, 6,000 ticks == 0.1ms)
 	// Turn the timer on and configure with our settings
 	FTM0_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
-			| FTM_SC_PS(PS_DIV_32) // set prescaler for desired resolution / overflow rate
+			| FTM_SC_PS(PS_DIV_1) // set prescaler for desired resolution / overflow rate
 			| FTM_SC_TOIE; // enable overflow interrupt
 
 	FTM0_MODE |= FTM_MODE_FTMEN;
 
 	NVIC_ENABLE_IRQ(IRQ_FTM0);
-
-}
-
-//---- DISPATCH TIMER ----//
-// Frequency: 60MHz (F_BUS)
-// counter: 16bit
-// prescaler: 1
-// modulo: 6,000 == FTM1_MAX_TICKS
-// resolution: 16.6666ns
-// overflow rate: 0.1ms --> 1kHz
-static void init_FTM1(void)
-{
-	// Disable write protection to change the settings -- TODO reenable write protection?
-	uint32_t mode = FTM1_FMS;
-	if (mode & FTM_FMS_WPEN)
-	{
-		FTM1_MODE |= FTM_MODE_WPDIS;
-	}
-
-	FTM1_CNT = 0x0000; //reset count to zero
-	FTM1_MOD = FTM1_MAX_TICKS; //max modulus = 6,000 (@60Mhz, 6,000 ticks == 0.1ms)
-	// Turn the timer on and configure with our settings
-	FTM1_SC = FTM_SC_CLKS(FTM_SYS_CLK) // Set to system clock
-			| FTM_SC_PS(PS_DIV_1) // set prescaler for desired resolution / overflow rate
-			| FTM_SC_TOIE; // enable overflow interrupt
-
-	FTM1_MODE |= FTM_MODE_FTMEN;
-
-	NVIC_ENABLE_IRQ(IRQ_FTM1);
 }
 
 static void init_serial(void)

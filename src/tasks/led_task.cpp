@@ -31,11 +31,16 @@ void led_task(void* args)
 
 	for(;;)
 	{
+		analogWrite(2, 50);
+		auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 		digitalWrite(LED_PIN, LOW);
 		vTaskDelay(500);
 		digitalWrite(LED_PIN, HIGH);
 		vTaskDelay(500);
-		// SYS_INFO("led_task");
+
+		auto end = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
+		auto elapsed =  end - now;
+		SYS_INFO("one sec: %llu", elapsed);
 	}
 }
 
