@@ -20,4 +20,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <pwm.hpp>
+#pragma once
+
+#include <board_config.hpp>
+
+namespace pwm
+{
+static constexpr unsigned MOTOR_1 = 3U;
+static constexpr unsigned MOTOR_2 = 4U;
+static constexpr unsigned MOTOR_3 = 16U;
+static constexpr unsigned MOTOR_4 = 17U;
+
+static constexpr unsigned MOTORS_DISARMED = 900U; // 900us
+static constexpr unsigned IDLE_TRHOTTLE = 1150U // 1150us
+static constexpr unsigned FULL_TRHOTTLE = 1950U; //1950us
+
+static constexpr float MICROS_PER_PWM_TICKS = 9.765625;
+
+} // end namespace pwm
+
+class Pwm
+{
+public:
+	Pwm(unsigned frequency)
+	{
+		// Configure at 400Hz and hold low
+		analogWriteFrequency(pwm::MOTOR_1, frequency);
+		analogWrite(pwm::MOTOR_1, pwm::MOTORS_DISARMED);
+	}
+
+	void write(uint8_t motor, unsigned pulse_width_us)
+	{
+		int ticks = pulse_width_us / pwm::MICROS_PER_PWM_TICKS;
+		// 2500us / 256 ticks == 9.765625
+
+		analogWrite(motor, ticks);
+	}
+};
+

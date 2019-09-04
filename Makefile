@@ -51,6 +51,7 @@ MPU9250 = src/mpu9250
 SERIAL = src/serial
 TASKS = src/tasks
 BOARD = src/board
+PWM = src/pwm
 
 SEGGER_SYSVIEW = segger_system_view/SEGGER
 SEGGER_SYSVIEW_CONFIG = segger_system_view/Config
@@ -75,6 +76,7 @@ CPPFLAGS += -I$(MPU9250)
 CPPFLAGS += -I$(SERIAL)
 CPPFLAGS += -I$(TASKS)
 CPPFLAGS += -I$(BOARD)
+CPPFLAGS += -I$(PWM)
 CPPFLAGS += -I$(SEGGER_SYSVIEW_FREERTOS) -I$(SEGGER_SYSVIEW_FREERTOS_CONFIG)
 CPPFLAGS += -I$(SEGGER_SYSVIEW) -I$(SEGGER_SYSVIEW_CONFIG)
 
@@ -111,6 +113,8 @@ MPU9250_FILES := $(wildcard $(MPU9250)/*.cpp)
 SERIAL_FILES := $(wildcard $(SERIAL)/*.cpp)
 TASKS_FILES := $(wildcard $(TASKS)/*.cpp)
 BOARD_FILES := $(wildcard $(BOARD)/*.cpp)
+PWM_FILES := $(wildcard $(PWM)/*.cpp)
+
 
 C_FILES := $(wildcard src/*.c)
 CPP_FILES := $(wildcard src/*.cpp)
@@ -134,6 +138,8 @@ SOURCES += $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o)
 # All my home grown stuff
 SOURCES += $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(MPU9250_FILES:.cpp=.o)
 SOURCES += $(SERIAL_FILES:.cpp=.o) $(TASKS_FILES:.cpp=.o) $(BOARD_FILES:.cpp=.o)
+SOURCES += $(PWM_FILES:.cpp=.o)
+
 # Amazon pathed version of FreeRTOS w/ Segger SystemView
 SOURCES += $(FREERTOS_FILES:.c=.o)
 SOURCES += $(SYS_VIEW_FILES:.c=.o) $(SYS_VIEW_FILES_ASM:.S=.o)

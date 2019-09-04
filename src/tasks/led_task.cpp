@@ -22,6 +22,7 @@
 
 #include <board_config.hpp>
 #include <Messenger.hpp>
+#include <Pwm.hpp>
 
 #define LED_PIN 13
 
@@ -29,13 +30,19 @@ void led_task(void* args)
 {
 	pinMode(LED_PIN, OUTPUT);
 
+	auto pwm = new Pwm(400);
+
 	for(;;)
 	{
-		analogWrite(2, 50);
+		pwm->write(pwm::MOTOR_1, 900);
+
 		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(500);
+		vTaskDelay(2000);
+
+		pwm->write(pwm::MOTOR_1, 1150);
+
 		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(500);
+		vTaskDelay(2000);
 	}
 }
 
