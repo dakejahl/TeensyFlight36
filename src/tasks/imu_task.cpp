@@ -79,8 +79,6 @@ void imu_task(void* args)
 			SYS_INFO("mpu9250 data was not available: %u", early_counter);
 		}
 
-		// WARNING: since we sample at 1kHz, we must not check the registers at 1kHz otherwise we will be too early
-		// NOTE: Spamming read requests when data is not ready fucks with the sensor and causes a long data blackout (~20ms?)
-		vTaskDelay(1); // 500Hz seems solid for now
+		vTaskDelay(1); // 1kHz, sometimes we miss some data buts that's OK... I think
 	}
 }
