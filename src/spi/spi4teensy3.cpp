@@ -127,8 +127,8 @@ namespace spi4teensy3 {
                 CORE_PIN14_CONFIG = PORT_PCR_DSE | PORT_PCR_MUX(2);
 
                 // SPI_CTAR_DBR, SPI_CTAR_BR(0), SPI_CTAR_BR(1)
-                // ctar0 = SPI_CTAR_BR(1); // 1/8 speed
-                ctar0 = SPI_CTAR_PBR(1) | SPI_CTAR_BR(6); // 1/128 speed
+                ctar0 = SPI_CTAR_BR(1); // 1/8 speed
+                // ctar0 = SPI_CTAR_PBR(1) | SPI_CTAR_BR(6); // 1/128 speed
                 // ctar0 = SPI_CTAR_DBR;
                 ctar1 = ctar0;
                 ctar0 |= SPI_CTAR_FMSZ(7);
