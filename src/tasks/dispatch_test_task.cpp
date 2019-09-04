@@ -23,9 +23,11 @@
 #include <board_config.hpp>
 #include <DispatchQueue.hpp>
 
+abs_time_t _last_time = 0;
+
 void dispatch_test_task(void* args)
 {
-	auto dispatcher = new DispatchQueue("dummy_q");
+	auto dispatcher = new DispatchQueue("dummy_q", PriorityLevel::HIGHEST);
 
 	auto func1 = []
 	{
@@ -35,10 +37,14 @@ void dispatch_test_task(void* args)
 			dummy++;
 		}
 
-		SYS_INFO("Hey I got dispatched on an interval!");
+		auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
+		auto elapsed = now - _last_time;
+		_last_time = now;
+		// SYS_INFO("Hey I got dispatched on an interval!");
+		// SYS_INFO("interval: %llu", elapsed);
 	};
 
-	dispatcher->dispatch_on_interval(func1, 3000);
+	dispatcher->dispatch_on_interval(func1, 2000);
 
 	for(;;)
 	{

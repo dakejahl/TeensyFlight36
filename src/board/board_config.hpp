@@ -70,7 +70,5 @@ do{                                                                     \
 enum PriorityLevel : uint8_t
 {
 	LOWEST = 0,
-	LOW_PRI_Q = 1,
-	HI_PRI_Q = 2,
 	HIGHEST = configMAX_PRIORITIES,
 };

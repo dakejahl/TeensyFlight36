@@ -31,7 +31,7 @@ HighPrecisionTimer* HighPrecisionTimer::_instance = nullptr;
 
 void HighPrecisionTimer::Instantiate(void)
 {
-	if (!_instance)
+	if (_instance == nullptr)
 	{
 		_instance = new HighPrecisionTimer();
 	}
@@ -85,7 +85,7 @@ void HighPrecisionTimer::handle_timer_overflow(void)
 	_base_ticks += FTM0_MAX_TICKS;
 	_freertos_stats_base_ticks = _base_ticks;
 
-	if (_callback_registered)
+	if (_callback_registered && _callback_enabled)
 	{
 		_callback();
 	}

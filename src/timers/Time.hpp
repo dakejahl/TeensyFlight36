@@ -51,19 +51,21 @@ public:
 	static void Instantiate(void);
 	static HighPrecisionTimer* Instance();
 
+	void handle_timer_overflow(void);
+
 	abs_time_t get_absolute_time_us(void);
 	abs_time_t get_absolute_time_us_from_isr(void);
-
-
-	void handle_timer_overflow(void);
 
 	template <typename T>
 	void register_overflow_callback(T* obj)
 	{
 		_callback = std::bind(&T::timer_overflow_callback, obj);
 		_callback_registered = true;
+		enable_callback();
 	}
 
+	void disable_callback(void) { _callback_enabled = false; };
+	void enable_callback(void) { _callback_enabled = true; };
 
 private:
 	HighPrecisionTimer(){}; // Private so that it can not be called
@@ -74,7 +76,9 @@ private:
 
 	abs_time_t _base_ticks = 0;
 
-	bool _callback_registered = false;
+	volatile bool _callback_registered = false;
+	volatile bool _callback_enabled = false;
+
 	fp_t _callback; // A function pointer to a callback function that gets called after an overflow event.
 };
 

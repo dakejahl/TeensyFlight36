@@ -81,6 +81,6 @@ void imu_task(void* args)
 
 		// WARNING: since we sample at 1kHz, we must not check the registers at 1kHz otherwise we will be too early
 		// NOTE: Spamming read requests when data is not ready fucks with the sensor and causes a long data blackout (~20ms?)
-		vTaskDelay(2); // 500Hz seems solid for now
+		vTaskDelay(1); // 500Hz seems solid for now
 	}
 }

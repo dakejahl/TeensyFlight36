@@ -35,74 +35,90 @@
 
 struct IntervalWork
 {
+	IntervalWork()
+		: work(nullptr)
+		, interval(0)
+		, deadline(time::MAX_TIME)
+	{}
+	IntervalWork(const fp_t& work, abs_time_t interval, abs_time_t deadline)
+		: work(work)
+		, interval(interval)
+		, deadline(deadline)
+	{}
+	IntervalWork(fp_t&& work, abs_time_t interval, abs_time_t deadline)
+		: work(std::move(work))
+		, interval(interval)
+		, deadline(deadline)
+	{}
+
 	fp_t work;
-	abs_time_t interval_ms;
-	abs_time_t next_deadline_us;
-};
-
-struct IntervalList
-{
-	std::list<IntervalWork> _items;
-	std::list<IntervalWork>::iterator _next; // holds the iterator index for the next item to run
-
-	std::list<IntervalWork>::iterator begin() { return _items.begin(); };
-	std::list<IntervalWork>::iterator end() { return _items.end(); };
-	void push_back(const IntervalWork& value) { _items.push_back(value); };
-	void push_back(IntervalWork&& value) { _items.push_back(value); };
+	abs_time_t interval;
+	abs_time_t deadline;
 };
 
 //-------------------- Impl --------------------//
 
-class IntervalDispatchQueue;
+class IntervalDispatchScheduler;
 
 class DispatchQueue
 {
 public:
-	DispatchQueue(const std::string name, const size_t stack_size = 1024,
-		const PriorityLevel priority = ::LOW_PRI_Q);
+	DispatchQueue(const std::string name, const PriorityLevel priority = ::HIGHEST,
+		const size_t stack_size = 1024);
 
 	~DispatchQueue(void);
 
 	void dispatch(const fp_t& work);
 	void dispatch(fp_t&& work);
 
-	void dispatch_on_interval(const fp_t& work, abs_time_t interval_ms);
-	void dispatch_on_interval(fp_t&& work, abs_time_t interval_ms);
+	void dispatch_on_interval(const fp_t& work, abs_time_t interval);
+	void dispatch_on_interval(fp_t&& work, abs_time_t interval);
 
-	void interval_dispatch_notify_ready(void);
-	void interval_dispatch_invoke_scheduler(void);
+	void notify(void);
 
 private:
 	void dispatch_thread_handler(void);
-
 	void join_worker_thread(void);
 
 	std::string _name;
 	std::queue<fp_t> _queue; // holds async items
-	IntervalList _interval_list; // holds interval items
 
-	IntervalDispatchQueue* _interval_dispatcher;
+	IntervalDispatchScheduler* _interval_dispatcher;
 
 	TaskHandle_t _task_handle;
 	SemaphoreHandle_t _mutex;
 
-	volatile bool _interval_item_ready = false;
-
-	bool _should_exit = false;
+	volatile bool _should_exit = false;
 };
 
-class IntervalDispatchQueue
+class IntervalDispatchScheduler
 {
 public:
-	IntervalDispatchQueue(DispatchQueue* dispatcher);
+	IntervalDispatchScheduler(DispatchQueue* dispatcher);
 
-	void schedule_next_deadline_us(abs_time_t deadline_us);
-	void disable_scheduling(void);
+	void add_item(const fp_t& work, abs_time_t interval);
+	void add_item(fp_t&& work, abs_time_t interval);
+
 	void timer_overflow_callback(void);
+
+	// void disable_scheduling(void);
+	void reschedule_item(IntervalWork* item);
+	void invoke_scheduler(void);
+	void enable_scheduler(void);
+	void disable_scheduler(void);
+
+	bool item_ready(void) { return _interval_list.size() && _an_item_is_ready; };
+	IntervalWork* get_ready_item(void) { return _next_item_to_run; };
+
+	IntervalWork& dispatch_get_next_item(void);
+
 private:
 
-	abs_time_t _next_deadline_us = time::MAX_TIME;
+	std::list<IntervalWork> _interval_list; // holds interval items
 
-	static IntervalDispatchQueue* _instance;
+	IntervalWork* _next_item_to_run = nullptr;
+	volatile bool _an_item_is_ready = false;
+
+	static IntervalDispatchScheduler* _instance;
 	DispatchQueue* _dispatcher = nullptr;
 };
