@@ -32,7 +32,7 @@ static constexpr unsigned MOTOR_3 = 16U;
 static constexpr unsigned MOTOR_4 = 17U;
 
 static constexpr unsigned MOTORS_DISARMED = 900U; // 900us
-static constexpr unsigned IDLE_TRHOTTLE = 1150U // 1150us
+static constexpr unsigned IDLE_TRHOTTLE = 1150U; // 1150us
 static constexpr unsigned FULL_TRHOTTLE = 1950U; //1950us
 
 static constexpr float MICROS_PER_PWM_TICKS = 9.765625;
