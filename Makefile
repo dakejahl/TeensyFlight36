@@ -84,6 +84,9 @@ CPPFLAGS += -I$(SEGGER_SYSVIEW) -I$(SEGGER_SYSVIEW_CONFIG)
 CPPFLAGS += -I$(HEADER_LIBS)
 CPPFLAGS += -I$(ESTIMATION)
 
+# Eigen directives
+CPPFLAGS += -D__EIGEN_NO_DEBUG__ -D__EIGEN_DONT_ALIGN_ -D__EIGEN_MALLOC_ALREADY_ALIGNED__ -D__EIGEN_NO_MALLOC__
+
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 

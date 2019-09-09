@@ -79,6 +79,9 @@ void imu_task(void* args)
 			SYS_INFO("mpu9250 data was not available: %u", early_counter);
 		}
 
+
+		// Let's throw our attitude estimator in here and see how it does
+
 		vTaskDelay(1); // 1kHz, sometimes we miss some data buts that's OK... I think
 	}
 }

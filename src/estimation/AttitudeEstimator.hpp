@@ -23,11 +23,56 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <cmath>
+
+#include <Time.hpp>
+#include <board_config.hpp>
+
+using namespace Eigen;
 
 class AttitudeEstimator
 {
 public:
+	AttitudeEstimator()
+	{
+
+	}
+
+	Quaternionf calculate_quaternions();
 
 private:
+	// Functions
+	Quaternionf Dav_qmethod(Vector3f r1, Vector3f r2, Vector3f b1, Vector3f b2, float a1, float a2);
+
+	Quaternionf quat_error(Quaternionf q1, Quaternionf q2);
+
+	Quaternionf vect2q(Vector4f v);
+
+	Vector4f q2vect(Quaternionf q);
+
+	Quaternionf qexp(Quaternionf q);
+
+	Matrix3f crossp_mat(Vector3f v);
+
+	template <typename T> int sgn(T val)
+	{
+    	return (T(0) < val) - (val < T(0));
+	}
+
+	// Variables
+	abs_time_t _last_time = 0;
+
+	Quaternionf _q_obs = {};
+	Quaternionf _q_err = {};
+
+	Vector3f _bias_obs = {};
+
+	Vector3f _epsilon_err = {};
+	float _eta_err = {};
+
+
+	Quaternionf _unknown_variable = {};
+
+
 
 };

@@ -23,10 +23,15 @@
 #include <board_config.hpp>
 #include <Messenger.hpp>
 #include <dispatch_queue/DispatchQueue.hpp>
+#include <AttitudeEstimator.hpp>
 
-void listener_task(void* args)
+void estimator_task(void* args)
 {
+	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
 	messenger::Subscriber<accel_raw_data_s> accel_sub;
+	messenger::Subscriber<mag_raw_data_s> mag_sub;
+
+	auto estimator = new AttitudeEstimator();
 
 	for(;;)
 	{
