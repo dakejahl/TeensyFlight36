@@ -24,6 +24,8 @@
 
 #include <board_config.hpp>
 
+#include <Eigen/Dense>
+
 namespace pwm
 {
 static constexpr unsigned MOTOR_1 = 3U;

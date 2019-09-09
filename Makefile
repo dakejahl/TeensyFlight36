@@ -52,6 +52,8 @@ SERIAL = src/serial
 TASKS = src/tasks
 BOARD = src/board
 PWM = src/pwm
+HEADER_LIBS = lib/
+ESTIMATION = src/estimation
 
 SEGGER_SYSVIEW = segger_system_view/SEGGER
 SEGGER_SYSVIEW_CONFIG = segger_system_view/Config
@@ -79,6 +81,8 @@ CPPFLAGS += -I$(BOARD)
 CPPFLAGS += -I$(PWM)
 CPPFLAGS += -I$(SEGGER_SYSVIEW_FREERTOS) -I$(SEGGER_SYSVIEW_FREERTOS_CONFIG)
 CPPFLAGS += -I$(SEGGER_SYSVIEW) -I$(SEGGER_SYSVIEW_CONFIG)
+CPPFLAGS += -I$(HEADER_LIBS)
+CPPFLAGS += -I$(ESTIMATION)
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
@@ -114,6 +118,8 @@ SERIAL_FILES := $(wildcard $(SERIAL)/*.cpp)
 TASKS_FILES := $(wildcard $(TASKS)/*.cpp)
 BOARD_FILES := $(wildcard $(BOARD)/*.cpp)
 PWM_FILES := $(wildcard $(PWM)/*.cpp)
+ESTIMATION_FILES := $(wildcard $(ESTIMATION)/*.cpp)
+
 
 
 C_FILES := $(wildcard src/*.c)
@@ -138,7 +144,7 @@ SOURCES += $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o)
 # All my home grown stuff
 SOURCES += $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(MPU9250_FILES:.cpp=.o)
 SOURCES += $(SERIAL_FILES:.cpp=.o) $(TASKS_FILES:.cpp=.o) $(BOARD_FILES:.cpp=.o)
-SOURCES += $(PWM_FILES:.cpp=.o)
+SOURCES += $(PWM_FILES:.cpp=.o) $(ESTIMATION_FILES:.cpp=.o)
 
 # Amazon pathed version of FreeRTOS w/ Segger SystemView
 SOURCES += $(FREERTOS_FILES:.c=.o)
