@@ -37,12 +37,12 @@ void led_task(void* args)
 		pwm->write(pwm::MOTOR_1, 900);
 
 		digitalWrite(LED_PIN, LOW);
-		vTaskDelay(2000);
+		vTaskDelay(1000);
 
 		pwm->write(pwm::MOTOR_1, 1150);
 
 		digitalWrite(LED_PIN, HIGH);
-		vTaskDelay(2000);
+		vTaskDelay(1000);
 	}
 }
 

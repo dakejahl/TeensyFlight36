@@ -141,15 +141,13 @@ void calibrate_gyro(void)
 	delete gyro_data;
 }
 
+// For this one we want to put the sensor on each side (6 sides) and measure the static reading.
+// The static reading should just be the gravity field vector "g" which we know is 9.81 m/s2.
+// We will just look for the value on an axis to be greater than 9, at which point we will
+// just delay 2 seconds, and then sample for 3 seconds at 10hz (30 samples)
 void calibrate_accel(void)
 {
 	AccelCalibration calibration;
-	// For this one we want to put the sensor on each side (6 sides) and
-	// measure the static reading
-
-	// static reading should just be the gravity field vector "g" which we know is 9.81 m/s2
-	// We will just look for the value on an axis to be greater than 9, at which point we will
-	// just delay 2 seconds, and then sample for 3 seconds at 10hz (30 samples)
 
 	while (!calibration.all_sides_complete())
 	{
@@ -158,6 +156,17 @@ void calibrate_accel(void)
 		calibration.calibrate(side);
 	}
 
-	// The gravity vector has been measured on each side, we now want to find the offsets and scales
+	// The gravity vector has been measured on each side, we now want to find the offsets and scales.
 	calibration.calculate_offsets_and_scales();
+
+	// TODO:
+	// estimation::Estimator::Instance()->update_gyro_offset() ... or something like that
+	// estimation::Estimator::Instance()->update_gyro_scale()
+	// estimation::Estimator::Instance()->update_accel_offset()
+	// estimation::Estimator::Instance()->update_accel_scale()
+
+	// estimation::Estimator::Instance()->update_mag_offset() ... we could get fancy and do elipsoid fitting.. only if neccessary
+	// estimation::Estimator::Instance()->update_mag_scale()
+
+	// estimation::Estimator::Instance()->reset() ... to reinitialize the estimator with the new offsets and scales
 }
