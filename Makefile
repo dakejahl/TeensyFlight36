@@ -54,6 +54,7 @@ BOARD = src/board
 PWM = src/pwm
 HEADER_LIBS = lib/
 ESTIMATION = src/estimation
+CALIBRATION = src/calibration
 
 SEGGER_SYSVIEW = segger_system_view/SEGGER
 SEGGER_SYSVIEW_CONFIG = segger_system_view/Config
@@ -83,6 +84,8 @@ CPPFLAGS += -I$(SEGGER_SYSVIEW_FREERTOS) -I$(SEGGER_SYSVIEW_FREERTOS_CONFIG)
 CPPFLAGS += -I$(SEGGER_SYSVIEW) -I$(SEGGER_SYSVIEW_CONFIG)
 CPPFLAGS += -I$(HEADER_LIBS)
 CPPFLAGS += -I$(ESTIMATION)
+CPPFLAGS += -I$(CALIBRATION)
+
 
 # Eigen directives
 CPPFLAGS += -D__EIGEN_NO_DEBUG__ -D__EIGEN_DONT_ALIGN_ -D__EIGEN_MALLOC_ALREADY_ALIGNED__ -D__EIGEN_NO_MALLOC__
@@ -122,6 +125,8 @@ TASKS_FILES := $(wildcard $(TASKS)/*.cpp)
 BOARD_FILES := $(wildcard $(BOARD)/*.cpp)
 PWM_FILES := $(wildcard $(PWM)/*.cpp)
 ESTIMATION_FILES := $(wildcard $(ESTIMATION)/*.cpp)
+CALIBRATION_FILES := $(wildcard $(CALIBRATION)/*.cpp)
+
 
 
 
@@ -147,7 +152,7 @@ SOURCES += $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o)
 # All my home grown stuff
 SOURCES += $(DP_Q_FILES:.cpp=.o) $(TIMER_FILES:.cpp=.o) $(SPI_FILES:.cpp=.o) $(MPU9250_FILES:.cpp=.o)
 SOURCES += $(SERIAL_FILES:.cpp=.o) $(TASKS_FILES:.cpp=.o) $(BOARD_FILES:.cpp=.o)
-SOURCES += $(PWM_FILES:.cpp=.o) $(ESTIMATION_FILES:.cpp=.o)
+SOURCES += $(PWM_FILES:.cpp=.o) $(ESTIMATION_FILES:.cpp=.o) $(CALIBRATION_FILES:.cpp=.o)
 
 # Amazon pathed version of FreeRTOS w/ Segger SystemView
 SOURCES += $(FREERTOS_FILES:.c=.o)

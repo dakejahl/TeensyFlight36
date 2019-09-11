@@ -197,12 +197,23 @@ void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 
 void Mpu9250::print_formatted_data(void)
 {
+	float accel_x = ((_sensor_data.accel_x * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+	float accel_y = ((_sensor_data.accel_y * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
 	float accel_z = ((_sensor_data.accel_z * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+
 	float gyro_x = ((_sensor_data.gyro_x * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float gyro_y = ((_sensor_data.gyro_y * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float gyro_z = ((_sensor_data.gyro_z * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+
 	float temperature = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
 
+	SYS_INFO("accel_x: %f", accel_x);
+	SYS_INFO("accel_y: %f", accel_y);
 	SYS_INFO("accel_z: %f", accel_z);
 	SYS_INFO("gyro_x: %f", gyro_x);
+	SYS_INFO("gyro_y: %f", gyro_y);
+	SYS_INFO("gyro_z: %f", gyro_z);
+
 	SYS_INFO("temperature: %f", temperature);
 	SYS_INFO("--- --- --- --- --- --- ---");
 }

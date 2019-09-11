@@ -76,7 +76,7 @@ void imu_task(void* args)
 		else
 		{
 			early_counter++;
-			SYS_INFO("mpu9250 data was not available: %u", early_counter);
+			// SYS_INFO("mpu9250 data was not available: %u", early_counter);
 		}
 
 

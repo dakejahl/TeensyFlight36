@@ -23,12 +23,16 @@
 #include <board_config.hpp>
 #include <Messenger.hpp>
 #include <vector>
+#include <AccelCalibration.hpp>
 
 std::string buffer;
 std::string GYRO_CAL = "gyro cal";
+std::string ACCEL_CAL = "accel cal";
+
 
 void evaluate_user_command(void);
 void calibrate_gyro(void);
+void calibrate_accel(void);
 
 
 void shell_task(void* args)
@@ -67,9 +71,6 @@ void shell_task(void* args)
 			// sleep while we have no data
 			vTaskDelay(100); // run at 10hz
 		}
-
-
-
 	}
 }
 
@@ -81,6 +82,11 @@ void evaluate_user_command(void)
 		// Run the gyro calibration
 		SYS_INFO("Calibrating gyro");
 		calibrate_gyro();
+	}
+	else if (buffer == ACCEL_CAL)
+	{
+		SYS_INFO("Calibrating accel");
+		calibrate_accel();
 	}
 }
 
@@ -105,7 +111,7 @@ void calibrate_gyro(void)
 			gyro_data->push_back(data);
 		}
 
-		vTaskDelay(100); // run at 10hz is fine
+		vTaskDelay(100); // run at 10hz -- 30 samples
 		now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 	}
 
@@ -129,8 +135,29 @@ void calibrate_gyro(void)
 	SYS_INFO("gyro_offset_y: %f", y_offset);
 	SYS_INFO("gyro_offset_z: %f", z_offset);
 
-	// We should have a buffer of ~300 data points X 24 bytes per data point == 7.2kB increased heap
+	// We should have a buffer of ~30 data points X 24 bytes per data point == 720B increased heap
 
 	// time to clean up
 	delete gyro_data;
+}
+
+void calibrate_accel(void)
+{
+	AccelCalibration calibration;
+	// For this one we want to put the sensor on each side (6 sides) and
+	// measure the static reading
+
+	// static reading should just be the gravity field vector "g" which we know is 9.81 m/s2
+	// We will just look for the value on an axis to be greater than 9, at which point we will
+	// just delay 2 seconds, and then sample for 3 seconds at 10hz (30 samples)
+
+	while (!calibration.all_sides_complete())
+	{
+		auto side = calibration.get_next_side_to_calibrate();
+
+		calibration.calibrate(side);
+	}
+
+	// The gravity vector has been measured on each side, we now want to find the offsets and scales
+	calibration.calculate_offsets_and_scales();
 }
