@@ -75,7 +75,7 @@ private:
 	bool _nose_down_calibrated = false;
 
 	// stores accumulated data before averaging
-	float _accumulate = 0;
+	double _accumulate = 0;
 
 	// Measured gravity vectory on each side
 	float _upside_up_measured_g = 0;

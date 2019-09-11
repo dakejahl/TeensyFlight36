@@ -22,59 +22,49 @@
 
 #include <board_config.hpp>
 #include <Messenger.hpp>
-#include <vector>
+#include <GyroCalibration.hpp>
 #include <AccelCalibration.hpp>
 
 std::string buffer;
 std::string GYRO_CAL = "gyro cal";
 std::string ACCEL_CAL = "accel cal";
 
-
 void evaluate_user_command(void);
 void calibrate_gyro(void);
 void calibrate_accel(void);
 
-
+// This task will poll the USB interface for user commands:
+// - gyro calibration, let sit still and measure offsets on all 3 axis (and noise value for ekf?)
+// - accel calibration (6 sides), find offsets and scales for all 3 axis
+// - mag calibration (rotate A LOT, find max/min on all 3 axis, calculate offsets and scale factor)
 void shell_task(void* args)
 {
-	// This task will poll the USB interface for user commands:
-	// - gyro calibration, let sit still and measure offsets on all 3 axis (and noise value for ekf?)
-	// - accel calibration (6 sides), find offsets and scales for all 3 axis
-	// - mag calibration (rotate A LOT, find max/min on all 3 axis, calculate offsets and scale factor)
-
 	char byte = 0;
 
 	for(;;)
 	{
-		// If we get something at the serial port, read it and print it
-		// Serial port PC side sends strings at a time terminated with a LF
+		// NOTE: Serial port PC side sends strings at a time terminated with a LF
 		if (Serial.available())
 		{
 			byte = Serial.read();
 
-			// We got some data -- First check if its a CR
 			if (byte == 10) // line feed
 			{
-				// Evaluate buffer
 				evaluate_user_command();
 				buffer.clear();
 			}
 			else
 			{
-				// Add the character to our buffer, when we recieve a CR (enter) we will compare the buffer
-				// against the list of known commands.
 				buffer.push_back(byte);
 			}
 		}
 		else
 		{
-			// sleep while we have no data
 			vTaskDelay(100); // run at 10hz
 		}
 	}
 }
 
-// Put user command functions here
 void evaluate_user_command(void)
 {
 	if (buffer == GYRO_CAL)
@@ -92,53 +82,9 @@ void evaluate_user_command(void)
 
 void calibrate_gyro(void)
 {
-	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
+	GyroCalibration gyro;
 
-	// We will sit for 3 seconds and collect data at 10Hz (gyro runs at 1khz)
-	auto start = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
-	abs_time_t run_time = 3000000; // 3 seconds
-
-	auto now = start;
-
-	// Buffer of data points
-	auto gyro_data = new std::vector<gyro_raw_data_s>();
-
-	while (now < start + run_time)
-	{
-		if (gyro_sub.updated())
-		{
-			auto data = gyro_sub.get();
-			gyro_data->push_back(data);
-		}
-
-		vTaskDelay(100); // run at 10hz -- 30 samples
-		now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
-	}
-
-	float x_sum = 0;
-	float y_sum = 0;
-	float z_sum = 0;
-
-	for (auto& g : *gyro_data)
-	{
-		x_sum += g.x;
-		y_sum += g.y;
-		z_sum += g.z;
-	}
-
-	auto x_offset = x_sum / gyro_data->size();
-	auto y_offset = y_sum / gyro_data->size();
-	auto z_offset = z_sum / gyro_data->size();
-
-	// Offset is the average value of the measurement
-	SYS_INFO("gyro_offset_x: %f", x_offset);
-	SYS_INFO("gyro_offset_y: %f", y_offset);
-	SYS_INFO("gyro_offset_z: %f", z_offset);
-
-	// We should have a buffer of ~30 data points X 24 bytes per data point == 720B increased heap
-
-	// time to clean up
-	delete gyro_data;
+	gyro.calibrate();
 }
 
 // For this one we want to put the sensor on each side (6 sides) and measure the static reading.
@@ -147,17 +93,17 @@ void calibrate_gyro(void)
 // just delay 2 seconds, and then sample for 3 seconds at 10hz (30 samples)
 void calibrate_accel(void)
 {
-	AccelCalibration calibration;
+	AccelCalibration accel;
 
-	while (!calibration.all_sides_complete())
+	while (!accel.all_sides_complete())
 	{
-		auto side = calibration.get_next_side_to_calibrate();
+		auto side = accel.get_next_side_to_calibrate();
 
-		calibration.calibrate(side);
+		accel.calibrate(side);
 	}
 
 	// The gravity vector has been measured on each side, we now want to find the offsets and scales.
-	calibration.calculate_offsets_and_scales();
+	accel.calculate_offsets_and_scales();
 
 	// TODO:
 	// estimation::Estimator::Instance()->update_gyro_offset() ... or something like that
