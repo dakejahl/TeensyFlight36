@@ -133,7 +133,7 @@ void Mpu9250::collect_data(void)
 	// Accel (xyz)   temp(c)   Gyro(xyz)
 	static constexpr size_t num_axis = 7;
 	static constexpr size_t bytes_per_axis = 2;
-	static constexpr size_t bytes_to_read = num_axis + bytes_per_axis;
+	static constexpr size_t bytes_to_read = num_axis * bytes_per_axis;
 
 	for (size_t i = 0; i < bytes_to_read; i++)
 	{
