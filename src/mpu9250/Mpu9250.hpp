@@ -27,6 +27,38 @@
 #include <Spi.hpp>
 #include <Messenger.hpp>
 
+// TODO: move to a separate header
+template <class T>
+class LowPassFilter
+{
+public:
+	LowPassFilter(float cutoff_freq) : _cutoff_freq(cutoff_freq) {}
+
+	float apply(T input, abs_time_t timestamp)
+	{
+		double dt = (timestamp - _last_timestamp) / (double)MICROS_PER_SEC;
+		_last_timestamp = timestamp;
+
+		T RC = 1.0 / (_cutoff_freq * 2 * M_PI);
+
+		T alpha = dt / (RC + dt);
+
+		// Filter the input
+		T output = alpha * input + (1 - alpha) * _previous_output;
+
+		_previous_output = output;
+
+		return output;
+	}
+
+private:
+
+    float _cutoff_freq = 0;
+
+    T _previous_output = 0;
+    abs_time_t _last_timestamp = 0;
+};
+
 // TODO: calibration
 #define TEMP_CALIB_OFFSET 0
 #define ACCEL_CALIB_OFFSET 0
@@ -152,4 +184,11 @@ private:
 	float _mag_offset = 0;
 	float _mag_scale = 0;
 
+	abs_time_t _last_timestamp = 0;
+
+	// mag filter
+	LowPassFilter<float> _mag_filter_x {50}; // 50Hz filter
+	LowPassFilter<float> _mag_filter_y {50}; // 50Hz filter
+	LowPassFilter<float> _mag_filter_z {50}; // 50Hz filter
 };
+

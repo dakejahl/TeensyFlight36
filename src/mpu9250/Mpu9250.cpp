@@ -273,15 +273,7 @@ void Mpu9250::collect_data(void)
 	data[11] = copy[10];
 	data[12] = copy[13];
 	data[13] = copy[12];
-	// skip mag_st1
-	// mag xyz
-	data[15] = copy[16];
-	data[16] = copy[15];
-	data[17] = copy[18];
-	data[18] = copy[17];
-	data[19] = copy[20];
-	data[20] = copy[19];
-	// skip mag_st2
+	// Mag data is already correct
 }
 
 void Mpu9250::publish_accel_data(abs_time_t& timestamp)
@@ -332,6 +324,11 @@ void Mpu9250::publish_mag_data(abs_time_t& timestamp)
 	float z = ((_sensor_data.mag_z * _mag_factory_scale_factor_z) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
 	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
 
+	// Pass through a 50Hz LPF
+	x = _mag_filter_x.apply(x, timestamp);
+	y = _mag_filter_y.apply(y, timestamp);
+	z = _mag_filter_z.apply(z, timestamp);
+
 	// Stuff the message
 	mag_raw_data_s data;
 
@@ -340,6 +337,9 @@ void Mpu9250::publish_mag_data(abs_time_t& timestamp)
 	data.y = y;
 	data.z = z;
 	data.temperature = temp;
+
+	// TODO: collect timestamp inside of collect()
+	_last_timestamp = timestamp;
 
 	_mag_pub.publish(data);
 }
