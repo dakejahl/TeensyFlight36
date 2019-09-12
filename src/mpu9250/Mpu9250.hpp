@@ -92,6 +92,7 @@ public:
 
 	void publish_accel_data(abs_time_t& timestamp);
 	void publish_gyro_data(abs_time_t& timestamp);
+	void publish_mag_data(abs_time_t& timestamp);
 
 	void print_formatted_data(void);
 
@@ -134,6 +135,7 @@ private:
 
 	messenger::Publisher<accel_raw_data_s> _accel_pub;
 	messenger::Publisher<gyro_raw_data_s> _gyro_pub;
+	messenger::Publisher<mag_raw_data_s> _mag_pub;
 
 	// mag factory cal "sensitivity adjustment"
 	float _mag_factory_scale_factor_x = 0;

@@ -324,6 +324,26 @@ void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 	_gyro_pub.publish(data);
 }
 
+void Mpu9250::publish_mag_data(abs_time_t& timestamp)
+{
+	// Convert the raw data
+	float x = ((_sensor_data.mag_x * _mag_factory_scale_factor_x) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float y = ((_sensor_data.mag_y * _mag_factory_scale_factor_y) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float z = ((_sensor_data.mag_z * _mag_factory_scale_factor_z) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+
+	// Stuff the message
+	mag_raw_data_s data;
+
+	data.timestamp = timestamp;
+	data.x = x;
+	data.y = y;
+	data.z = z;
+	data.temperature = temp;
+
+	_mag_pub.publish(data);
+}
+
 void Mpu9250::print_formatted_data(void)
 {
 	float accel_x = ((_sensor_data.accel_x * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;

@@ -71,6 +71,8 @@ void imu_task(void* args)
 
 			mpu9250->publish_accel_data(time);
 			mpu9250->publish_gyro_data(time);
+			mpu9250->publish_mag_data(time);
+
 
 			// mpu9250->print_formatted_data();
 		}

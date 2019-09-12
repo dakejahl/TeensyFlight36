@@ -51,5 +51,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# platformio build files
+# build files
 build/
+
+# python virtual environment
+pyenv/
+tools/serial_port_data/mag_data.csv
+tools/python_scripts/mag_data.csv
+tools/python_scripts/mag_data.html
