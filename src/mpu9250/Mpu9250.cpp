@@ -75,6 +75,9 @@ void Mpu9250::initialize_registers(void)
 	write_register(address::GYRO_CONFIG, value::GYRO_DLPF_2000_DPS);
 	write_register(address::ACCEL_CONFIG, value::ACCEL_16_G);
 	write_register(address::ACCEL_CONFIG_2, value::ACCEL_DLPF_1kHz);
+
+	// Configure the mag
+	initialize_magnetometer_registers();
 }
 
 bool Mpu9250::validate_registers(void)
@@ -121,6 +124,114 @@ bool Mpu9250::validate_registers(void)
 	return true;
 }
 
+uint8_t Mpu9250::read_register_mag(uint8_t reg)
+{
+	write_register(address::I2C_SLV0_ADDR, value::AK8963_I2C_ADDR | value::BIT_I2C_SLV0_READ); // setup to read from i2c slave
+	write_register(address::I2C_SLV0_REG, reg); // I2C slave 0 register address to read from
+	write_register(address::I2C_SLV0_CTRL, value::BIT_I2C_SLV0_EN | 1); // bytes read [3:0] == 7 bytes max
+
+	// 25 μs/byte at 400 kHz
+	vTaskDelay(10);
+
+	auto byte = read_register(address::EXT_SENS_DATA_00); // collect value
+
+	write_register(address::I2C_SLV0_CTRL, 0); // disable slave writing to ext sensor registers
+
+	vTaskDelay(10);
+
+	return byte;
+}
+
+void Mpu9250::write_register_mag(uint8_t addr, uint8_t val)
+{
+	write_register(address::I2C_SLV0_ADDR, value::AK8963_I2C_ADDR | value::BIT_I2C_SLV0_WRITE);
+	write_register(address::I2C_SLV0_REG, addr);
+	write_register(address::I2C_SLV0_DO, val);
+	write_register(address::I2C_SLV0_CTRL, value::BIT_I2C_SLV0_EN | 1);
+	vTaskDelay(50);
+}
+
+void Mpu9250::initialize_magnetometer_registers(void)
+{
+	// User control -- enable i2c master and reset everything
+	auto reg = read_register(address::USER_CTRL);
+	write_register(address::USER_CTRL, reg | value::I2C_MST_EN | value::BIT_SIG_COND_RST);
+
+	// I2C master
+	write_register(address::I2C_MSTR_CTRL, value::BIT_I2C_MST_P_NSR | value::BIT_I2C_MST_WAIT_FOR_ES | value::BIT_I2C_MST_CLOCK_400kHz);
+
+	// Check to ensure mag is alive
+	auto whoami = read_register_mag(address::AK8963_WHOAMI);
+	if (whoami != value::AK8963_DEVICE_ID)
+	{
+		SYS_INFO("Magnetometer is not alive: %d", whoami);
+	}
+	else
+	{
+		SYS_INFO("Magnetometer is alive!");
+	}
+
+	get_mag_factory_cal();
+
+	// Continuous measurement at highest resolution
+	uint8_t mode = value::AK8963_CONTINUOUS_MODE2 | value::AK8963_16BIT_ADC;
+
+	write_register(address::I2C_SLV0_ADDR, value::AK8963_I2C_ADDR | value::BIT_I2C_SLV0_WRITE);
+	write_register(address::I2C_SLV0_REG, address::AK8963_CNTL1);
+	write_register(address::I2C_SLV0_DO, mode);
+	write_register(address::I2C_SLV0_CTRL, value::BIT_I2C_SLV0_EN | 1);
+	vTaskDelay(50);
+
+	// Now we read the cntl1 register to verify settings
+	write_register(address::I2C_SLV0_ADDR, value::AK8963_I2C_ADDR | value::BIT_I2C_SLV0_READ);
+	write_register(address::I2C_SLV0_REG, address::AK8963_CNTL1);
+	write_register(address::I2C_SLV0_CTRL, value::BIT_I2C_SLV0_EN | 1);
+	vTaskDelay(100);
+
+	if(read_register(address::EXT_SENS_DATA_00) != mode)
+	{
+		SYS_INFO("Magnetometer is not configured!");
+	}
+	else
+	{
+		SYS_INFO("Magnetometer is configured!");
+	}
+
+	// Setup to dump mag sensor data into external sensor0 registers
+	write_register(address::I2C_SLV0_ADDR, value::AK8963_I2C_ADDR | value::BIT_I2C_SLV0_READ);
+	write_register(address::I2C_SLV0_REG, 0x02); // st1
+	write_register(address::I2C_SLV0_CTRL, value::BIT_I2C_SLV0_EN | 8); // read st1 - st2
+	vTaskDelay(50);
+}
+
+void Mpu9250::get_mag_factory_cal(void)
+{
+	// Extra factory calibration values
+	// -- first, reset
+	write_register_mag(address::AK8963_CNTL2, value::AK8963_RESET);
+	// -- second, power down mag
+	write_register_mag(address::AK8963_CNTL1, 0x00);
+	// -- third, enter fuse ROM mode
+	write_register_mag(address::AK8963_CNTL1, value::AK8963_FUSE_ROM);
+	// -- fourth, read factory calibration from ROM
+	write_register(address::I2C_SLV0_ADDR, value::AK8963_I2C_ADDR | value::BIT_I2C_SLV0_READ);
+	write_register(address::I2C_SLV0_REG, address::AK8963_ASAX);
+	write_register(address::I2C_SLV0_CTRL, value::BIT_I2C_SLV0_EN | 3); // read out all 3 calibration bytes
+	vTaskDelay(50);
+	// go collect the bytes I've just told the mpu9250 to read
+	auto x = read_register(address::EXT_SENS_DATA_00);
+	auto y = read_register(address::EXT_SENS_DATA_01);
+	auto z = read_register(address::EXT_SENS_DATA_02);
+
+	SYS_INFO("mag_cal_x is %d!", x);
+	SYS_INFO("mag_cal_y is %d!", y);
+	SYS_INFO("mag_cal_z is %d!", z);
+
+	_mag_factory_scale_factor_x = (x - 128) * 0.5 / 128 + 1;
+	_mag_factory_scale_factor_y = (y - 128) * 0.5 / 128 + 1;
+	_mag_factory_scale_factor_z = (z - 128) * 0.5 / 128 + 1;
+}
+
 bool Mpu9250::new_data_available(void)
 {
 	return read_register(address::INT_STATUS) == value::RAW_DATA_RDY_INT;
@@ -130,29 +241,47 @@ void Mpu9250::collect_data(void)
 {
 	uint8_t* byte_data = reinterpret_cast<uint8_t*>(&_sensor_data);
 
-	// Accel (xyz)   temp(c)   Gyro(xyz)
-	static constexpr size_t num_axis = 7;
-	static constexpr size_t bytes_per_axis = 2;
-	static constexpr size_t bytes_to_read = num_axis * bytes_per_axis;
+	// Accel (xyz)   temp(c)   Gyro(xyz)   Mag (st1, xyz, st2)
+	static constexpr size_t bytes_to_read = sizeof(SensorDataPacked) - 2; // 2 bytes of padding
 
 	for (size_t i = 0; i < bytes_to_read; i++)
 	{
 		// Start at base address and increment over all registers we are interested in.
-		uint8_t val = read_register(address::ACCEL_XOUT_H + i);
-
-		// We need to reorder the LSB and MSB for each axis pair
-		bool at_new_half_word = !(i % 2);
-
-		if (at_new_half_word)
-		{
-			byte_data[i + 1] = val;
-		}
-		else
-		{
-			byte_data[i - 1] = val;
-		}
+		byte_data[i] = read_register(address::ACCEL_XOUT_H + i);
 	}
 
+	// reorder the LSB and MSB in the sensor data
+	SensorDataPacked temporaray = _sensor_data;
+
+	uint8_t* copy = static_cast<uint8_t*>((void*)&temporaray);
+	uint8_t* data = static_cast<uint8_t*>((void*)&_sensor_data);
+
+	// accel xyz
+	data[0] = copy[1];
+	data[1] = copy[0];
+	data[2] = copy[3];
+	data[3] = copy[2];
+	data[4] = copy[5];
+	data[5] = copy[4];
+	// temperature
+	data[6] = copy[7];
+	data[7] = copy[6];
+	// gyro xyz
+	data[8] = copy[9];
+	data[9] = copy[8];
+	data[10] = copy[11];
+	data[11] = copy[10];
+	data[12] = copy[13];
+	data[13] = copy[12];
+	// skip mag_st1
+	// mag xyz
+	data[15] = copy[16];
+	data[16] = copy[15];
+	data[17] = copy[18];
+	data[18] = copy[17];
+	data[19] = copy[20];
+	data[20] = copy[19];
+	// skip mag_st2
 }
 
 void Mpu9250::publish_accel_data(abs_time_t& timestamp)
@@ -207,13 +336,25 @@ void Mpu9250::print_formatted_data(void)
 
 	float temperature = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
 
+	float mag_st1 = _sensor_data.mag_st1;
+	float mag_x = _sensor_data.mag_x;
+	float mag_y = _sensor_data.mag_y;
+	float mag_z = _sensor_data.mag_z;
+	float mag_st2 = _sensor_data.mag_st2;
+
 	SYS_INFO("accel_x: %f", accel_x);
 	SYS_INFO("accel_y: %f", accel_y);
 	SYS_INFO("accel_z: %f", accel_z);
 	SYS_INFO("gyro_x: %f", gyro_x);
 	SYS_INFO("gyro_y: %f", gyro_y);
 	SYS_INFO("gyro_z: %f", gyro_z);
-
 	SYS_INFO("temperature: %f", temperature);
+	SYS_INFO("mag_st1: %f", mag_st1);
+	SYS_INFO("mag_x: %f", mag_x);
+	SYS_INFO("mag_y: %f", mag_y);
+	SYS_INFO("mag_z: %f", mag_z);
+	SYS_INFO("mag_st2: %f", mag_st2);
+
+
 	SYS_INFO("--- --- --- --- --- --- ---");
 }

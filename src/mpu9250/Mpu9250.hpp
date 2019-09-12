@@ -65,6 +65,12 @@ class Mpu9250
 		int16_t		gyro_x;
 		int16_t		gyro_y;
 		int16_t		gyro_z;
+		// Mag data is stored in the first slot for external sensors if enabled
+		uint8_t 	mag_st1;
+		int16_t 	mag_x;
+		int16_t 	mag_y;
+		int16_t 	mag_z;
+		uint8_t 	mag_st2;
 		int16_t		padding;
 	};
 
@@ -77,11 +83,9 @@ public:
 	}
 
 	bool probe(void);
+
 	void initialize_registers(void);
 	bool validate_registers(void);
-
-	uint8_t read_register(uint8_t reg);
-	void write_register(uint8_t addr, uint8_t val);
 
 	bool new_data_available(void);
 	void collect_data(void);
@@ -91,7 +95,38 @@ public:
 
 	void print_formatted_data(void);
 
+	// calibration setters
+	void set_gyro_calibration(float offset, float scale)
+	{
+		_gyro_offset = offset;
+		_gyro_scale = scale;
+	}
+
+	void set_accel_calibration(float offset, float scale)
+	{
+		_accel_offset = offset;
+		_accel_scale = scale;
+	}
+
+	void set_mag_calibration(float offset, float scale)
+	{
+		_mag_offset = offset;
+		_mag_scale = scale;
+	}
+
 private:
+	void initialize_magnetometer_registers(void);
+
+	// Read / Write for the MPU9250
+	void write_register(uint8_t addr, uint8_t val);
+	uint8_t read_register(uint8_t reg);
+
+	// Read / Write for the AK8963
+	void write_register_mag(uint8_t addr, uint8_t val);
+	uint8_t read_register_mag(uint8_t reg);
+
+	void get_mag_factory_cal(void);
+
 
 	interface::Spi* _interface;
 
@@ -99,4 +134,20 @@ private:
 
 	messenger::Publisher<accel_raw_data_s> _accel_pub;
 	messenger::Publisher<gyro_raw_data_s> _gyro_pub;
+
+	// mag factory cal "sensitivity adjustment"
+	float _mag_factory_scale_factor_x = 0;
+	float _mag_factory_scale_factor_y = 0;
+	float _mag_factory_scale_factor_z = 0;
+
+	// User calibration
+	float _gyro_offset = 0;
+	float _gyro_scale= 0;
+
+	float _accel_offset = 0;
+	float _accel_scale = 0;
+
+	float _mag_offset = 0;
+	float _mag_scale = 0;
+
 };

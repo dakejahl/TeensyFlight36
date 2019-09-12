@@ -43,6 +43,7 @@ void imu_task(void* args)
 
 	// Check that the configuration is correct
 	bool registers_okay = mpu9250->validate_registers();
+	// registers_okay &= mpu9250->validate_magnetometer_registers();
 
 	if (alive && registers_okay)
 	{
@@ -71,7 +72,7 @@ void imu_task(void* args)
 			mpu9250->publish_accel_data(time);
 			mpu9250->publish_gyro_data(time);
 
-			// mpu9250->print_formatted_data();
+			mpu9250->print_formatted_data();
 		}
 		else
 		{
@@ -82,6 +83,6 @@ void imu_task(void* args)
 
 		// Let's throw our attitude estimator in here and see how it does
 
-		vTaskDelay(1); // 1kHz, sometimes we miss some data buts that's OK... I think
+		vTaskDelay(100); // 1kHz, sometimes we miss some data buts that's OK... I think
 	}
 }
