@@ -50,7 +50,9 @@ Sbus::Sbus(TaskHandle_t& handle)
 	// WARNING: FreeRTOS is like "if your priority is higher (lower number) than 80 .. then fuck you"
 	NVIC_SET_PRIORITY(IRQ_UART0_STATUS, 240); // Cortex-M4: 0,16,32,48,64,80,96,112,128,144,160,176,192,208,224,240
 
-	NVIC_ENABLE_IRQ(IRQ_UART0_STATUS); // only enable the interrupt after everything is configured correctly
+
+	// TODO: enable ISR callbacks for data processing? Frame spacing is 5ms (200Hz) which is pretty slow, this is probably unnecessary.
+	// NVIC_ENABLE_IRQ(IRQ_UART0_STATUS); // only enable the interrupt after everything is configured correctly
 
 	taskEXIT_CRITICAL();
 }

@@ -43,7 +43,6 @@ void imu_task(void* args)
 
 	// Check that the configuration is correct
 	bool registers_okay = mpu9250->validate_registers();
-	// registers_okay &= mpu9250->validate_magnetometer_registers();
 
 	if (alive && registers_okay)
 	{
