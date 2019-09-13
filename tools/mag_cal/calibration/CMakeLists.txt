@@ -5,9 +5,11 @@
 #
 cmake_minimum_required(VERSION 3.8)
 
-project(ExampleProject LANGUAGES C CXX VERSION 1.0.0)
+project(MagCal LANGUAGES C CXX VERSION 1.0.0)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+
 #
 # Prefer -pthread compiler and linker flag when using libpthread. This must
 # be set before call to find_package(Threads).
@@ -22,16 +24,14 @@ find_package(Threads REQUIRED)
 #
 # export PKG_CONFIG_PATH=/opt/libserial/lib/pkgconfig/
 #
-# find_package(PkgConfig)
-# pkg_check_modules(SERIAL libserial)
+find_package(PkgConfig)
+pkg_check_modules(SERIAL libserial)
 
-# SET(CMAKE_EXE_LINKER_FLAGS
-#           "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,/usr/local/lib")
+SET(CMAKE_EXE_LINKER_FLAGS
+          "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,/usr/local/lib")
 
+add_executable(MagCal mag_cal.cpp)
 
-add_executable(ExampleProject serial_to_csv.cpp)
-# target_include_directories(ExampleProject PRIVATE ${SERIAL_INCLUDE_DIRS})
-# target_link_libraries(ExampleProject PRIVATE ${SERIAL_LDFLAGS} ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(MagCal PRIVATE serial_INCLUDE_DIRS ellipsoid-fit_INCLUDE_DIR)
 
-target_include_directories(ExampleProject PRIVATE serial_INCLUDE_DIRS)
-target_link_libraries(ExampleProject PRIVATE ${SERIAL_LDFLAGS} ${CMAKE_THREAD_LIBS_INIT} serial)
+target_link_libraries(MagCal PRIVATE serial ${CMAKE_THREAD_LIBS_INIT} ellipsoid-fit)

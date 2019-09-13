@@ -22,6 +22,10 @@
 
 #pragma once
 
+#include <board_config.hpp>
+#include <Messenger.hpp>
+#include <Time.hpp>
+
 class GyroCalibration
 {
 public:

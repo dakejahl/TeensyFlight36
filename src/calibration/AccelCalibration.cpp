@@ -20,8 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
 #include <AccelCalibration.hpp>
 
 CalibrationSide AccelCalibration::get_next_side_to_calibrate(void)

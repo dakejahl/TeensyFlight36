@@ -24,6 +24,10 @@
 
 #include <algorithm>
 
+#include <board_config.hpp>
+#include <Messenger.hpp>
+#include <Time.hpp>
+
 static constexpr float BIG_ENOUGH = 9.0f;
 static constexpr float GRAVITY_ACCEL = 9.80665f;
 

@@ -25,13 +25,18 @@
 #include <GyroCalibration.hpp>
 #include <AccelCalibration.hpp>
 
+
 std::string buffer;
 std::string GYRO_CAL = "gyro cal";
 std::string ACCEL_CAL = "accel cal";
+std::string MAG_CAL = "mag cal";
+
 
 void evaluate_user_command(void);
 void calibrate_gyro(void);
 void calibrate_accel(void);
+void calibrate_mag(void);
+
 
 // This task will poll the USB interface for user commands:
 // - gyro calibration, let sit still and measure offsets on all 3 axis (and noise value for ekf?)
@@ -78,6 +83,11 @@ void evaluate_user_command(void)
 		SYS_INFO("Calibrating accel");
 		calibrate_accel();
 	}
+	else if (buffer == MAG_CAL)
+	{
+		SYS_INFO("Calibrating mag");
+		calibrate_mag();
+	}
 }
 
 void calibrate_gyro(void)
@@ -115,4 +125,59 @@ void calibrate_accel(void)
 	// estimation::Estimator::Instance()->update_mag_scale()
 
 	// estimation::Estimator::Instance()->reset() ... to reinitialize the estimator with the new offsets and scales
+}
+
+void calibrate_mag(void)
+{
+
+	// NO
+
+	// we are just going to do the ellipsoid fit on the host PC -- so much easier that way
+
+
+
+
+
+	// number of points to collect
+	// MagCalibration mag;
+
+	// mag.collect_points(10); // 10ms interval
+
+	// SYS_INFO("collected all points");
+
+	// mag.apply_ellipsoid_fit(); // 10ms interval
+
+	// SYS_INFO("performed fit");
+
+	// auto x_c = mag.get_x_center();
+	// auto y_c = mag.get_y_center();
+	// auto z_c = mag.get_z_center();
+
+	// auto x_r = mag.get_x_radius();
+	// auto y_r = mag.get_y_radius();
+	// auto z_r = mag.get_z_radius();
+
+	// // LETS SEE HOW GOOD OUR SHIT IS!
+	// messenger::Subscriber<mag_raw_data_s> mag_sub;
+
+	// for(;;)
+	// {
+	// 	auto data = mag_sub.get();
+
+	// 	// apply corrections
+	// 	float x = (data.x - x_c) / x_r;
+	// 	float y = (data.y - y_c) / y_r;
+	// 	float z = (data.z - z_c) / z_r;
+
+
+	// 	Serial4.print(x);
+	// 	Serial4.print(',');
+	// 	Serial4.print(y);
+	// 	Serial4.print(',');
+	// 	Serial4.print(z);
+	// 	Serial4.print("\n");
+
+
+	// 	vTaskDelay(10);
+	// }
 }

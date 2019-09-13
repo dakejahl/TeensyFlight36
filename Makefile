@@ -86,9 +86,8 @@ CPPFLAGS += -I$(HEADER_LIBS)
 CPPFLAGS += -I$(ESTIMATION)
 CPPFLAGS += -I$(CALIBRATION)
 
-
 # Eigen directives
-CPPFLAGS += -D__EIGEN_NO_DEBUG__ -D__EIGEN_DONT_ALIGN_ -D__EIGEN_MALLOC_ALREADY_ALIGNED__ -D__EIGEN_NO_MALLOC__
+CPPFLAGS += -DEIGEN_NO_DEBUG -DEIGEN_DONT_ALIGN -DEIGEN_MALLOC_ALREADY_ALIGNED -DEIGEN_NO_MALLOC -DEIGEN_UNROLLING_LIMIT=0
 
 # compiler options for C++ only
 CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
@@ -126,9 +125,6 @@ BOARD_FILES := $(wildcard $(BOARD)/*.cpp)
 PWM_FILES := $(wildcard $(PWM)/*.cpp)
 ESTIMATION_FILES := $(wildcard $(ESTIMATION)/*.cpp)
 CALIBRATION_FILES := $(wildcard $(CALIBRATION)/*.cpp)
-
-
-
 
 C_FILES := $(wildcard src/*.c)
 CPP_FILES := $(wildcard src/*.cpp)
