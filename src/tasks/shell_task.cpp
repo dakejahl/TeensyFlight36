@@ -88,6 +88,8 @@ void evaluate_user_command(void)
 		SYS_INFO("Calibrating mag");
 		calibrate_mag();
 	}
+
+	Serial.print("tsh> ");
 }
 
 void calibrate_gyro(void)
