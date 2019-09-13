@@ -130,54 +130,33 @@ void calibrate_accel(void)
 void calibrate_mag(void)
 {
 
-	// NO
+	Serial4.begin(9600, SERIAL_8N1);
 
-	// we are just going to do the ellipsoid fit on the host PC -- so much easier that way
+	messenger::Subscriber<mag_raw_data_s> mag_sub;
 
+	SYS_INFO("Enabling mag data stream over serial4");
 
+	for(;;)
+	{
+		auto data = mag_sub.get();
+		float x = data.x;
+		float y = data.y;
+		float z = data.z;
 
+		Serial4.print(x);
+		Serial4.print(',');
+		Serial4.print(y);
+		Serial4.print(',');
+		Serial4.print(z);
+		Serial4.print("\n");
 
+		vTaskDelay(10);
 
-	// number of points to collect
-	// MagCalibration mag;
-
-	// mag.collect_points(10); // 10ms interval
-
-	// SYS_INFO("collected all points");
-
-	// mag.apply_ellipsoid_fit(); // 10ms interval
-
-	// SYS_INFO("performed fit");
-
-	// auto x_c = mag.get_x_center();
-	// auto y_c = mag.get_y_center();
-	// auto z_c = mag.get_z_center();
-
-	// auto x_r = mag.get_x_radius();
-	// auto y_r = mag.get_y_radius();
-	// auto z_r = mag.get_z_radius();
-
-	// // LETS SEE HOW GOOD OUR SHIT IS!
-	// messenger::Subscriber<mag_raw_data_s> mag_sub;
-
-	// for(;;)
-	// {
-	// 	auto data = mag_sub.get();
-
-	// 	// apply corrections
-	// 	float x = (data.x - x_c) / x_r;
-	// 	float y = (data.y - y_c) / y_r;
-	// 	float z = (data.z - z_c) / z_r;
-
-
-	// 	Serial4.print(x);
-	// 	Serial4.print(',');
-	// 	Serial4.print(y);
-	// 	Serial4.print(',');
-	// 	Serial4.print(z);
-	// 	Serial4.print("\n");
-
-
-	// 	vTaskDelay(10);
-	// }
+		// Any user input cancels the spewing of data
+		if (Serial.available())
+		{
+			SYS_INFO("Disabling mag data stream");
+			return;
+		}
+	}
 }

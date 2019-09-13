@@ -46,6 +46,7 @@ int main(void)
     serial_port.SetStopBits(StopBits::STOP_BITS_1) ;
 
     // Wait for data to be available at the serial port.
+    std::cerr << "\nWaiting for data...." << std::endl ;
     while(!serial_port.IsDataAvailable())
     {
         usleep(1000) ;
@@ -80,6 +81,9 @@ int main(void)
     std::string float_as_string;
     unsigned row_index = 0;
     unsigned elem_index = 0;
+
+    std::cerr << "\nStarting mag calibration." << std::endl ;
+
 
     while(row_index < rows - 1)
     {

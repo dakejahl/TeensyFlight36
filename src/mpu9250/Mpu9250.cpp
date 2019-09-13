@@ -87,39 +87,63 @@ bool Mpu9250::validate_registers(void)
 	// Power management
 	reg_val = read_register(address::PWR_MGMT_1);
 	if (reg_val != value::CLK_SEL_AUTO)
+	{
+		SYS_INFO("PWR_MGMT_1");
 		return false;
+	}
 
 	reg_val = read_register(address::PWR_MGMT_2);
 	if (reg_val != value::ENABLE_ACCEL_GYRO)
+	{
+		SYS_INFO("PWR_MGMT_2");
 		return false;
+	}
 
 	// Configuration
 	reg_val = read_register(address::CONFIG);
 	if (reg_val != value::CONFIG_DLPF_GYRO_92Hz)
+	{
+		SYS_INFO("CONFIG");
 		return false;
+	}
 
 	// Sample rate divider
 	reg_val = read_register(address::SMPLRT_DIV);
 	if (reg_val != value::SMPLRT_DIV_NONE)
+	{
+		SYS_INFO("SMPLRT_DIV");
 		return false;
+	}
 
 	// Interrupt enable
 	reg_val = read_register(address::INT_ENABLE);
 	if (reg_val != value::INT_DISABLE)
+	{
+		SYS_INFO("INT_ENABLE");
 		return false;
+	}
 
 	// Sensors
 	reg_val = read_register(address::GYRO_CONFIG);
 	if (reg_val != value::GYRO_DLPF_2000_DPS)
+	{
+		SYS_INFO("GYRO_CONFIG");
 		return false;
+	}
 
 	reg_val = read_register(address::ACCEL_CONFIG);
 	if (reg_val != value::ACCEL_16_G)
+	{
+		SYS_INFO("ACCEL_CONFIG");
 		return false;
+	}
 
 	reg_val = read_register(address::ACCEL_CONFIG_2);
 	if (reg_val != value::ACCEL_DLPF_1kHz)
+	{
+		SYS_INFO("ACCEL_CONFIG_2");
 		return false;
+	}
 
 	return true;
 }
