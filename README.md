@@ -28,7 +28,7 @@ This piece of software is amazing. I learn so much from reviewing the informatio
 https://www.segger.com/products/development-tools/systemview/
 
 ### Interactive data visualization
-This is pretty nice to have. I wanted to avoid an ellipsoid fit algorithm for calibrating my mag, but after seeing the data in 3D I realized a simplistic algorithm was probably not going to work. This is also going to come in handy for visualizing my estimated attitudes.<br/>
+Created a tool in C++ that reads and parses mag data via a serial port, runs an ellipsoid fit algorithm on the data set, and then plots the data in 3D with the caclulated offsets and scales for each axis. The plot is a 3D interactive plot created with `plotly`.<br/>
 https://plot.ly/python/3d-scatter-plots/
 
 ![Image description](mag_data.png)
