@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <string>
 
 #include <ellipsoid_fit/ellipsoid/fit.h>
 #include <ellipsoid_fit/ellipsoid/generate.h>
@@ -44,12 +45,6 @@ int main(void)
     // Set the number of stop bits.
     serial_port.SetStopBits(StopBits::STOP_BITS_1) ;
 
-    // Create a fild that we'd like to write to
-    std::ofstream file;
-    file.open("mag_data.csv");
-
-    file << "x,y,z\n";
-
     // Wait for data to be available at the serial port.
     while(!serial_port.IsDataAvailable())
     {
@@ -60,7 +55,7 @@ int main(void)
     size_t ms_timeout = 250 ;
 
     // Char variable to store data coming from the serial port.
-    char data_byte ;
+    char data_byte  = 0;
 
     // Get to the next newline
     while(data_byte != '\n')
@@ -76,66 +71,47 @@ int main(void)
 	    }
     }
 
-    unsigned bytes_read = 0;
-    static constexpr unsigned rows = 10;
-    static constexpr unsigned bytes_per_row = 4*3 + 2 + 1; // x , y , z \ n --- THERES 10 BYTES IN A ROW!
+    static constexpr unsigned rows = 1000;
 
     // Read 1000 mag data points
-    ellipsoid::Parameters parameters;
-    parameters.center = {0,0,0};
-    parameters.radii = {1,1,1};
     Eigen::Matrix<double, rows, 3> points;
     Eigen::Vector3d point;
 
-    unsigned row_count = 0;
-    unsigned index = 0;
-    while(bytes_read < rows * bytes_per_row)
+    std::string float_as_string;
+    unsigned row_index = 0;
+    unsigned elem_index = 0;
+
+    while(row_index < rows - 1)
     {
 	    try
 	    {
 	        // Read a single byte of data from the serial port.
 	        serial_port.ReadByte(data_byte, ms_timeout) ;
-            bytes_read++;
 
-            // write data to file
-	        file << data_byte;
-
-            // store coordinate
-            if (data_byte != ',' && data_byte != '\n' && data_byte != '.')
-            {
-                // point(index) = data_byte;
-                // std::cerr << "\nbyte is " << data_byte << std::endl ;
-                printf("byte: %c\n", data_byte);
-                // std::cerr << "\nindex is " << index << std::endl ;
-
-                index++;
-            }
-            else if (data_byte == '\n')
-            {
-                printf("NEW LINE\n");
-            }
-            else if (data_byte == ',')
-            {
-                printf(",,,,,,,,,,,,,,,,,,,,\n");
-            }
-            else if (data_byte == '.')
-            {
-                printf("DOT\n");
-            }
-
-            // push vector into matrix if we've read xyz
+            // We are starting a new row
             if (data_byte == '\n')
             {
-                index = 0;
-                // points.row(row_count) = point;
-                // point = {0,0,0};
-                row_count++;
+                point[elem_index] = std::stof(float_as_string);
+                points.row(row_index) = point;
+
+                float_as_string.clear();
+                row_index++;
+                elem_index = 0;
+                continue;
             }
+            // We are moving to the next element in the array
+            else if (data_byte == ',')
+            {
+                point[elem_index] = std::stof(float_as_string);
 
-
-	        // Show the user what is being read from the serial port.
-	        // std::cout << data_byte << std::flush ;
-
+                float_as_string.clear();
+                elem_index++;
+            }
+            // We are still parsing the current element
+            else
+            {
+                float_as_string += data_byte;
+            }
 	    }
 	    catch (const ReadTimeout&)
 	    {
@@ -143,22 +119,35 @@ int main(void)
 	    }
 	}
 
-	file.flush();
+    std::cerr << "\nRead " << row_index + 1<< "rows" << std::endl ;
 
-	file.close();
+    // Run the ellipsoid fit algorithm
+    auto params = ellipsoid::fit(points, ellipsoid::EllipsoidType::Aligned);
 
-	std::cerr << "\nRead " << bytes_read << "bytes" << std::endl ;
-    std::cerr << "\nRead " << row_count << "rows" << std::endl ;
-
-
-    // Run the ellipsoid fit algorithm now
-
-    auto identified_parameters = ellipsoid::fit(points, ellipsoid::EllipsoidType::Aligned);
-
-    std::cout << "Parameters used for generation:\n";
-    parameters.print();
     std::cout << "Identified parameters:\n";
-    identified_parameters.print();
+    params.print();
 
+    // Create a file that we'd like to write to
+    std::ofstream file;
+    file.open("mag_data.csv");
+
+    file << "x,y,z\n";
+
+    // write calibrated data to file
+    for (unsigned i = 0; i < rows - 1; i++)
+    {
+        auto p = points.row(i);
+
+        // We use the center point per axis as the offset, and the radii as the scale factor
+        float x = (p.x() - params.center.x()) / params.radii.x();
+        float y = (p.y() - params.center.y()) / params.radii.y();
+        float z = (p.z() - params.center.z()) / params.radii.z();
+
+        file << x << ',' << y<< ',' << z << '\n';
+    }
+
+    file.flush();
+
+    file.close();
 }
 
