@@ -140,7 +140,9 @@ void AccelCalibration::calibrate(CalibrationSide side)
 
 	auto now = start;
 
-	_accumulate = 0;
+	_filter.reset(0);
+	_filtered_data_point = 0;
+
 	unsigned num_samples = 0;
 	while (now < start + run_time)
 	{
@@ -162,78 +164,82 @@ void AccelCalibration::calibrate(CalibrationSide side)
 
 void AccelCalibration::accumlate_data_for_side(CalibrationSide side)
 {
+	float value = 0;
 	switch (side)
 	{
 		case CalibrationSide::UPSIDE_UP:
-			_accumulate += _data.z;
+			value = _data.z;
 			break;
 
 		case CalibrationSide::UPSIDE_DOWN:
-			_accumulate += _data.z;
+			value = _data.z;
 			break;
 
 		case CalibrationSide::LEFT_SIDE:
-			_accumulate += _data.y;
+			value = _data.y;
 			break;
 
 		case CalibrationSide::RIGHT_SIDE:
-			_accumulate += _data.y;
+			value = _data.y;
 			break;
 
 		case CalibrationSide::NOSE_UP:
-			_accumulate += _data.x;
+			value = _data.x;
 			break;
 
 		case CalibrationSide::NOSE_DOWN:
-			_accumulate += _data.x;
+			value = _data.x;
 			break;
 
 		default:
 			SYS_INFO("wtf there is no side to calibrate!");
 			break;
+
 	}
+
+	// Run through the filter;
+	auto dt = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
+	_filtered_data_point = _filter.apply(value, dt);
 }
 
 void AccelCalibration::update_measured_g_for_side(CalibrationSide side, unsigned num_samples)
 {
-	_accumulate /= num_samples;
-
 	switch (side)
 	{
 		case CalibrationSide::UPSIDE_UP:
-			_upside_up_measured_g = _accumulate;
+			_upside_up_measured_g = _filtered_data_point;
 			_upside_up_calibrated = true;
-			SYS_INFO("UPSIDE_UP finished: value = %f", _accumulate)
+			SYS_INFO("UPSIDE_UP finished: value = %f", _filtered_data_point)
 			break;
 
 		case CalibrationSide::UPSIDE_DOWN:
-			_upside_down_measured_g = _accumulate;
+			_upside_down_measured_g = _filtered_data_point;
 			_upside_down_calibrated = true;
-			SYS_INFO("UPSIDE_DOWN finished: value = %f", _accumulate)
+			SYS_INFO("UPSIDE_DOWN finished: value = %f", _filtered_data_point)
 			break;
 
 		case CalibrationSide::LEFT_SIDE:
-			_left_side_measured_g = _accumulate;
+			_left_side_measured_g = _filtered_data_point;
 			_left_side_calibrated = true;
-			SYS_INFO("LEFT_SIDE finished: value = %f", _accumulate)
+			SYS_INFO("LEFT_SIDE finished: value = %f", _filtered_data_point)
 			break;
 
 		case CalibrationSide::RIGHT_SIDE:
-			_right_side_measured_g = _accumulate;
+			_right_side_measured_g = _filtered_data_point;
 			_right_side_calibrated = true;
-			SYS_INFO("RIGHT_SIDE finished: value = %f", _accumulate)
+			SYS_INFO("RIGHT_SIDE finished: value = %f", _filtered_data_point)
 			break;
 
 		case CalibrationSide::NOSE_UP:
-			_nose_up_measured_g = _accumulate;
+			_nose_up_measured_g = _filtered_data_point;
 			_nose_up_calibrated = true;
-			SYS_INFO("NOSE_UP finished: value = %f", _accumulate)
+			SYS_INFO("NOSE_UP finished: value = %f", _filtered_data_point)
 			break;
 
 		case CalibrationSide::NOSE_DOWN:
-			_nose_down_measured_g = _accumulate;
+			_nose_down_measured_g = _filtered_data_point;
 			_nose_down_calibrated = true;
-			SYS_INFO("NOSE_DOWN finished: value = %f", _accumulate)
+			SYS_INFO("NOSE_DOWN finished: value = %f", _filtered_data_point)
 			break;
 
 		default:

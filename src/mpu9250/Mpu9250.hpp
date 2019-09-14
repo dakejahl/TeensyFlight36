@@ -26,38 +26,8 @@
 
 #include <Spi.hpp>
 #include <Messenger.hpp>
+#include <LowPassFilter.hpp>
 
-// TODO: move to a separate header
-template <class T>
-class LowPassFilter
-{
-public:
-	LowPassFilter(float cutoff_freq) : _cutoff_freq(cutoff_freq) {}
-
-	float apply(T input, abs_time_t timestamp)
-	{
-		double dt = (timestamp - _last_timestamp) / (double)MICROS_PER_SEC;
-		_last_timestamp = timestamp;
-
-		T RC = 1.0 / (_cutoff_freq * 2 * M_PI);
-
-		T alpha = dt / (RC + dt);
-
-		// Filter the input
-		T output = alpha * input + (1 - alpha) * _previous_output;
-
-		_previous_output = output;
-
-		return output;
-	}
-
-private:
-
-    float _cutoff_freq = 0;
-
-    T _previous_output = 0;
-    abs_time_t _last_timestamp = 0;
-};
 
 // Gyro constants
 static constexpr double GYRO_FULL_SCALE_DPS = 2000.0;

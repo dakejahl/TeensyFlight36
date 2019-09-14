@@ -27,6 +27,7 @@
 #include <board_config.hpp>
 #include <Messenger.hpp>
 #include <Time.hpp>
+#include <LowPassFilter.hpp>
 
 static constexpr float BIG_ENOUGH = 9.0f;
 static constexpr float GRAVITY_ACCEL = 9.80665f;
@@ -79,7 +80,7 @@ private:
 	bool _nose_down_calibrated = false;
 
 	// stores accumulated data before averaging
-	double _accumulate = 0;
+	double _filtered_data_point = 0;
 
 	// Measured gravity vectory on each side
 	float _upside_up_measured_g = 0;
@@ -101,4 +102,5 @@ private:
 	float _y_scale = 0;
 	float _z_scale = 0;
 
+	LowPassFilter<float> _filter {50}; // 50Hz filter
 };
