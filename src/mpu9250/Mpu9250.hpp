@@ -59,13 +59,6 @@ private:
     abs_time_t _last_timestamp = 0;
 };
 
-// TODO: calibration
-#define TEMP_CALIB_OFFSET 0
-#define ACCEL_CALIB_OFFSET 0
-#define ACCEL_CALIB_SCALE 1
-#define GYRO_CALIB_OFFSET 0
-#define GYRO_CALIB_SCALE 1
-
 // Gyro constants
 static constexpr double GYRO_FULL_SCALE_DPS = 2000.0;
 static constexpr double GYRO_FULL_SCALE_RAD_S = GYRO_FULL_SCALE_DPS / (180.0 / M_PI);

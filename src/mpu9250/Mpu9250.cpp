@@ -303,10 +303,10 @@ void Mpu9250::collect_data(void)
 void Mpu9250::publish_accel_data(abs_time_t& timestamp)
 {
 	// Convert the raw data
-	float x = ((_sensor_data.accel_x * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
-	float y = ((_sensor_data.accel_y * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
-	float z = ((_sensor_data.accel_z * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
-	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+	float x = _sensor_data.accel_x * ACCEL_M_S2_PER_TICK;
+	float y = _sensor_data.accel_y * ACCEL_M_S2_PER_TICK;
+	float z = _sensor_data.accel_z * ACCEL_M_S2_PER_TICK;
+	float temp = _sensor_data.temperature / 333.87f + 21.0f;
 
 	// Stuff the message
 	accel_raw_data_s data;
@@ -323,10 +323,10 @@ void Mpu9250::publish_accel_data(abs_time_t& timestamp)
 void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 {
 	// Convert the raw data
-	float x = ((_sensor_data.gyro_x * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float y = ((_sensor_data.gyro_y * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float z = ((_sensor_data.gyro_z * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+	float x = _sensor_data.gyro_x * RAD_S_PER_TICK;
+	float y = _sensor_data.gyro_y * RAD_S_PER_TICK;
+	float z = _sensor_data.gyro_z * RAD_S_PER_TICK;
+	float temp = _sensor_data.temperature  / 333.87f + 21.0f;
 
 	// Stuff the message
 	gyro_raw_data_s data;
@@ -343,10 +343,10 @@ void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 void Mpu9250::publish_mag_data(abs_time_t& timestamp)
 {
 	// Convert the raw data
-	float x = ((_sensor_data.mag_x * _mag_factory_scale_factor_x) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float y = ((_sensor_data.mag_y * _mag_factory_scale_factor_y) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float z = ((_sensor_data.mag_z * _mag_factory_scale_factor_z) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float temp = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+	float x = _sensor_data.mag_x * _mag_factory_scale_factor_x;
+	float y = _sensor_data.mag_y * _mag_factory_scale_factor_y;
+	float z = _sensor_data.mag_z * _mag_factory_scale_factor_z;
+	float temp = _sensor_data.temperature  / 333.87f + 21.0f;
 
 	// Pass through a 50Hz LPF
 	x = _mag_filter_x.apply(x, timestamp);
@@ -370,15 +370,15 @@ void Mpu9250::publish_mag_data(abs_time_t& timestamp)
 
 void Mpu9250::print_formatted_data(void)
 {
-	float accel_x = ((_sensor_data.accel_x * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
-	float accel_y = ((_sensor_data.accel_y * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
-	float accel_z = ((_sensor_data.accel_z * ACCEL_M_S2_PER_TICK) - ACCEL_CALIB_OFFSET) * ACCEL_CALIB_SCALE;
+	float accel_x = _sensor_data.accel_x * ACCEL_M_S2_PER_TICK;
+	float accel_y = _sensor_data.accel_y * ACCEL_M_S2_PER_TICK;
+	float accel_z = _sensor_data.accel_z * ACCEL_M_S2_PER_TICK;
 
-	float gyro_x = ((_sensor_data.gyro_x * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float gyro_y = ((_sensor_data.gyro_y * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
-	float gyro_z = ((_sensor_data.gyro_z * RAD_S_PER_TICK) - GYRO_CALIB_OFFSET) * GYRO_CALIB_SCALE;
+	float gyro_x = _sensor_data.gyro_x * RAD_S_PER_TICK;
+	float gyro_y = _sensor_data.gyro_y * RAD_S_PER_TICK;
+	float gyro_z = _sensor_data.gyro_z * RAD_S_PER_TICK;
 
-	float temperature = (_sensor_data.temperature - TEMP_CALIB_OFFSET) / 333.87f + 21.0f;
+	float temperature = _sensor_data.temperature / 333.87f + 21.0f;
 
 	float mag_st1 = _sensor_data.mag_st1;
 	float mag_x = _sensor_data.mag_x;
