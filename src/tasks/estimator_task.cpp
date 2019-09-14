@@ -35,17 +35,7 @@ void estimator_task(void* args)
 
 	for(;;)
 	{
-		accel_raw_data_s data;
-
-		if (accel_sub.updated())
-		{
-			data = accel_sub.get();
-			// SYS_INFO("listener_task: got some data %d", data.x);
-		}
-		else
-		{
-			// SYS_INFO("listener_task: no data available");
-		}
+		estimator->estimate_quaternion_from_accel();
 
 		vTaskDelay(100);
 	}

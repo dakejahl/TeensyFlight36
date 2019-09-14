@@ -48,7 +48,7 @@ extern "C" int main()
 
 	xTaskCreate(led_task, "led_task", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::LOWEST+1, NULL);
 	// 	ESTIMATOR TASK SPAWNS A THREAD!! WTF! WHY??
-	// xTaskCreate(estimator_task, "estimator", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::LOWEST+1, NULL);
+	xTaskCreate(estimator_task, "estimator", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::LOWEST+1, NULL);
 
 	xTaskCreate(serial_uart_task, "frsky", configMINIMAL_STACK_SIZE * 4, NULL, PriorityLevel::LOWEST+2, NULL);
 

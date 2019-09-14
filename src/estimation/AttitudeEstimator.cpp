@@ -24,127 +24,108 @@
 
 using namespace Eigen;
 
-Quaternionf AttitudeEstimator::calculate_quaternions(void)
+Quaternionf AttitudeEstimator::estimate_quaternion_from_accel(void)
 {
-	static Vector3f b1(0,0,1); // global frame expected accel
+	// Get data from system
+	auto accel_data = _accel_sub.get();
+	Vector3f accel(accel_data.x, accel_data.y, accel_data.z);
 
-	static Vector3f b2(0.4, 0, 0.916); // global frame expected mag
+	// Apply calibration
+	accel.x() = (accel.x() - ACCEL_OFFSET_X) * ACCEL_SCALE_X;
+	accel.y() = (accel.y() - ACCEL_OFFSET_Y) * ACCEL_SCALE_Y;
+	accel.z() = (accel.z() - ACCEL_OFFSET_Z) * ACCEL_SCALE_Z;
 
-	static float a1 = 1; // weight for accel
-	static float a2 = 1; // weight for mag
-	static float k = 4; // non-linear observer gain
+	// Rotate accel into reference frame (XYZ = NUE) ---> accel::XYZ = -X -Z Y
+	auto a = accel;
+	accel.x() = -a.x();
+	accel.y() = -a.z();
+	accel.z() =  a.y();
 
-	Vector3f gyro_data = {}; // get data
-	Vector3f accel_data = {}; // get data
-	Vector3f mag_data = {}; // get data
+	// ----- Eq(18) ----- //
 
-	auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
-	auto Ts = now - _last_time; // units of microseconds
-	_last_time = now;
+	// Firstly, estimate vector of gravity using previous measurement of Q.
+	Vector3f g_vect_ref = Vector3f(0,1,0); // Gravity field points down (NUE)
+	Vector3f g_vect_est = direction_cosine_matrix(_q_estimated) * g_vect_ref;
 
-	auto r1 = accel_data;
-	auto r2 = mag_data;
-	auto w_gyr = gyro_data;
+	// Second, calculate measured vector of earths gravity
+	Vector3f g_vect_meas = accel / accel.norm();
 
-	auto q_meas = Dav_qmethod(r1, r2, b1, b2, a1, a2);
+	// ----- Eq(20) && Eq(21) ----- //
 
-	// non-linear observer
-	_q_obs = _q_obs * qexp(vect2q(Ts / 2 * q2vect(_unknown_variable)));
-	_bias_obs = _bias_obs - Ts / 2 * _epsilon_err * sgn(_eta_err);
+	// Correct the estimated direction of gravity using accel readings
+	static constexpr float SCALAR_THING = 1;
 
-	// angular rate from gyro minus the bias from the oberserver
-	auto w = w_gyr - _bias_obs;
+	// Cross product of measured and estimated vector fields
+	Vector3f N_a = g_vect_meas.cross(g_vect_est);
+	// Rotation theta around axis N_a which is defined by the cross product of Vg_meas and Vg_est
+	float theta_err = accel.norm() * std::cos(g_vect_meas.dot(g_vect_est));
 
-	// Calculate error between measured and observer
-	auto q_err = quat_error(q_meas, _q_obs);
-	_eta_err = q_err.w();
+	float real = std::cos(SCALAR_THING * theta_err / 2);
+	Vector3f imaginary = N_a * std::sin(SCALAR_THING * theta_err / 2);
 
-	// save the error vector
-	_epsilon_err = q_err.vec();
+	// Error quaternion
+	Quaternionf Q_ae;
+	Q_ae.w() = real;
+	Q_ae.x() = imaginary.x();
+	Q_ae.y() = imaginary.y();
+	Q_ae.z() = imaginary.z();
 
-	Quaternionf w_quat;
-	w_quat.w() = 0;
-	w_quat.vec() = w + k * _epsilon_err * sgn(_eta_err);
-	_unknown_variable = q_err *  w_quat * q_err.inverse();
-
-	Quaternionf q_att;
-
-	if (_q_obs.w() < 0)
-	{
-		q_att.w() = -_q_obs.w();
-		q_att.vec() = -_q_obs.vec();
-	}
-	else
-	{
-		q_att = _q_obs;
-	}
-
-	return q_att;
-
-	// q_att = quaternion attitude
-
+	// Calculate estimated quaternion
+	return Q_ae * _q_estimated;
 }
 
-Quaternionf AttitudeEstimator::Dav_qmethod(Vector3f r1, Vector3f r2, Vector3f b1, Vector3f b2, float a1, float a2)
+Quaternionf AttitudeEstimator::estimate_quaternion_from_mag(void)
 {
-	Vector3f Z;
+	auto mag_data = _mag_sub.get();
+	Vector3f mag(mag_data.x, mag_data.y, mag_data.z);
 
-	Vector4f eigenvalues;
-	Vector4f eig_vector;
+	mag.x() = (mag.x() - MAG_OFFSET_X) / MAG_SCALE_X;
+	mag.y() = (mag.y() - MAG_OFFSET_Y) / MAG_SCALE_Y;
+	mag.z() = (mag.z() - MAG_OFFSET_Z) / MAG_SCALE_Z;
+	// Rotate mag into reference frame -- XYZ = NUE
+	// accel XYZ = -X Z -Y     -- TODO: verify this.. I used the px4 driver as a reference
+	mag.x() = -mag.x();
+	mag.y() =  mag.z();
+	mag.z() = -mag.y();
 
-	Matrix3f B;
-	Matrix3f S;
-
-	Matrix4f K;
-	Matrix4f eigenvectors;
-
-	float eig_max;
-
-	// Begin the math
-	B = a1 * b1 * r1.transpose() + a2 * b2 * r2.transpose();
-	S = B + B.transpose();
-
-	// Push elements into vector3
-	Z << B(1, 2) - B(2, 1), B(2, 0) - B(0, 2), B(0, 1) - B(1, 0);
-
-	// Push rows into matrix4
-	K << (S - (B.trace() * MatrixXf::Identity(3, 3))), Z, Z.transpose(), B.trace();
-
-	// calculate eigen values and vectors
-	SelfAdjointEigenSolver<Matrix4f> eigensolver(K);
-
-	if (eigensolver.info() != Success)
-	{
-		SYS_INFO("eigen value error...?");
-	}
-
-	eigenvalues = eigensolver.eigenvalues();
-	eigenvectors = eigensolver.eigenvectors();
-
-	eig_max = eigenvalues.maxCoeff();
-
-	for (unsigned j = 0; j < 4; j++)
-	{
-		if (eigenvalues(j) == eig_max)
-		{
-			eig_vector(0) = eigenvectors(3, j);
-			eig_vector(1) = -eigenvectors(0, j);
-			eig_vector(2) = -eigenvectors(1, j);
-			eig_vector(3) = -eigenvectors(2, j);
-		}
-	}
-
-	if (eig_vector(0) < 0)
-	{
-		eig_vector(0) = -eig_vector(0);
-		eig_vector(1) = -eig_vector(1);
-		eig_vector(2) = -eig_vector(2);
-		eig_vector(3) = -eig_vector(3);
-
-	}
-
-	return vect2q(eig_vector);
+	// Mag estimation and correction
+	Vector3f m_vect_ref(0,0,0); // TODO: figure out what this is
+	Vector3f m_vect_meas = mag / mag.norm();
+	Vector3f m_vect_est = direction_cosine_matrix(_q_estimated) * m_vect_ref; // Gravity field is only in one direction on earth (NUE)
 }
+
+float AttitudeEstimator::roll_from_quat(const Quaternionf& q)
+{
+	float q0 = q.w();
+	float q1 = q.x();
+	float q2 = q.y();
+	float q3 = q.z();
+
+	return std::atan((2*q0*q1 - 2*q2*q3) / (q0*q0 - q1*q1 + q2*q2 - q3*q3));
+}
+
+float AttitudeEstimator::pitch_from_quat(const Quaternionf& q)
+{
+	float q0 = q.w();
+	float q1 = q.x();
+	float q2 = q.y();
+	float q3 = q.z();
+
+	return std::asin(2*q0*q3 + 2*q1*q2);
+}
+
+float AttitudeEstimator::yaw_from_quat(const Quaternionf& q)
+{
+	float q0 = q.w();
+	float q1 = q.x();
+	float q2 = q.y();
+	float q3 = q.z();
+
+	return std::atan((2*q0*q2-2*q1*q3) / (q0*q0 + q1*q1 - q2*q2 - q3*q3));
+}
+
+
+
 
 Quaternionf AttitudeEstimator::quat_error(Quaternionf q1, Quaternionf q2)
 {
