@@ -84,6 +84,6 @@ void imu_task(void* args)
 
 		// Let's throw our attitude estimator in here and see how it does
 
-		vTaskDelay(1); // 1kHz, sometimes we miss some data buts that's OK... I think
+		vTaskDelay(100); // 1kHz, sometimes we miss some data buts that's OK... I think
 	}
 }

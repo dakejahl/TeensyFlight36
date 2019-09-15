@@ -35,7 +35,12 @@ std::string MAG_CAL = "mag cal";
 void evaluate_user_command(void);
 void calibrate_gyro(void);
 void calibrate_accel(void);
-void calibrate_mag(void);
+
+// Functions to allow streaming of data in CSV format
+void stream_accel_data(void);
+void stream_mag_data(void);
+
+
 
 
 // This task will poll the USB interface for user commands:
@@ -86,7 +91,12 @@ void evaluate_user_command(void)
 	else if (buffer == MAG_CAL)
 	{
 		SYS_INFO("Calibrating mag");
-		calibrate_mag();
+		stream_mag_data();
+	}
+	else if (buffer == "stream accel")
+	{
+		SYS_INFO("Streaming accel data ");
+		stream_accel_data();
 	}
 
 	Serial.print("tsh> ");
@@ -129,7 +139,7 @@ void calibrate_accel(void)
 	// estimation::Estimator::Instance()->reset() ... to reinitialize the estimator with the new offsets and scales
 }
 
-void calibrate_mag(void)
+void stream_mag_data(void)
 {
 
 	Serial4.begin(9600, SERIAL_8N1);
@@ -158,6 +168,40 @@ void calibrate_mag(void)
 		if (Serial.available())
 		{
 			SYS_INFO("Disabling mag data stream");
+			return;
+		}
+	}
+}
+
+void stream_accel_data(void)
+{
+
+	Serial4.begin(9600, SERIAL_8N1);
+
+	messenger::Subscriber<accel_raw_data_s> accel_sub;
+
+	SYS_INFO("Enabling accel data stream over serial4");
+
+	for(;;)
+	{
+		auto data = accel_sub.get();
+		float x = data.x;
+		float y = data.y;
+		float z = data.z;
+
+		Serial4.print(x);
+		Serial4.print(',');
+		Serial4.print(y);
+		Serial4.print(',');
+		Serial4.print(z);
+		Serial4.print("\n");
+
+		vTaskDelay(10);
+
+		// Any user input cancels the spewing of data
+		if (Serial.available())
+		{
+			SYS_INFO("Disabling accel data stream");
 			return;
 		}
 	}
