@@ -5,7 +5,7 @@
 #
 cmake_minimum_required(VERSION 3.8)
 
-project(ExampleProject LANGUAGES C CXX VERSION 1.0.0)
+project(DataStream LANGUAGES C CXX VERSION 1.0.0)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 #
@@ -29,9 +29,9 @@ find_package(Threads REQUIRED)
 #           "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,/usr/local/lib")
 
 
-add_executable(ExampleProject serial_to_csv.cpp)
-# target_include_directories(ExampleProject PRIVATE ${SERIAL_INCLUDE_DIRS})
-# target_link_libraries(ExampleProject PRIVATE ${SERIAL_LDFLAGS} ${CMAKE_THREAD_LIBS_INIT})
+add_executable(DataStream serial_to_csv.cpp)
+# target_include_directories(DataStream PRIVATE ${SERIAL_INCLUDE_DIRS})
+# target_link_libraries(DataStream PRIVATE ${SERIAL_LDFLAGS} ${CMAKE_THREAD_LIBS_INIT})
 
-target_include_directories(ExampleProject PRIVATE serial_INCLUDE_DIRS)
-target_link_libraries(ExampleProject PRIVATE ${SERIAL_LDFLAGS} ${CMAKE_THREAD_LIBS_INIT} serial)
+target_include_directories(DataStream PRIVATE serial_INCLUDE_DIRS)
+target_link_libraries(DataStream PRIVATE ${SERIAL_LDFLAGS} ${CMAKE_THREAD_LIBS_INIT} serial)
