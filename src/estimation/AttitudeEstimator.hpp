@@ -51,6 +51,13 @@ static constexpr float MAG_SCALE_X =  	289.209f;
 static constexpr float MAG_SCALE_Y =  	282.384f;
 static constexpr float MAG_SCALE_Z =  	262.062f;
 
+class ComplimentaryFilter
+{
+public:
+
+private:
+};
+
 class AttitudeEstimator
 {
 public:
