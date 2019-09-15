@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <string>
 
 constexpr const char* const SERIAL_PORT_1 = "/dev/ttyUSB0" ;
 
@@ -41,12 +42,14 @@ int main(void)
     // Set the number of stop bits.
     serial_port.SetStopBits(StopBits::STOP_BITS_1) ;
 
-    // Create a fild that we'd like to write to
+    // Create a file that we'd like to write to
     std::ofstream file;
-    file.open("mag_data.csv");
+    const char* path = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/3_axis_data.csv";
+    file.open(path);
 
     file << "x,y,z\n";
 
+    printf("Waiting for data...\n");
     // Wait for data to be available at the serial port.
     while(!serial_port.IsDataAvailable())
     {
@@ -59,6 +62,7 @@ int main(void)
     // Char variable to store data coming from the serial port.
     char data_byte ;
 
+    printf("Reading in data\n");
     // Get to the next newline
     while(data_byte != '\n')
     {
@@ -74,18 +78,23 @@ int main(void)
     }
 
     // Read one byte from the serial port and print it to the terminal.
+    std::string line;
     unsigned bytes_read = 0;
-    unsigned rows = 1000;
-    unsigned bytes_per_row = 4*3 + 2 + 1; // x , y , z \ n
-
-
-    while(bytes_read < rows * bytes_per_row)
+    while(1)
     {
 	    try
 	    {
 	        // Read a single byte of data from the serial port.
 	        serial_port.ReadByte(data_byte, ms_timeout) ;
-	        file << data_byte;
+            line = line + data_byte;
+
+            // Wait until we have an entire lines worth of data before writing to file
+            if (data_byte == '\n')
+            {
+                file << line;
+                file.flush();
+                line.clear();
+            }
 
 	        // Show the user what is being read from the serial port.
 	        // std::cout << data_byte << std::flush ;
@@ -95,6 +104,7 @@ int main(void)
 	    catch (const ReadTimeout&)
 	    {
 	        std::cerr << "\nThe ReadByte() call has timed out." << std::endl ;
+            break; // stop recording data only when the data stream stops
 	    }
 	}
 

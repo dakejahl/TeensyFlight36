@@ -56,6 +56,4 @@ build/
 
 # python virtual environment
 pyenv/
-tools/serial_port_data/mag_data.csv
-tools/python_scripts/mag_data.csv
-tools/python_scripts/mag_data.html
+tools/raw_data

@@ -1,7 +1,8 @@
 import pandas as pd
 import plotly.express as px
 
-df = pd.read_csv('mag_data.csv')
+path = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/3_axis_data.csv";
+df = pd.read_csv(path)
 print(df)
 
 # iris = px.data.iris()
@@ -13,4 +14,5 @@ fig.update_traces(marker=dict(size=2,
                                         color='DarkSlateGrey')),
                   selector=dict(mode='markers'))
 # fig.show()
-fig.write_html('mag_data.html', auto_open=True)
+out = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/mag_data.html";
+fig.write_html(out, auto_open=True)
