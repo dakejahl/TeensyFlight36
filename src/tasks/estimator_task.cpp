@@ -35,7 +35,7 @@ void estimator_task(void* args)
 
 	for(;;)
 	{
-		estimator->estimate_quaternion_from_accel();
+		estimator->estimate_quat_1st_step();
 
 		vTaskDelay(100);
 	}

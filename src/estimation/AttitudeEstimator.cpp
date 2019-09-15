@@ -24,7 +24,7 @@
 
 using namespace Eigen;
 
-Quaternionf AttitudeEstimator::estimate_quaternion_from_accel(void)
+Quaternionf AttitudeEstimator::estimate_quat_1st_step(void)
 {
 	// Get data from system
 	auto accel_data = _accel_sub.get();
@@ -58,7 +58,7 @@ Quaternionf AttitudeEstimator::estimate_quaternion_from_accel(void)
 	// Cross product of measured and estimated vector fields
 	Vector3f N_a = g_vect_meas.cross(g_vect_est);
 	// Rotation theta around axis N_a which is defined by the cross product of Vg_meas and Vg_est
-	float theta_err = accel.norm() * std::cos(g_vect_meas.dot(g_vect_est));
+	float theta_err = std::acos(g_vect_meas.dot(g_vect_est));
 
 	float real = std::cos(SCALAR_THING * theta_err / 2);
 	Vector3f imaginary = N_a * std::sin(SCALAR_THING * theta_err / 2);
@@ -74,7 +74,7 @@ Quaternionf AttitudeEstimator::estimate_quaternion_from_accel(void)
 	return Q_ae * _q_estimated;
 }
 
-Quaternionf AttitudeEstimator::estimate_quaternion_from_mag(void)
+Quaternionf AttitudeEstimator::estimate_quat_2nd_step(const Quaternionf& q_est)
 {
 	auto mag_data = _mag_sub.get();
 	Vector3f mag(mag_data.x, mag_data.y, mag_data.z);
@@ -92,6 +92,31 @@ Quaternionf AttitudeEstimator::estimate_quaternion_from_mag(void)
 	Vector3f m_vect_ref(0,0,0); // TODO: figure out what this is
 	Vector3f m_vect_meas = mag / mag.norm();
 	Vector3f m_vect_est = direction_cosine_matrix(_q_estimated) * m_vect_ref; // Gravity field is only in one direction on earth (NUE)
+
+	// ----- Eq(22) ----- //
+	Vector3f V_mxz = {mag.x(), mag.y(), mag.z()};
+	V_mxz = q_est.conjugate() * (q_est * V_mxz);
+
+	// ----- Eq(23) ----- //
+	float bx = V_mxz.x();
+	float bz = V_mxz.z();
+	V_mxz = {std::sqrt(bx*bx + bz*bz), 0, 0};
+
+	// ----- Eq(24) ----- //
+	Vector3f V_north = {1, 0, 0}; // NUE
+	Vector3f N_m = V_mxz.cross(V_north);
+	float theta_err = std::acos(V_mxz.dot(V_north));
+
+	float real = std::cos(theta_err / 2);
+	Vector3f imaginary = N_m * std::sin(theta_err / 2);
+
+	Quaternionf Q_me;
+	Q_me.w() = real;
+	Q_me.x() = imaginary.x();
+	Q_me.y() = imaginary.y();
+	Q_me.z() = imaginary.z();
+
+	return Q_me * q_est;
 }
 
 float AttitudeEstimator::roll_from_quat(const Quaternionf& q)

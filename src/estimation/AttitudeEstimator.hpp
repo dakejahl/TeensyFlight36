@@ -55,8 +55,8 @@ class AttitudeEstimator
 {
 public:
 
-	Quaternionf estimate_quaternion_from_accel(void);
-	Quaternionf estimate_quaternion_from_mag(void);
+	Quaternionf estimate_quat_1st_step(void);
+	Quaternionf estimate_quat_2nd_step(const Quaternionf& q);
 
 	float roll_from_quat(const Quaternionf& q);
 	float pitch_from_quat(const Quaternionf& q);
@@ -91,8 +91,6 @@ public:
 
 private:
 	// Functions
-	Quaternionf Dav_qmethod(Vector3f r1, Vector3f r2, Vector3f b1, Vector3f b2, float a1, float a2);
-
 	Quaternionf quat_error(Quaternionf q1, Quaternionf q2);
 
 	Quaternionf vect2q(Vector4f v);
