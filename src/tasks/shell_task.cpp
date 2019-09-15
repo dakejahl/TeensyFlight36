@@ -150,19 +150,22 @@ void stream_mag_data(void)
 
 	for(;;)
 	{
-		auto data = mag_sub.get();
-		float x = data.x;
-		float y = data.y;
-		float z = data.z;
+		if (mag_sub.updated())
+		{
+			auto data = mag_sub.get();
+			float x = data.x;
+			float y = data.y;
+			float z = data.z;
 
-		Serial4.print(x);
-		Serial4.print(',');
-		Serial4.print(y);
-		Serial4.print(',');
-		Serial4.print(z);
-		Serial4.print("\n");
+			Serial4.print(x);
+			Serial4.print(',');
+			Serial4.print(y);
+			Serial4.print(',');
+			Serial4.print(z);
+			Serial4.print("\n");
 
-		vTaskDelay(10);
+			vTaskDelay(10);
+		}
 
 		// Any user input cancels the spewing of data
 		if (Serial.available())
@@ -184,17 +187,21 @@ void stream_accel_data(void)
 
 	for(;;)
 	{
-		auto data = accel_sub.get();
-		float x = data.x;
-		float y = data.y;
-		float z = data.z;
+		if (accel_sub.updated())
+		{
+			auto data = accel_sub.get();
+			float x = data.x;
+			float y = data.y;
+			float z = data.z;
 
-		Serial4.print(x);
-		Serial4.print(',');
-		Serial4.print(y);
-		Serial4.print(',');
-		Serial4.print(z);
-		Serial4.print("\n");
+			Serial4.print(x);
+			Serial4.print(',');
+			Serial4.print(y);
+			Serial4.print(',');
+			Serial4.print(z);
+			Serial4.print("\n");
+		}
+
 
 		vTaskDelay(10);
 
