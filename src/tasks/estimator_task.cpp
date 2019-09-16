@@ -23,7 +23,6 @@
 #include <board_config.hpp>
 #include <Messenger.hpp>
 #include <dispatch_queue/DispatchQueue.hpp>
-#include <TwoStepGeometricEstimator.hpp>
 #include <ComplimentaryFilter.hpp>
 
 
@@ -37,7 +36,6 @@ void estimator_task(void* args)
 
 
 	auto estimator = new ComplimentaryFilter(0.1);
-	// auto estimator = new TwoStepGeometricEstimator();
 
 
 	for(;;)
@@ -50,11 +48,7 @@ void estimator_task(void* args)
 			auto roll = estimator->get_roll();
 			auto pitch = estimator->get_pitch();
 
-
-			// JUST CALCULATIONS FROM ACCEL!
-			// auto roll = equations::roll_from_accel(x, y, z);
-			// auto pitch = equations::pitch_from_accel(x, y, z);
-			// publish for our live stream
+			// Publish for our stream
 			attitude_euler rpy;
 			rpy.roll = roll;
 			rpy.pitch = pitch;

@@ -80,26 +80,31 @@ void evaluate_user_command(void)
 		// Run the gyro calibration
 		SYS_INFO("Calibrating gyro");
 		calibrate_gyro();
+		return;
 	}
 	else if (buffer == ACCEL_CAL)
 	{
 		SYS_INFO("Calibrating accel");
 		calibrate_accel();
+		return;
 	}
 	else if (buffer == MAG_CAL)
 	{
 		SYS_INFO("Calibrating mag");
 		stream_mag_data();
+		return;
 	}
 	else if (buffer == "stream accel")
 	{
 		SYS_INFO("Streaming accel data");
 		stream_accel_data();
+		return;
 	}
 	else if (buffer == "stream rpy")
 	{
 		SYS_INFO("Streaming euler rpy data");
 		stream_attitude_euler_data();
+		return;
 	}
 
 	Serial.print("tsh> ");
