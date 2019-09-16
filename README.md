@@ -35,7 +35,7 @@ https://plot.ly/python/3d-scatter-plots/
 
 ### Live plotting
 Using the data stream to CSV tool paired with a python script that monitors the 3-axis data file for updates, I am able to view real-time data being streamed from the device.
-![](images/live_plot.png)
+![](images/live_plot.gif)
 
 
 ### Attitude visualization
