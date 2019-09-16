@@ -39,9 +39,7 @@ void calibrate_accel(void);
 // Functions to allow streaming of data in CSV format
 void stream_accel_data(void);
 void stream_mag_data(void);
-
-
-
+void stream_attitude_euler_data(void);
 
 // This task will poll the USB interface for user commands:
 // - gyro calibration, let sit still and measure offsets on all 3 axis (and noise value for ekf?)
@@ -95,8 +93,13 @@ void evaluate_user_command(void)
 	}
 	else if (buffer == "stream accel")
 	{
-		SYS_INFO("Streaming accel data ");
+		SYS_INFO("Streaming accel data");
 		stream_accel_data();
+	}
+	else if (buffer == "stream rpy")
+	{
+		SYS_INFO("Streaming euler rpy data");
+		stream_attitude_euler_data();
 	}
 
 	Serial.print("tsh> ");
@@ -178,7 +181,6 @@ void stream_mag_data(void)
 
 void stream_accel_data(void)
 {
-
 	Serial4.begin(9600, SERIAL_8N1);
 
 	messenger::Subscriber<accel_raw_data_s> accel_sub;
@@ -209,6 +211,43 @@ void stream_accel_data(void)
 		if (Serial.available())
 		{
 			SYS_INFO("Disabling accel data stream");
+			return;
+		}
+	}
+}
+
+void stream_attitude_euler_data(void)
+{
+	Serial4.begin(9600, SERIAL_8N1);
+
+	messenger::Subscriber<attitude_euler> attitude_sub;
+
+	SYS_INFO("Enabling euler attitude data stream over serial4");
+
+	for(;;)
+	{
+		if (attitude_sub.updated())
+		{
+			auto data = attitude_sub.get();
+			float x = data.roll;
+			float y = data.pitch;
+			float z = data.yaw;
+
+			Serial4.print(x);
+			Serial4.print(',');
+			Serial4.print(y);
+			Serial4.print(',');
+			Serial4.print(z);
+			Serial4.print("\n");
+		}
+
+
+		vTaskDelay(10);
+
+		// Any user input cancels the spewing of data
+		if (Serial.available())
+		{
+			SYS_INFO("Disabling euler attitude data stream");
 			return;
 		}
 	}

@@ -65,6 +65,14 @@ struct __attribute__((__packed__)) rc_input_s
 	bool rc_lost;
 };
 
+struct __attribute__((__packed__)) attitude_euler
+{
+	abs_time_t timestamp;
+	float roll;
+	float pitch;
+	float yaw;
+};
+
 // Multiple publisher multiple subscriber implementation
 // with a (SHARED!) data file.
 namespace messenger

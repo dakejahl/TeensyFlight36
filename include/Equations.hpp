@@ -20,48 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
-#include <dispatch_queue/DispatchQueue.hpp>
-#include <AttitudeEstimator.hpp>
+#pragma once
 
-void estimator_task(void* args)
+namespace equations
 {
-	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
-	messenger::Subscriber<accel_raw_data_s> accel_sub;
-	messenger::Subscriber<mag_raw_data_s> mag_sub;
 
-	messenger::Publisher<attitude_euler> attitude_pub;
-
-
-	// auto estimator = new AttitudeEstimator();
-	auto estimator = new ComplimentaryFilter();
-
-	for(;;)
-	{
-		if (accel_sub.updated())
-		{
-			auto data = accel_sub.get();
-			float x = data.x;
-			float y = data.y;
-			float z = data.z;
-
-			// This function modifies the input!!
-			estimator->apply_accel_calibration(x, y, z);
-
-			auto roll = equations::calculate_roll_from_accel(x, y, z);
-			auto pitch = equations::calculate_pitch_from_accel(x, y, z);
-
-			// These equations are correct... We need to aplly the calibration though
-			// SYS_INFO("roll: %f", roll);
-			// SYS_INFO("pitch: %f\n", pitch);
-
-			attitude_euler rpy;
-			rpy.roll = roll;
-			rpy.pitch = pitch;
-			attitude_pub.publish(rpy);
-		}
-
-		vTaskDelay(100);
-	}
+inline float calculate_roll_from_accel(float x, float y, float z)
+{
+	return std::atan( y / (std::sqrt(x*x + z*z))) * 180.0f / M_PI;
 }
+
+inline float calculate_pitch_from_accel(float x, float y, float z)
+{
+	return std::atan( x / (std::sqrt(y*y + z*z))) * 180.0f / M_PI;
+}
+
+}; // end namespace estimation
