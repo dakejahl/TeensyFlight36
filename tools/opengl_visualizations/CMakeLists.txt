@@ -18,4 +18,6 @@ include(GNUInstallDirs)
 
 # Targets that we develop here
 add_subdirectory(attitude_color_cube)
+add_subdirectory(examples)
+
 

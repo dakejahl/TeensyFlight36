@@ -37,6 +37,11 @@ https://plot.ly/python/3d-scatter-plots/
 Using the data stream to CSV tool paired with a python script that monitors the 3-axis data file for updates, I am able to view real-time data being streamed from the device.
 ![Image description](images/live_plot.png)
 
+
+### Attitude visualization
+Using the data stream to CSV tool, I am able to parse attidue data and render in 3D using OpenGL.
+![Image description](images/attitude.gif)
+
 ***Thank you to...***
 
 The PX4 team, you guys rock https://github.com/PX4/Firmware<br/>
