@@ -25,12 +25,12 @@
 namespace equations
 {
 
-inline float calculate_roll_from_accel(float x, float y, float z)
+inline float roll_from_accel(float x, float y, float z)
 {
 	return std::atan( y / (std::sqrt(x*x + z*z))) * 180.0f / M_PI;
 }
 
-inline float calculate_pitch_from_accel(float x, float y, float z)
+inline float pitch_from_accel(float x, float y, float z)
 {
 	return std::atan( x / (std::sqrt(y*y + z*z))) * 180.0f / M_PI;
 }

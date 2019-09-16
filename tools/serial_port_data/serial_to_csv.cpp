@@ -28,7 +28,7 @@ int main(void)
     }
 
     // Set the baud rate of the serial port.
-    serial_port.SetBaudRate(BaudRate::BAUD_9600) ;
+    serial_port.SetBaudRate(BaudRate::BAUD_115200) ;
 
     // Set the number of data bits.
     serial_port.SetCharacterSize(CharacterSize::CHAR_SIZE_8) ;

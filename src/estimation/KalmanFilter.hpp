@@ -20,47 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
-#include <dispatch_queue/DispatchQueue.hpp>
-#include <TwoStepGeometricEstimator.hpp>
-#include <ComplimentaryFilter.hpp>
+#pragma once
 
+/*
+	The Kalman Filter is also know as a Linear Quadratic Estimator. It is a type of observer or state estimator
+	which is optimal in the sense that it tries to minimise a quadratic cost function. Furthermore, the Kalman
+	Filter doesn’t just take the sensor measurements into account but also the underlying dynamics of the system
+*/
 
-void estimator_task(void* args)
+class KalmanFilter
 {
-	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
-	messenger::Subscriber<accel_raw_data_s> accel_sub;
-	messenger::Subscriber<mag_raw_data_s> mag_sub;
+public:
 
-	messenger::Publisher<attitude_euler> attitude_pub;
+private:
 
-
-	auto estimator = new ComplimentaryFilter(0.1);
-	// auto estimator = new TwoStepGeometricEstimator();
-
-
-	for(;;)
-	{
-		if (accel_sub.updated())
-		{
-			estimator->collect_sensor_data();
-			estimator->apply();
-
-			auto roll = estimator->get_roll();
-			auto pitch = estimator->get_pitch();
-
-
-			// JUST CALCULATIONS FROM ACCEL!
-			// auto roll = equations::roll_from_accel(x, y, z);
-			// auto pitch = equations::pitch_from_accel(x, y, z);
-			// publish for our live stream
-			attitude_euler rpy;
-			rpy.roll = roll;
-			rpy.pitch = pitch;
-			attitude_pub.publish(rpy);
-		}
-
-		vTaskDelay(1);
-	}
-}
+};

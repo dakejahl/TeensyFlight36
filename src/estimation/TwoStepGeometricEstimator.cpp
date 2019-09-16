@@ -20,26 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <AttitudeEstimator.hpp>
+#include <TwoStepGeometricEstimator.hpp>
 
 using namespace Eigen;
 
-Quaternionf AttitudeEstimator::estimate_quat_1st_step(void)
+
+
+// ----- ATTITUDE QUATERNION FANCY PANTS ESTIMATOR -----//
+void TwoStepGeometricEstimator::apply(void)
+{
+	auto q = estimate_quat_1st_step();
+
+	// SYS_INFO("q.w(): %f", q.w());
+	// SYS_INFO("q.x(): %f", q.x());
+	// SYS_INFO("q.y(): %f", q.y());
+	// SYS_INFO("q.z(): %f", q.z());
+
+	_roll_est = roll_from_quat(q);
+	_pitch_est = pitch_from_quat(q);
+}
+
+Quaternionf TwoStepGeometricEstimator::estimate_quat_1st_step(void)
 {
 	// Get data from system
-	auto accel_data = _accel_sub.get();
-	Vector3f accel(accel_data.x, accel_data.y, accel_data.z);
-
-	// Apply calibration
-	accel.x() = (accel.x() - ACCEL_OFFSET_X) * ACCEL_SCALE_X;
-	accel.y() = (accel.y() - ACCEL_OFFSET_Y) * ACCEL_SCALE_Y;
-	accel.z() = (accel.z() - ACCEL_OFFSET_Z) * ACCEL_SCALE_Z;
+	Vector3f accel = _accel_xyz;
 
 	// Rotate accel into reference frame (XYZ = NUE) ---> accel::XYZ = -X -Z Y
 	auto a = accel;
-	accel.x() = -a.x();
-	accel.y() = -a.z();
-	accel.z() =  a.y();
+	accel.x() =  a.x();
+	accel.y() =  a.z();
+	accel.z() = -a.y();
 
 	// ----- Eq(18) ----- //
 
@@ -71,10 +81,12 @@ Quaternionf AttitudeEstimator::estimate_quat_1st_step(void)
 	Q_ae.z() = imaginary.z();
 
 	// Calculate estimated quaternion
-	return Q_ae * _q_estimated;
+	auto q_est =  Q_ae * _q_estimated;
+
+	return q_est;
 }
 
-Quaternionf AttitudeEstimator::estimate_quat_2nd_step(const Quaternionf& q_est)
+Quaternionf TwoStepGeometricEstimator::estimate_quat_2nd_step(const Quaternionf& q_est)
 {
 	auto mag_data = _mag_sub.get();
 	Vector3f mag(mag_data.x, mag_data.y, mag_data.z);
@@ -119,32 +131,27 @@ Quaternionf AttitudeEstimator::estimate_quat_2nd_step(const Quaternionf& q_est)
 	return Q_me * q_est;
 }
 
-float Estimator::roll_from_quat(const Quaternionf& q)
+Matrix3f TwoStepGeometricEstimator::direction_cosine_matrix(const Quaternionf& q)
 {
+	Matrix3f C_bn;
+
 	float q0 = q.w();
 	float q1 = q.x();
 	float q2 = q.y();
 	float q3 = q.z();
 
-	return std::atan((2*q0*q1 - 2*q2*q3) / (q0*q0 - q1*q1 + q2*q2 - q3*q3));
+	C_bn(0,0) = q0*q0 + q1*q1 - q2*q2 - q3*q3;
+	C_bn(0,1) = 2*q0*q3 + 2*q1*q2;
+	C_bn(0,2) = -2*q0*q2 + 2*q1*q3;
+
+	C_bn(1,0) = -2*q0*q3 + 2*q1*q2;
+	C_bn(1,1) = q0*q0 - q1*q1 + q2*q2 - q3*q3;
+	C_bn(1,2) = 2*q0*q1 + 2*q2*q3;
+
+	C_bn(2,0) = 2*q0*q2 + 2*q1*q3;
+	C_bn(2,1) = -2*q0*q1 + 2*q2*q3;
+	C_bn(2,2) = q0*q0 - q1*q1 - q2*q2 + q3*q3;
+
+	return C_bn;
 }
 
-float Estimator::pitch_from_quat(const Quaternionf& q)
-{
-	float q0 = q.w();
-	float q1 = q.x();
-	float q2 = q.y();
-	float q3 = q.z();
-
-	return std::asin(2*q0*q3 + 2*q1*q2);
-}
-
-float Estimator::yaw_from_quat(const Quaternionf& q)
-{
-	float q0 = q.w();
-	float q1 = q.x();
-	float q2 = q.y();
-	float q3 = q.z();
-
-	return std::atan((2*q0*q2-2*q1*q3) / (q0*q0 + q1*q1 - q2*q2 - q3*q3));
-}

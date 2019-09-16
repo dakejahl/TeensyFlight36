@@ -20,47 +20,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
-#include <dispatch_queue/DispatchQueue.hpp>
-#include <TwoStepGeometricEstimator.hpp>
 #include <ComplimentaryFilter.hpp>
 
-
-void estimator_task(void* args)
+void ComplimentaryFilter::apply(void)
 {
-	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
-	messenger::Subscriber<accel_raw_data_s> accel_sub;
-	messenger::Subscriber<mag_raw_data_s> mag_sub;
+	estimate_rpy_from_accel_and_gyro(_accel_xyz, _gyro_xyz);
+}
 
-	messenger::Publisher<attitude_euler> attitude_pub;
+void ComplimentaryFilter::estimate_rpy_from_accel_and_gyro(const Vector3f& accel, const Vector3f& gyro)
+{
+	// Calculate roll and pitch
+	float roll = equations::roll_from_accel(accel.x(), accel.y(), accel.z());
+	float pitch = equations::pitch_from_accel(accel.x(), accel.y(), accel.z());
 
+	// Calculate roll and pitch rates
+	float roll_rate = _gyro_xyz.x() + _gyro_xyz.y() * std::sin(_roll_est) * std::tan(_pitch_est)
+					+ _gyro_xyz.z() * std::cos(_roll_est) * std::tan(_pitch_est);
 
-	auto estimator = new ComplimentaryFilter(0.1);
-	// auto estimator = new TwoStepGeometricEstimator();
-
-
-	for(;;)
-	{
-		if (accel_sub.updated())
-		{
-			estimator->collect_sensor_data();
-			estimator->apply();
-
-			auto roll = estimator->get_roll();
-			auto pitch = estimator->get_pitch();
+	float pitch_rate = _gyro_xyz.y() * std::cos(_roll_est) - _gyro_xyz.z() * std::sin(_roll_est);
 
 
-			// JUST CALCULATIONS FROM ACCEL!
-			// auto roll = equations::roll_from_accel(x, y, z);
-			// auto pitch = equations::pitch_from_accel(x, y, z);
-			// publish for our live stream
-			attitude_euler rpy;
-			rpy.roll = roll;
-			rpy.pitch = pitch;
-			attitude_pub.publish(rpy);
-		}
+	auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
+	float dt = (now - _last_timestamp) / MICROS_PER_SEC;
+	_last_timestamp = now;
 
-		vTaskDelay(1);
-	}
+	// Run filter
+	_roll_est = (1 - _alpha) * (_roll_est + roll_rate * dt) + _alpha * roll;
+	_pitch_est = (1 - _alpha) * (_pitch_est + pitch_rate * dt) + _alpha * pitch;
+
 }

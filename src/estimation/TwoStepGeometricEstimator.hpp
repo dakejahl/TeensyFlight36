@@ -20,47 +20,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
+#include "Estimator.hpp"
+
 #include <board_config.hpp>
-#include <Messenger.hpp>
-#include <dispatch_queue/DispatchQueue.hpp>
-#include <TwoStepGeometricEstimator.hpp>
-#include <ComplimentaryFilter.hpp>
 
+#include <LowPassFilter.hpp>
+#include <Equations.hpp>
 
-void estimator_task(void* args)
+using namespace Eigen;
+
+class TwoStepGeometricEstimator : public Estimator
 {
-	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
-	messenger::Subscriber<accel_raw_data_s> accel_sub;
-	messenger::Subscriber<mag_raw_data_s> mag_sub;
+public:
 
-	messenger::Publisher<attitude_euler> attitude_pub;
+	void apply(void);
 
+	Quaternionf estimate_quat_1st_step(void);
+	Quaternionf estimate_quat_2nd_step(const Quaternionf& q);
 
-	auto estimator = new ComplimentaryFilter(0.1);
-	// auto estimator = new TwoStepGeometricEstimator();
+	//----- Eq (5) -----//
+	// Frame is NUE
+	Matrix3f direction_cosine_matrix(const Quaternionf& q);
 
+private:
+	Quaternionf _q_estimated = {1,0,0,0}; // level surface
 
-	for(;;)
-	{
-		if (accel_sub.updated())
-		{
-			estimator->collect_sensor_data();
-			estimator->apply();
-
-			auto roll = estimator->get_roll();
-			auto pitch = estimator->get_pitch();
-
-
-			// JUST CALCULATIONS FROM ACCEL!
-			// auto roll = equations::roll_from_accel(x, y, z);
-			// auto pitch = equations::pitch_from_accel(x, y, z);
-			// publish for our live stream
-			attitude_euler rpy;
-			rpy.roll = roll;
-			rpy.pitch = pitch;
-			attitude_pub.publish(rpy);
-		}
-
-		vTaskDelay(1);
-	}
-}
+};

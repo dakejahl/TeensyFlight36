@@ -22,17 +22,10 @@
 
 #pragma once
 
-#include <Eigen/Dense>
-#include <cmath>
-
 #include <Time.hpp>
-#include <board_config.hpp>
 #include <Messenger.hpp>
 
-#include <LowPassFilter.hpp>
-#include <Equations.hpp>
-
-using namespace Eigen;
+#include <Eigen/Dense>
 
 // Gyro
 static constexpr float GYRO_OFFSET_X =  -0.005717;
@@ -53,87 +46,39 @@ static constexpr float MAG_SCALE_X =  	289.209f;
 static constexpr float MAG_SCALE_Y =  	282.384f;
 static constexpr float MAG_SCALE_Z =  	262.062f;
 
+
+using namespace Eigen;
+
 class Estimator
 {
 public:
+	void collect_sensor_data(void);
+
 	float roll_from_quat(const Quaternionf& q);
 	float pitch_from_quat(const Quaternionf& q);
 	float yaw_from_quat(const Quaternionf& q);
 
-	void apply_gyro_calibration(float& x, float& y, float& z)
-	{
-		x = x - GYRO_OFFSET_X;
-		y = y - GYRO_OFFSET_Y;
-		z = z - GYRO_OFFSET_Z;
-	}
+	void apply_gyro_calibration(float& x, float& y, float& z);
+	void apply_accel_calibration(float& x, float& y, float& z);
+	void apply_mag_calibration(float& x, float& y, float& z);
 
-	void apply_accel_calibration(float& x, float& y, float& z)
-	{
-		x = (x - ACCEL_OFFSET_X) * ACCEL_SCALE_X;
-		y = (y - ACCEL_OFFSET_Y) * ACCEL_SCALE_Y;
-		z = (z - ACCEL_OFFSET_Z) * ACCEL_SCALE_Z;
-	}
-
-	void apply_mag_calibration(float& x, float& y, float& z)
-	{
-		x = (x - MAG_OFFSET_X) / MAG_SCALE_X;
-		y = (y - MAG_OFFSET_Y) / MAG_SCALE_Y;
-		z = (z - MAG_OFFSET_Z) / MAG_SCALE_Z;
-	}
-
-private:
-};
-
-class ComplimentaryFilter : public Estimator
-{
-public:
-
-private:
-};
-
-class AttitudeEstimator : public Estimator
-{
-public:
-
-	Quaternionf estimate_quat_1st_step(void);
-	Quaternionf estimate_quat_2nd_step(const Quaternionf& q);
+	float get_roll() { return _roll_est; };
+	float get_pitch() { return _pitch_est; };
 
 
+protected:
+	abs_time_t _last_timestamp = {};
 
-
-	//----- Eq (5) -----//
-	// Frame is NUE
-	Matrix3f direction_cosine_matrix(const Quaternionf& q)
-	{
-		Matrix3f C_bn;
-
-		float q0 = q.w();
-		float q1 = q.x();
-		float q2 = q.y();
-		float q3 = q.z();
-
-		C_bn(0,0) = q0*q0 + q1*q1 - q2*q2 - q3*q3;
-		C_bn(0,1) = 2*q0*q3 + 2*q1*q2;
-		C_bn(0,2) = -2*q0*q2 + 2*q1*q3;
-
-		C_bn(1,0) = -2*q0*q3 + 2*q1*q2;
-		C_bn(1,1) = q0*q0 - q1*q1 + q2*q2 - q3*q3;
-		C_bn(1,2) = 2*q0*q1 + 2*q2*q3;
-
-		C_bn(2,0) = 2*q0*q2 + 2*q1*q3;
-		C_bn(2,1) = -2*q0*q1 + 2*q2*q3;
-		C_bn(2,2) = q0*q0 - q1*q1 - q2*q2 + q3*q3;
-
-		return C_bn;
-	}
-
-private:
-	// Data for my actual impl
-	Quaternionf _q_estimated = {1,0,0,0}; // level surface
+	// Sensor data collected from last polling
+	Vector3f _gyro_xyz = {};
+	Vector3f _accel_xyz = {};
+	Vector3f _mag_xyz = {};
 
 	// Data subscribers
 	messenger::Subscriber<gyro_raw_data_s> _gyro_sub;
 	messenger::Subscriber<accel_raw_data_s> _accel_sub;
 	messenger::Subscriber<mag_raw_data_s> _mag_sub;
 
+	float _roll_est {};
+	float _pitch_est {};
 };

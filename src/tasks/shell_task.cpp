@@ -144,8 +144,7 @@ void calibrate_accel(void)
 
 void stream_mag_data(void)
 {
-
-	Serial4.begin(9600, SERIAL_8N1);
+	Serial4.begin(115200, SERIAL_8N1);
 
 	messenger::Subscriber<mag_raw_data_s> mag_sub;
 
@@ -166,9 +165,9 @@ void stream_mag_data(void)
 			Serial4.print(',');
 			Serial4.print(z);
 			Serial4.print("\n");
-
-			vTaskDelay(10);
 		}
+
+		vTaskDelay(50);
 
 		// Any user input cancels the spewing of data
 		if (Serial.available())
@@ -181,7 +180,7 @@ void stream_mag_data(void)
 
 void stream_accel_data(void)
 {
-	Serial4.begin(9600, SERIAL_8N1);
+	Serial4.begin(115200, SERIAL_8N1);
 
 	messenger::Subscriber<accel_raw_data_s> accel_sub;
 
@@ -204,8 +203,7 @@ void stream_accel_data(void)
 			Serial4.print("\n");
 		}
 
-
-		vTaskDelay(10);
+		vTaskDelay(50);
 
 		// Any user input cancels the spewing of data
 		if (Serial.available())
@@ -218,7 +216,7 @@ void stream_accel_data(void)
 
 void stream_attitude_euler_data(void)
 {
-	Serial4.begin(9600, SERIAL_8N1);
+	Serial4.begin(115200, SERIAL_8N1);
 
 	messenger::Subscriber<attitude_euler> attitude_sub;
 
@@ -241,8 +239,8 @@ void stream_attitude_euler_data(void)
 			Serial4.print("\n");
 		}
 
-
-		vTaskDelay(10);
+		// 20hz
+		vTaskDelay(50);
 
 		// Any user input cancels the spewing of data
 		if (Serial.available())
