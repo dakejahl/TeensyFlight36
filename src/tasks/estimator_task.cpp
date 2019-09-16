@@ -49,13 +49,14 @@ void estimator_task(void* args)
 			// This function modifies the input!!
 			estimator->apply_accel_calibration(x, y, z);
 
+
 			auto roll = equations::calculate_roll_from_accel(x, y, z);
 			auto pitch = equations::calculate_pitch_from_accel(x, y, z);
 
-			// These equations are correct... We need to aplly the calibration though
-			// SYS_INFO("roll: %f", roll);
-			// SYS_INFO("pitch: %f\n", pitch);
 
+
+
+			// publish for our live stream
 			attitude_euler rpy;
 			rpy.roll = roll;
 			rpy.pitch = pitch;

@@ -56,6 +56,10 @@ static constexpr float MAG_SCALE_Z =  	262.062f;
 class Estimator
 {
 public:
+	float roll_from_quat(const Quaternionf& q);
+	float pitch_from_quat(const Quaternionf& q);
+	float yaw_from_quat(const Quaternionf& q);
+
 	void apply_gyro_calibration(float& x, float& y, float& z)
 	{
 		x = x - GYRO_OFFSET_X;
@@ -94,9 +98,7 @@ public:
 	Quaternionf estimate_quat_1st_step(void);
 	Quaternionf estimate_quat_2nd_step(const Quaternionf& q);
 
-	float roll_from_quat(const Quaternionf& q);
-	float pitch_from_quat(const Quaternionf& q);
-	float yaw_from_quat(const Quaternionf& q);
+
 
 
 	//----- Eq (5) -----//
@@ -126,35 +128,6 @@ public:
 	}
 
 private:
-	// Functions
-	Quaternionf quat_error(Quaternionf q1, Quaternionf q2);
-
-	Quaternionf vect2q(Vector4f v);
-
-	Vector4f q2vect(Quaternionf q);
-
-	Quaternionf qexp(Quaternionf q);
-
-	Matrix3f crossp_mat(Vector3f v);
-
-	template <typename T> int sgn(T val)
-	{
-    	return (T(0) < val) - (val < T(0));
-	}
-
-	// Variables
-	abs_time_t _last_time = 0;
-
-	Quaternionf _q_obs = {};
-	Quaternionf _q_err = {};
-
-	Vector3f _bias_obs = {};
-
-	Vector3f _epsilon_err = {};
-	float _eta_err = {};
-
-	Quaternionf _unknown_variable = {};
-
 	// Data for my actual impl
 	Quaternionf _q_estimated = {1,0,0,0}; // level surface
 

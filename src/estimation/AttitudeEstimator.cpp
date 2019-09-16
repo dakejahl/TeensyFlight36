@@ -119,7 +119,7 @@ Quaternionf AttitudeEstimator::estimate_quat_2nd_step(const Quaternionf& q_est)
 	return Q_me * q_est;
 }
 
-float AttitudeEstimator::roll_from_quat(const Quaternionf& q)
+float Estimator::roll_from_quat(const Quaternionf& q)
 {
 	float q0 = q.w();
 	float q1 = q.x();
@@ -129,7 +129,7 @@ float AttitudeEstimator::roll_from_quat(const Quaternionf& q)
 	return std::atan((2*q0*q1 - 2*q2*q3) / (q0*q0 - q1*q1 + q2*q2 - q3*q3));
 }
 
-float AttitudeEstimator::pitch_from_quat(const Quaternionf& q)
+float Estimator::pitch_from_quat(const Quaternionf& q)
 {
 	float q0 = q.w();
 	float q1 = q.x();
@@ -139,7 +139,7 @@ float AttitudeEstimator::pitch_from_quat(const Quaternionf& q)
 	return std::asin(2*q0*q3 + 2*q1*q2);
 }
 
-float AttitudeEstimator::yaw_from_quat(const Quaternionf& q)
+float Estimator::yaw_from_quat(const Quaternionf& q)
 {
 	float q0 = q.w();
 	float q1 = q.x();
@@ -147,99 +147,4 @@ float AttitudeEstimator::yaw_from_quat(const Quaternionf& q)
 	float q3 = q.z();
 
 	return std::atan((2*q0*q2-2*q1*q3) / (q0*q0 + q1*q1 - q2*q2 - q3*q3));
-}
-
-Quaternionf AttitudeEstimator::quat_error(Quaternionf q1, Quaternionf q2)
-{
-	Vector4f q_error, auxq1;
-	Matrix4f K;
-	Quaternionf err;
-
-	auxq1 << q1.vec(), q1.w();
-
-	K << q2.w() * MatrixXf::Identity(3, 3) - crossp_mat(q2.vec()), -q2.vec(), q2.vec().transpose(), q2.w();
-
-	q_error = K * auxq1;
-
-	err.w() = q_error(3);
-	err.vec()(0) = q_error(0);
-	err.vec()(1) = q_error(1);
-	err.vec()(2) = q_error(2);
-
-	return err;
-}
-
-Matrix3f AttitudeEstimator::crossp_mat(Vector3f v)
-{
-	Matrix3f aux;
-
-	aux << 	0, -v(2), v(1),
-			v(2), 0, -v(0),
-			-v(1), v(0), 0;
-
-	return aux;
-}
-
-Quaternionf AttitudeEstimator::vect2q(Vector4f v)
-{
-	Quaternionf q;
-	Vector3f v_3;
-
-	q.w() = v(0);
-	v_3(0) = v(1);
-	v_3(1) = v(2);
-	v_3(2) = v(3);
-
-	q.vec() = v_3;
-
-	return q;
-}
-
-Vector4f AttitudeEstimator::q2vect(Quaternionf q)
-{
-	Vector4f quat;
-	Vector3f q_v;
-
-	quat(0) = q.w();
-	q_v = q.vec();
-
-	quat(1) = q_v(0);
-	quat(2) = q_v(1);
-	quat(3) = q_v(2);
-
-	return quat;
-}
-
-Quaternionf AttitudeEstimator::qexp(Quaternionf q)
-{
-	Quaternionf exp_q;
-	Vector3f vect;
-	Vector3f exp_v;
-
-	float sigma, exp_sigma, w, sinw;
-
-	sigma = q.w();
-	vect = q.vec();
-
-	w = vect.norm();
-	sinw = std::sin(w);
-	exp_sigma = std::exp(sigma) * std::cos(w);
-
-	if (w != 0)
-	{
-		exp_v(0) = std::exp(sigma) * (vect(0) / w) * sinw;
-		exp_v(1) = std::exp(sigma) * (vect(1) / w) * sinw;
-		exp_v(2) = std::exp(sigma) * (vect(2) / w) * sinw;
-	}
-	else
-	{
-		exp_v(0) = 0;
-		exp_v(1) = 0;
-		exp_v(2) = 0;
-	}
-
-	exp_q.w() = exp_sigma;
-	exp_q.vec() = exp_v;
-
-	return exp_q;
 }
