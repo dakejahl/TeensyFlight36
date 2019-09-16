@@ -149,9 +149,6 @@ float AttitudeEstimator::yaw_from_quat(const Quaternionf& q)
 	return std::atan((2*q0*q2-2*q1*q3) / (q0*q0 + q1*q1 - q2*q2 - q3*q3));
 }
 
-
-
-
 Quaternionf AttitudeEstimator::quat_error(Quaternionf q1, Quaternionf q2)
 {
 	Vector4f q_error, auxq1;
@@ -182,8 +179,6 @@ Matrix3f AttitudeEstimator::crossp_mat(Vector3f v)
 
 	return aux;
 }
-
-
 
 Quaternionf AttitudeEstimator::vect2q(Vector4f v)
 {

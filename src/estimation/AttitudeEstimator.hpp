@@ -28,7 +28,9 @@
 #include <Time.hpp>
 #include <board_config.hpp>
 #include <Messenger.hpp>
+
 #include <LowPassFilter.hpp>
+#include <Equations.hpp>
 
 using namespace Eigen;
 
@@ -51,14 +53,41 @@ static constexpr float MAG_SCALE_X =  	289.209f;
 static constexpr float MAG_SCALE_Y =  	282.384f;
 static constexpr float MAG_SCALE_Z =  	262.062f;
 
-class ComplimentaryFilter
+class Estimator
+{
+public:
+	void apply_gyro_calibration(float& x, float& y, float& z)
+	{
+		x = x - GYRO_OFFSET_X;
+		y = y - GYRO_OFFSET_Y;
+		z = z - GYRO_OFFSET_Z;
+	}
+
+	void apply_accel_calibration(float& x, float& y, float& z)
+	{
+		x = (x - ACCEL_OFFSET_X) * ACCEL_SCALE_X;
+		y = (y - ACCEL_OFFSET_Y) * ACCEL_SCALE_Y;
+		z = (z - ACCEL_OFFSET_Z) * ACCEL_SCALE_Z;
+	}
+
+	void apply_mag_calibration(float& x, float& y, float& z)
+	{
+		x = (x - MAG_OFFSET_X) / MAG_SCALE_X;
+		y = (y - MAG_OFFSET_Y) / MAG_SCALE_Y;
+		z = (z - MAG_OFFSET_Z) / MAG_SCALE_Z;
+	}
+
+private:
+};
+
+class ComplimentaryFilter : public Estimator
 {
 public:
 
 private:
 };
 
-class AttitudeEstimator
+class AttitudeEstimator : public Estimator
 {
 public:
 
