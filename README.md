@@ -1,4 +1,4 @@
-![Image description](images/teensyflight.png)
+![](images/teensyflight.png)
 ## What's the point?
 Challenging myself to learn, improve, and produce practical high quality embedded systems and software.
 
@@ -21,26 +21,26 @@ https://mcuoneclipse.com/2017/04/29/modifying-the-teensy-3-5-and-3-6-for-arm-swd
 Pretty neat little GUI in MCUXpresso. I ended up implementing the debug support when I got stuck for a few hours on a program crash. It ended up being a stack overflow that I didn't suspect because I didn't know that the FreeRTOS `overflow_hook()` is not reliable.
 
 Anyways, check out your stack and heap usage as well as runtime stats
-![Image description](images/freertosTAD.png)
+![](images/freertosTAD.png)
 ### Segger SystemView
 This piece of software is amazing. I learn so much from reviewing the information preseneted in this GUI. Your program can be instrumented as much or as little as you'd like! This is used to verify timing as well as scheduling characteristics. This was a little bit of effort to integrate into the build but definitely worth it. As checked-in (9/1/19) it is ready to go with the click of a button! With the JLink hooked up: Target --> Start Recording.
-![Image description](images/systemview.png)<br/>
+![](images/systemview.png)<br/>
 https://www.segger.com/products/development-tools/systemview/
 
 ### Interactive data visualization
 Created a tool in C++ that reads 3-axis csv data and writes this to a file.  I then run an ellipsoid fit algorithm on the data set and plot the data in 3D with the caclulated offsets and scales for each axis. The plot is a 3D interactive plot created with `plotly`.<br/>
 https://plot.ly/python/3d-scatter-plots/
 
-![Image description](images/mag_data.png)
+![](images/mag_data.gif)
 
 ### Live plotting
 Using the data stream to CSV tool paired with a python script that monitors the 3-axis data file for updates, I am able to view real-time data being streamed from the device.
-![Image description](images/live_plot.png)
+![](images/live_plot.png)
 
 
 ### Attitude visualization
 Using the data stream to CSV tool, I am able to parse attidue data and render in 3D using OpenGL.
-![Image description](images/attitude.gif)
+![](images/attitude.gif)
 
 ***Thank you to...***
 

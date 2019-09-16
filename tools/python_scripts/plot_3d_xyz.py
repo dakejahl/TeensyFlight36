@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
 
-path = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/3_axis_data.csv";
+path = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/mag_data.csv";
 df = pd.read_csv(path)
 print(df)
 

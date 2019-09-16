@@ -133,7 +133,8 @@ int main(void)
 
     // Create a file that we'd like to write to
     std::ofstream file;
-    file.open("mag_data.csv");
+    const char* path = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/mag_data.csv";
+    file.open(path);
 
     file << "x,y,z\n";
 

@@ -150,8 +150,8 @@ private:
 	abs_time_t _last_timestamp = 0;
 
 	// mag filter
-	LowPassFilter<float> _mag_filter_x {50}; // 50Hz filter
-	LowPassFilter<float> _mag_filter_y {50}; // 50Hz filter
-	LowPassFilter<float> _mag_filter_z {50}; // 50Hz filter
+	LowPassFilter<float> _mag_filter_x {20}; // 50Hz filter
+	LowPassFilter<float> _mag_filter_y {20}; // 50Hz filter
+	LowPassFilter<float> _mag_filter_z {20}; // 50Hz filter
 };
 
