@@ -1,6 +1,6 @@
 ![Image description](images/teensyflight.png)
 ## What's the point?
-Challenging my ability to learn, improve, and produce practical high quality embedded systems and software.
+Challenging myself to learn, improve, and produce practical high quality embedded systems and software.
 
 ## Features
 - Makefile + SWD GDB upload and debug

@@ -85,6 +85,7 @@ void draw()
 	glVertex3f(1.0, 0.2, 1.0);
 	glVertex3f(1.0, -0.2, 1.0);
 	glVertex3f(1.0, -0.2, -1.0);
+
 	glEnd();
 }
 
@@ -137,6 +138,11 @@ void init()
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
 	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+
 	glDepthFunc(GL_LEQUAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
