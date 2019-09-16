@@ -27,7 +27,7 @@ using namespace Eigen;
 
 
 // ----- ATTITUDE QUATERNION FANCY PANTS ESTIMATOR -----//
-void TwoStepGeometricEstimator::apply(void)
+void TwoStepGeometricEstimator::estimate_attitude(void)
 {
 	auto q = estimate_quat_1st_step();
 

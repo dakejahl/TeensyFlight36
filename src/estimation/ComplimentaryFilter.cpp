@@ -22,7 +22,7 @@
 
 #include <ComplimentaryFilter.hpp>
 
-void ComplimentaryFilter::apply(void)
+void ComplimentaryFilter::estimate_attitude(void)
 {
 	estimate_rpy_from_accel_and_gyro(_accel_xyz, _gyro_xyz);
 }

@@ -34,7 +34,7 @@ public:
 	ComplimentaryFilter(float alpha) : _alpha(alpha)
 	{}
 
-	void apply(void);
+	void estimate_attitude(void);
 
 	void estimate_rpy_from_accel_and_gyro(const Vector3f& accel, const Vector3f& gyro);
 

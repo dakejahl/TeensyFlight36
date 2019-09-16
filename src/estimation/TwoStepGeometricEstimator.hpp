@@ -35,7 +35,7 @@ class TwoStepGeometricEstimator : public Estimator
 {
 public:
 
-	void apply(void);
+	void estimate_attitude(void);
 
 	Quaternionf estimate_quat_1st_step(void);
 	Quaternionf estimate_quat_2nd_step(const Quaternionf& q);

@@ -43,7 +43,7 @@ void estimator_task(void* args)
 		if (accel_sub.updated())
 		{
 			estimator->collect_sensor_data();
-			estimator->apply();
+			estimator->estimate_attitude();
 
 			auto roll = estimator->get_roll();
 			auto pitch = estimator->get_pitch();
