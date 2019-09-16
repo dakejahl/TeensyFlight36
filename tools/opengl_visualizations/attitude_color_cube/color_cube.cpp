@@ -3,12 +3,11 @@
 // in the scene, we can render it using backface culling only. i.e., there
 // is no need for a depth buffer.
 
-#ifdef __APPLE_CC__
-#include <GLUT/glut.h>
-#else
+
 #include <GL/glut.h>
-#endif
 #include <cmath>
+
+#include <libserial/SerialPort.h>
 
 // The cube has opposite corners at (0,0,0) and (1,1,1), which are black and
 // white respectively.  The x-axis is the red gradient, the y-axis is the
@@ -105,4 +104,10 @@ int main(int argc, char** argv) {
   glutDisplayFunc(display);
   init();
   glutMainLoop();
+}
+
+
+void setup_serial()
+{
+
 }
