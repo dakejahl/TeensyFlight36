@@ -338,6 +338,22 @@ void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 	data.temperature = temp;
 
 	_gyro_pub.publish(data);
+
+	// TODO: is there a better way to do this?
+	// publish filtered data for controller input
+	gyro_filtered_data_s filtered_gyro;
+
+	x = _gyro_filter_x.apply(x, timestamp);
+	y = _gyro_filter_y.apply(y, timestamp);
+	z = _gyro_filter_z.apply(z, timestamp);
+
+	filtered_gyro.timestamp = timestamp;
+	filtered_gyro.x = x;
+	filtered_gyro.y = y;
+	filtered_gyro.z = z;
+	filtered_gyro.temperature = temp;
+
+	_filtered_gyro_pub.publish(filtered_gyro);
 }
 
 void Mpu9250::publish_mag_data(abs_time_t& timestamp)

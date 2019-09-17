@@ -47,6 +47,15 @@ struct __attribute__((__packed__)) gyro_raw_data_s
 	float z;
 };
 
+struct __attribute__((__packed__)) gyro_filtered_data_s
+{
+	abs_time_t timestamp;
+	float temperature;
+	float x;
+	float y;
+	float z;
+};
+
 struct __attribute__((__packed__)) mag_raw_data_s
 {
 	abs_time_t timestamp;
@@ -59,7 +68,7 @@ struct __attribute__((__packed__)) mag_raw_data_s
 struct __attribute__((__packed__)) rc_input_s
 {
 	abs_time_t timestamp;
-	uint16_t channel_values[16];
+	uint16_t channels[16];
 	uint16_t lost_frame_count;
 	bool rc_failsafe;
 	bool rc_lost;

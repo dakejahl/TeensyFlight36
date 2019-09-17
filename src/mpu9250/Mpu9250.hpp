@@ -131,6 +131,8 @@ private:
 	messenger::Publisher<accel_raw_data_s> _accel_pub;
 	messenger::Publisher<gyro_raw_data_s> _gyro_pub;
 	messenger::Publisher<mag_raw_data_s> _mag_pub;
+	messenger::Publisher<gyro_filtered_data_s> _filtered_gyro_pub;
+
 
 	// mag factory cal "sensitivity adjustment"
 	float _mag_factory_scale_factor_x = 0;
@@ -150,8 +152,12 @@ private:
 	abs_time_t _last_timestamp = 0;
 
 	// mag filter
-	LowPassFilter<float> _mag_filter_x {20}; // 50Hz filter
-	LowPassFilter<float> _mag_filter_y {20}; // 50Hz filter
-	LowPassFilter<float> _mag_filter_z {20}; // 50Hz filter
+	LowPassFilter<float> _mag_filter_x {20}; // 20Hz filter
+	LowPassFilter<float> _mag_filter_y {20}; // 20Hz filter
+	LowPassFilter<float> _mag_filter_z {20}; // 20Hz filter
+
+	LowPassFilter<float> _gyro_filter_x {100};// 100Hz filter
+	LowPassFilter<float> _gyro_filter_y {100};// 100Hz filter
+	LowPassFilter<float> _gyro_filter_z {100};// 100Hz filter
 };
 

@@ -38,6 +38,6 @@ void serial_uart_task(void* args)
 		abs_time_t time = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 		sbus->publish_data(time);
 
-		sbus->print_data();
+		// sbus->print_data();
 	}
 }

@@ -126,7 +126,7 @@ void Sbus::publish_data(abs_time_t& timestamp)
 
 	for (size_t i = 0; i < RC_NUMBER_CHANNELS; i++)
 	{
-		data.channel_values[i] = _channels_data[i];
+		data.channels[i] = _channels_data[i];
 	}
 
 	_rc_pub.publish(data);
