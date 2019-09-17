@@ -11,8 +11,9 @@ Challenging myself to learn, improve, and produce practical high quality embedde
 - MPU9250 @ 1kHz gyro / accel / mag on 10MHz SPI
 - FrSky XM+ mini on UART SBUS
 - PWM driver at 400Hz for actuator control signals
-- Calibration -- offsets/scales + ellipsoid fit for mag
-- Data visualization with python -- serial UART to host PC
+- Attitude estimation. Complimentary filter, Kalman filter, EKF
+- Host side serial communications with onboard "shell" task
+- Interactive plotting and visualizations with python and OpenGL
 
 ## Debugging -- SWD: JLink + GDB + MCUXpresso
 Now this is a hardware hack. I soldered the reset line on the companion microcontroller (KL02) to ground, this holds the KL02 in reset and thus prevents its activity on the SWD lines.<br/>
