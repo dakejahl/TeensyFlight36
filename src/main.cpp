@@ -30,7 +30,7 @@ extern void imu_task(void* args);
 extern void sanity_idle_task(void* args);
 extern void dispatch_test_task(void* args);
 extern void shell_task(void* args);
-
+extern void controller_task(void* args);
 
 extern const uint8_t FreeRTOSDebugConfig[];
 
@@ -54,6 +54,8 @@ extern "C" int main()
 
 	xTaskCreate(dispatch_test_task, "dispatch_test_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::HIGHEST, NULL);
 	xTaskCreate(imu_task, "imu_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::HIGHEST-1, NULL);
+	xTaskCreate(controller_task, "controller_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::HIGHEST-1, NULL);
+
 
 	vTaskStartScheduler();
 
