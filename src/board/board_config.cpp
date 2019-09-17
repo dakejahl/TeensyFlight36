@@ -42,7 +42,6 @@ extern "C" void SystemInit(void)
 #define PS_DIV_64 0b110
 #define PS_DIV_128 0b111
 
-#define FTM_PRESCALE_533_NANO_SEC 32
 #define FTM_SYS_CLK 1
 
 //---- HIGH PRECISION / DISPATCH SCHEDULING ----//

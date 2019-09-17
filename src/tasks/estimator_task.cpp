@@ -53,6 +53,7 @@ void estimator_task(void* args)
 			rpy.roll = roll;
 			rpy.pitch = pitch;
 			attitude_pub.publish(rpy);
+
 		}
 
 		vTaskDelay(1);

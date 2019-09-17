@@ -37,6 +37,8 @@ static constexpr unsigned MOTORS_DISARMED = 900U; // 900us
 static constexpr unsigned IDLE_TRHOTTLE = 1150U; // 1150us
 static constexpr unsigned FULL_TRHOTTLE = 1950U; //1950us
 
+// 400Hz (2.5ms) and 256 ticks gives:
+// 2500us / 256 ticks == 9.765625 micro_s / tick
 static constexpr float MICROS_PER_PWM_TICKS = 9.765625;
 
 } // end namespace pwm
@@ -47,14 +49,22 @@ public:
 	Pwm(unsigned frequency)
 	{
 		// Configure at 400Hz and hold low
+
+		// MOTOR_1 and MOTOR_2 share a pwm timer
 		analogWriteFrequency(pwm::MOTOR_1, frequency);
 		analogWrite(pwm::MOTOR_1, pwm::MOTORS_DISARMED);
+		analogWrite(pwm::MOTOR_2, pwm::MOTORS_DISARMED);
+
+		// MOTOR_3 and MOTOR_4 share a pwm timer
+		analogWriteFrequency(pwm::MOTOR_3, frequency);
+		analogWrite(pwm::MOTOR_3, pwm::MOTORS_DISARMED);
+		analogWrite(pwm::MOTOR_4, pwm::MOTORS_DISARMED);
 	}
 
 	void write(uint8_t motor, unsigned pulse_width_us)
 	{
 		int ticks = pulse_width_us / pwm::MICROS_PER_PWM_TICKS;
-		// 2500us / 256 ticks == 9.765625
+
 
 		analogWrite(motor, ticks);
 	}

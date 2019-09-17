@@ -242,6 +242,9 @@ void stream_attitude_euler_data(void)
 			Serial4.print(',');
 			Serial4.print(z);
 			Serial4.print("\n");
+
+			// SYS_INFO("roll: %f", data.roll);
+			// SYS_INFO("pitch: %f", data.pitch);
 		}
 
 		// 20hz
