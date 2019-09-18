@@ -64,6 +64,10 @@ float PIDController::get_effort(float target, float current)
 	{
 		effort = _max_effort;
 	}
+	else if (effort < -_max_effort)
+	{
+		effort = -_max_effort;
+	}
 
 	_last_error = error;
 

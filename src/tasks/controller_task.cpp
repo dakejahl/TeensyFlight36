@@ -59,8 +59,8 @@ void controller_task(void* args)
 		}
 
 		// 250hz == 4ms
-		// vTaskDelay(4);
-		vTaskDelay(100);
+		vTaskDelay(4);
+		// vTaskDelay(100);
 
 	}
 }

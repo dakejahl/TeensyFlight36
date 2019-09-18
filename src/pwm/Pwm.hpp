@@ -36,6 +36,8 @@ static constexpr unsigned MOTOR_4 = 17U;
 static constexpr unsigned MOTORS_DISARMED = 900U; // 900us
 static constexpr unsigned IDLE_THROTTLE = 1150U; // 1150us
 static constexpr unsigned FULL_THROTTLE = 1950U; //1950us
+static constexpr unsigned SAFE_THROTTLE = 1500U; //1950us
+
 
 // 400Hz (2.5ms) and 256 ticks gives:
 // 2500us / 256 ticks == 9.765625 micro_s / tick
