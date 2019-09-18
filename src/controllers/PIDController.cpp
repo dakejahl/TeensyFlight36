@@ -52,10 +52,10 @@ float PIDController::get_effort(float target, float current)
 	}
 
 	// integral windup reset
-	if ( (_last_error < 0.0f && error > 0.0f) || (_last_error > 0.0f && error < 0.0f))
-	{
-		_error_integral = 0;
-	}
+	// if ( (_last_error < 0.0f && error > 0.0f) || (_last_error > 0.0f && error < 0.0f))
+	// {
+	// 	_error_integral = 0;
+	// }
 
 	// Calculate effort from PID gains and error
 	float effort = _kP * error + _kI * _error_integral + _kD * (error - _last_error);
