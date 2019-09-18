@@ -158,17 +158,38 @@ void AttitudeControl::run_controllers(void)
 	float pitch_effort = _pitch_rate_controller->get_effort(effort, _pitch_rate);
 
 	// ----- ACTUATOR OUTPUTS -----/
+	// SYS_INFO("_throttle_sp: %f", _throttle_sp);
+	// SYS_INFO("_roll_sp: %f", _roll_sp);
+	// SYS_INFO("_pitch_sp: %f\n", _pitch_sp);
+
+	// SYS_INFO("_throttle: %f", _rc_throttle);
+	// SYS_INFO("_roll: %f", _roll);
+	// SYS_INFO("_pitch: %f", _pitch);
+
+	// SYS_INFO("roll_effort: %f", roll_effort);
+	// SYS_INFO("pitch_effort: %f", pitch_effort);
 
 	// perform mixing
-	float motor_effort_1 = pwm::FULL_THROTTLE * (_throttle_sp / 4) + (pitch_effort / 4) - (roll_effort / 4);
-	float motor_effort_2 = pwm::FULL_THROTTLE * (_throttle_sp / 4) - (pitch_effort / 4) + (roll_effort / 4);
-	float motor_effort_3 = pwm::FULL_THROTTLE * (_throttle_sp / 4) + (pitch_effort / 4) + (roll_effort / 4);
-	float motor_effort_4 = pwm::FULL_THROTTLE * (_throttle_sp / 4) - (pitch_effort / 4) - (roll_effort / 4);
+	unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::FULL_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort - roll_effort);
+	unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::FULL_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort + roll_effort);
+	unsigned motor_effort_3 = pwm::IDLE_THROTTLE + (pwm::FULL_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort + roll_effort);
+	unsigned motor_effort_4 = pwm::IDLE_THROTTLE + (pwm::FULL_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort);
 
-	motor_effort_1 = equations::clamp<float>(motor_effort_1, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
-	motor_effort_2 = equations::clamp<float>(motor_effort_2, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
-	motor_effort_3 = equations::clamp<float>(motor_effort_3, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
-	motor_effort_4 = equations::clamp<float>(motor_effort_4, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
+	motor_effort_1 = equations::clamp<unsigned>(motor_effort_1, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
+	motor_effort_2 = equations::clamp<unsigned>(motor_effort_2, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
+	motor_effort_3 = equations::clamp<unsigned>(motor_effort_3, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
+	motor_effort_4 = equations::clamp<unsigned>(motor_effort_4, pwm::IDLE_THROTTLE, pwm::FULL_THROTTLE);
+
+	// SYS_INFO("motor_effort_1: %d", motor_effort_1);
+	// SYS_INFO("motor_effort_2: %d", motor_effort_2);
+	// SYS_INFO("motor_effort_3: %d", motor_effort_3);
+	// SYS_INFO("motor_effort_4: %d\n", motor_effort_4);
+
+	// Ouput it to the motors.... fingers crossed
+	_pwm->write(pwm::MOTOR_1, motor_effort_1);
+	_pwm->write(pwm::MOTOR_2, motor_effort_2);
+	_pwm->write(pwm::MOTOR_3, motor_effort_3);
+	_pwm->write(pwm::MOTOR_4, motor_effort_4);
 }
 
 void AttitudeControl::outputs_motors_idle(void)

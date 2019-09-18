@@ -79,11 +79,11 @@ private:
 	Pwm* _pwm {};
 
 	// RC input from user
-	uint16_t _rc_throttle = 0;
-	uint16_t _rc_yaw = 0;
-	uint16_t _rc_pitch = 0;
-	uint16_t _rc_roll = 0;
-	uint16_t _rc_kill = 0;
+	float _rc_throttle = 0;
+	float _rc_yaw = 0;
+	float _rc_pitch = 0;
+	float _rc_roll = 0;
+	float _rc_kill = 0;
 
 	// Attitude control
 	float _throttle_sp = 0;

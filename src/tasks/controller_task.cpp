@@ -52,10 +52,6 @@ void controller_task(void* args)
 
 			// Push attitude setpoint into attitude controller
 			attitude_controller->run_controllers();
-
-			// Push rates setpoint into rates controller
-
-
 		}
 		else
 		{
@@ -63,6 +59,8 @@ void controller_task(void* args)
 		}
 
 		// 250hz == 4ms
-		vTaskDelay(4);
+		// vTaskDelay(4);
+		vTaskDelay(100);
+
 	}
 }

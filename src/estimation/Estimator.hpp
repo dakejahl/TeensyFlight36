@@ -28,16 +28,16 @@
 #include <Eigen/Dense>
 
 // Gyro
-static constexpr float GYRO_OFFSET_X =  -0.005717;
-static constexpr float GYRO_OFFSET_Y =  0.030644;
-static constexpr float GYRO_OFFSET_Z =  0.017080;
+static constexpr float GYRO_OFFSET_X =  -0.011718f;
+static constexpr float GYRO_OFFSET_Y =  0.032100f;
+static constexpr float GYRO_OFFSET_Z =  0.031106f;
 // Accel
-static constexpr float ACCEL_OFFSET_X = 0.326940f;
-static constexpr float ACCEL_OFFSET_Y = 0.193270f;
-static constexpr float ACCEL_OFFSET_Z = -0.411380f;
-static constexpr float ACCEL_SCALE_X =	0.997458f;
-static constexpr float ACCEL_SCALE_Y =	0.998817f;
-static constexpr float ACCEL_SCALE_Z =	0.984198f;
+static constexpr float ACCEL_OFFSET_X = 0.317478f;
+static constexpr float ACCEL_OFFSET_Y = 0.224600f;
+static constexpr float ACCEL_OFFSET_Z = -0.334862f;
+static constexpr float ACCEL_SCALE_X =	1.003191f;
+static constexpr float ACCEL_SCALE_Y =	0.998537f;
+static constexpr float ACCEL_SCALE_Z =	0.992191f;
 // Mag -- TODO: investigate why a single outlier fucks up the ellipsoid fit algorithm
 static constexpr float MAG_OFFSET_X =   10.0653f;
 static constexpr float MAG_OFFSET_Y =   34.8082f;
