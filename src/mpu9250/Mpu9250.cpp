@@ -308,6 +308,11 @@ void Mpu9250::publish_accel_data(abs_time_t& timestamp)
 	float z = _sensor_data.accel_z * ACCEL_M_S2_PER_TICK;
 	float temp = _sensor_data.temperature / 333.87f + 21.0f;
 
+	// Apply a lowpass filter
+	x = _accel_filter_x.apply(x, timestamp);
+	y = _accel_filter_y.apply(y, timestamp);
+	z = _accel_filter_z.apply(z, timestamp);
+
 	// Stuff the message
 	accel_raw_data_s data;
 
