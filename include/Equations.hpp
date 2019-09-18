@@ -35,4 +35,34 @@ inline float pitch_from_accel(float x, float y, float z)
 	return std::atan( x / (std::sqrt(y*y + z*z))) * 180.0f / M_PI;
 }
 
+inline float pitch_rate_from_gyro(float x, float y, float z, float roll_est)
+{
+	float pitch_rate = y * std::cos(roll_est) - z * std::sin(roll_est);
+
+	return pitch_rate;
+}
+
+inline float roll_rate_from_gyro(float x, float y, float z, float pitch_est, float roll_est)
+{
+	float roll_rate = x + y * std::sin(roll_est) * std::tan(pitch_est)
+					+ z * std::cos(roll_est) * std::tan(pitch_est);
+
+	return roll_rate;
+}
+
+template <typename T>
+inline float clamp(T val, T lo, T hi)
+{
+	if (val > hi)
+	{
+		val = hi;
+	}
+	else if (val < lo)
+	{
+		val = lo;
+	}
+
+	return val;
+}
+
 }; // end namespace estimation

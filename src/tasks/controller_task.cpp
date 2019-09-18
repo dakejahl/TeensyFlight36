@@ -39,7 +39,8 @@ void controller_task(void* args)
 		attitude_controller->check_for_kill_condition();
 
 		// Retrieve latest gyro data
-		attitude_controller->collect_gyro_data();
+		attitude_controller->collect_attitude_data();
+		attitude_controller->collect_attitude_rate_data();
 
 		if (attitude_controller->armed())
 		{
@@ -50,7 +51,7 @@ void controller_task(void* args)
 			attitude_controller->convert_unit_rpy_to_rpy_degs();
 
 			// Push attitude setpoint into attitude controller
-			attitude_controller->calculate_effort_for_rates_controller();
+			attitude_controller->run_controllers();
 
 			// Push rates setpoint into rates controller
 

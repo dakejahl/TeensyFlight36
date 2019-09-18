@@ -34,11 +34,9 @@ void ComplimentaryFilter::estimate_rpy_from_accel_and_gyro(const Vector3f& accel
 	float pitch = equations::pitch_from_accel(accel.x(), accel.y(), accel.z());
 
 	// Calculate roll and pitch rates
-	float roll_rate = _gyro_xyz.x() + _gyro_xyz.y() * std::sin(_roll_est) * std::tan(_pitch_est)
-					+ _gyro_xyz.z() * std::cos(_roll_est) * std::tan(_pitch_est);
+	float pitch_rate = equations::pitch_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _roll_est);
 
-	float pitch_rate = _gyro_xyz.y() * std::cos(_roll_est) - _gyro_xyz.z() * std::sin(_roll_est);
-
+	float roll_rate = equations::roll_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _pitch_est, _roll_est);
 
 	auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 	float dt = (now - _last_timestamp) / MICROS_PER_SEC;

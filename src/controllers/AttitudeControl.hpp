@@ -25,11 +25,13 @@
 #include <PIDController.hpp>
 #include <Pwm.hpp>
 #include <Messenger.hpp>
+#include <Equations.hpp>
+
 
 #define ARM_TIME_US 2000000
 #define KILL_VALUE 1000
-#define MAX_PITCH 45
-#define MAX_ROLL 45
+#define MAX_PITCH_ANGLE_DEG 45
+#define MAX_ROLL_ANGLE_DEG 45
 
 class AttitudeControl
 {
@@ -37,7 +39,8 @@ public:
 	AttitudeControl();
 
 	// Gyro stuff
-	void collect_gyro_data(void);
+	void collect_attitude_data(void);
+	void collect_attitude_rate_data(void);
 
 	// RC stuff
 	void get_rc_input(void);
@@ -52,17 +55,25 @@ public:
 	// Controller stuff
 	void convert_rc_to_trpy(void);
 	void convert_unit_rpy_to_rpy_degs(void);
-	void calculate_effort_for_rates_controller(void);
-private:
 
-	// gyro filtered data (for control signals)
-	float _gyro_x = 0;
-	float _gyro_y = 0;
-	float _gyro_z = 0;
+	// Runs the attitude controller and then the rates controller
+	void run_controllers(void);
+
+private:
+	// Attitude
+	float _roll = 0;
+	float _pitch = 0;
+	float _yaw = 0;
+
+	// Rates
+	float _roll_rate = 0;
+	float _pitch_rate = 0;
+	float _yaw_rate = 0;
 
 	// Subscribers
 	messenger::Subscriber<rc_input_s> _rc_sub;
 	messenger::Subscriber<gyro_filtered_data_s> _gyro_sub;
+	messenger::Subscriber<attitude_euler> _attitude_sub;
 
 	// PWM output module
 	Pwm* _pwm {};
