@@ -6,6 +6,7 @@
 
 #include <GL/glut.h>
 #include <cmath>
+#include <cstring>
 
 #include <libserial/SerialPort.h>
 
@@ -27,6 +28,7 @@ volatile bool rpy_data_ready = true;
 int setup_serial(void);
 void wait_for_serial_data(void);
 void serial_parse_data(void);
+void print_text_on_screen(float x, float y, float r, float g, float b, char *string);
 
 const int NUM_VERTICES = 8;
 const int NUM_FACES = 6;
@@ -45,6 +47,18 @@ void draw()
 	float pitch = rpy_data.at(1);
 	float yaw = rpy_data.at(2);
 
+	// Print out RPY values
+	char words[20];
+	snprintf(words, strlen(words), "roll: %f", roll);
+	print_text_on_screen(1, 2, 1, 0, 0, words);
+
+	snprintf(words, strlen(words), "pitch: %f", pitch);
+	print_text_on_screen(1, 1.8, 1, 0, 0, words);
+
+	snprintf(words, strlen(words), "yaw: %f", yaw);
+	print_text_on_screen(1, 1.6, 1, 0, 0, words);
+
+	// Perform rotation in scene based on attitude
 	glRotatef(-roll, 0.00, 0.00, 1.00);
 	glRotatef(-pitch, 1.00, 0.00, 0.00);
 	glRotatef(-yaw, 0.00, 1.00, 0.00);
@@ -89,6 +103,18 @@ void draw()
 	glVertex3f(1.0, -0.2, -1.0);
 
 	glEnd();
+}
+
+void print_text_on_screen(float x, float y, float r, float g, float b, char *string)
+{
+	glColor3f( r, g, b );
+	glRasterPos2f(x, y);
+	int len, i;
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, string[i]);
+	}
 }
 
 void display()
