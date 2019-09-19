@@ -62,7 +62,7 @@ void draw()
 	// (us the observer) that is being rotated.
 	glRotatef(-roll, 0.00, 0.00, 1.00);
 	glRotatef(-pitch, 1.00, 0.00, 0.00);
-	glRotatef(-yaw, 0.00, 1.00, 0.00);
+	glRotatef(yaw, 0.00, 1.00, 0.00);
 
 	glBegin(GL_QUADS);
 	glColor3f(0.0, 0.0, 0.0);
