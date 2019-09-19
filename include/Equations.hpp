@@ -35,6 +35,14 @@ inline float pitch_from_accel(float x, float y, float z)
 	return std::atan( x / (std::sqrt(y*y + z*z))) * 180.0f / M_PI;
 }
 
+inline float roll_rate_from_gyro(float x, float y, float z, float pitch_est, float roll_est)
+{
+	float roll_rate = x + y * std::sin(roll_est) * std::tan(pitch_est)
+					+ z * std::cos(roll_est) * std::tan(pitch_est);
+
+	return roll_rate;
+}
+
 inline float pitch_rate_from_gyro(float x, float y, float z, float roll_est)
 {
 	float pitch_rate = y * std::cos(roll_est) - z * std::sin(roll_est);
@@ -42,12 +50,11 @@ inline float pitch_rate_from_gyro(float x, float y, float z, float roll_est)
 	return pitch_rate;
 }
 
-inline float roll_rate_from_gyro(float x, float y, float z, float pitch_est, float roll_est)
+inline float yaw_rate_from_gyro(float x, float y, float z, float pitch_est, float roll_est)
 {
-	float roll_rate = x + y * std::sin(roll_est) * std::tan(pitch_est)
-					+ z * std::cos(roll_est) * std::tan(pitch_est);
+	float yaw_rate = y * std::sin(roll_est) / std::cos(pitch_est) + z * std::cos(roll_est) / std::cos(pitch_est);
 
-	return roll_rate;
+	return yaw_rate;
 }
 
 template <typename T>

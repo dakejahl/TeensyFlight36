@@ -43,9 +43,11 @@ void draw()
 
 	float roll = rpy_data.at(0);
 	float pitch = rpy_data.at(1);
+	float yaw = rpy_data.at(2);
 
 	glRotatef(-roll, 0.00, 0.00, 1.00);
-	glRotatef(pitch, 1.00, 0.00, 0.00);
+	glRotatef(-pitch, 1.00, 0.00, 0.00);
+	glRotatef(-yaw, 0.00, 1.00, 0.00);
 
 	glBegin(GL_QUADS);
 	glColor3f(0.0, 0.0, 0.0);

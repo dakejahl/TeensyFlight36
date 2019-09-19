@@ -47,16 +47,19 @@ void estimator_task(void* args)
 
 			auto roll = estimator->get_roll();
 			auto pitch = estimator->get_pitch();
+			auto yaw = estimator->get_yaw();
 
 			// Publish for our stream
 			attitude_euler rpy;
 			rpy.roll = roll;
 			rpy.pitch = pitch;
+			rpy.yaw = yaw;
 			attitude_pub.publish(rpy);
-
 		}
 
 		// 250hz is fine
-		vTaskDelay(4);
+		// vTaskDelay(4);
+		vTaskDelay(100);
+
 	}
 }

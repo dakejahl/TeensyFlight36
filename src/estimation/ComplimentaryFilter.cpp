@@ -34,16 +34,28 @@ void ComplimentaryFilter::estimate_rpy_from_accel_and_gyro(const Vector3f& accel
 	float pitch = equations::pitch_from_accel(accel.x(), accel.y(), accel.z());
 
 	// Calculate roll and pitch rates
-	float pitch_rate = equations::pitch_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _roll_est);
+	float pitch_rate = (180 / M_PI) * equations::pitch_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _roll_est * M_PI / 180);
 
-	float roll_rate = equations::roll_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _pitch_est, _roll_est);
+	float roll_rate = (180 / M_PI) * equations::roll_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _pitch_est * M_PI / 180, _roll_est * M_PI / 180);
+
+	float yaw_rate = (180 / M_PI) *  equations::yaw_rate_from_gyro(_gyro_xyz.x(), _gyro_xyz.y(), _gyro_xyz.z(), _pitch_est * M_PI / 180, _roll_est * M_PI / 180);
+
+	SYS_INFO("pitch_rate: %f", pitch_rate);
+	SYS_INFO("roll_rate: %f", roll_rate);
+	SYS_INFO("yaw_rate: %f", yaw_rate);
 
 	auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
-	float dt = (now - _last_timestamp) / MICROS_PER_SEC;
+	float dt = ((float)now - (float)_last_timestamp) / MICROS_PER_SEC;
 	_last_timestamp = now;
 
+	_alpha = 0;
 	// Run filter
 	_roll_est = (1 - _alpha) * (_roll_est + roll_rate * dt) + _alpha * roll;
 	_pitch_est = (1 - _alpha) * (_pitch_est + pitch_rate * dt) + _alpha * pitch;
+	_yaw_est = _yaw_est + yaw_rate * dt; // just integrating the gyro
+	// SYS_INFO("roll est: %f", _roll_est);
 
+	// SYS_INFO("pitch est: %f", _pitch_est);
+
+	// SYS_INFO("yaw est: %f", _yaw_est);
 }

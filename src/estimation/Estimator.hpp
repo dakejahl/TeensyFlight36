@@ -64,7 +64,7 @@ public:
 
 	float get_roll() { return _roll_est; };
 	float get_pitch() { return _pitch_est; };
-
+	float get_yaw() { return _yaw_est; };
 
 protected:
 	abs_time_t _last_timestamp = {};
@@ -81,4 +81,5 @@ protected:
 
 	float _roll_est {};
 	float _pitch_est {};
+	float _yaw_est {};
 };

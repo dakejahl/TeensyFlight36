@@ -56,7 +56,6 @@ static constexpr abs_time_t PICOS_PER_MICRO = 1000000LLU;
 static constexpr abs_time_t MICROS_PER_MILLI = 1000LLU;
 static constexpr abs_time_t MICROS_PER_SEC = 1000000.0f;
 
-
 // Setup peripherals etc
 extern "C" void SystemInit(void);
 

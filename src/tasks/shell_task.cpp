@@ -40,6 +40,8 @@ void calibrate_accel(void);
 void stream_accel_data(void);
 void stream_mag_data(void);
 void stream_attitude_euler_data(void);
+void stream_filtered_gyro_data(void);
+
 
 // This task will poll the USB interface for user commands:
 // - gyro calibration, let sit still and measure offsets on all 3 axis (and noise value for ekf?)
@@ -104,6 +106,12 @@ void evaluate_user_command(void)
 	{
 		SYS_INFO("Streaming euler rpy data");
 		stream_attitude_euler_data();
+		return;
+	}
+	else if (buffer == "stream gyrof")
+	{
+		SYS_INFO("Streaming filtered gyro data");
+		stream_filtered_gyro_data();
 		return;
 	}
 
@@ -243,6 +251,48 @@ void stream_attitude_euler_data(void)
 			Serial4.print(z);
 			Serial4.print("\n");
 
+			SYS_INFO("roll: %f", data.roll);
+			SYS_INFO("pitch: %f", data.pitch);
+			SYS_INFO("yaw: %f", data.yaw);
+
+		}
+
+		// 20hz
+		vTaskDelay(50);
+
+		// Any user input cancels the spewing of data
+		if (Serial.available())
+		{
+			SYS_INFO("Disabling euler attitude data stream");
+			return;
+		}
+	}
+}
+
+void stream_filtered_gyro_data(void)
+{
+	Serial4.begin(115200, SERIAL_8N1);
+
+	messenger::Subscriber<gyro_filtered_data_s> gyro_f_sub;
+
+	SYS_INFO("Enabling filtered gyro data stream over serial4");
+
+	for(;;)
+	{
+		if (gyro_f_sub.updated())
+		{
+			auto data = gyro_f_sub.get();
+			float x = data.x;
+			float y = data.y;
+			float z = data.z;
+
+			Serial4.print(x);
+			Serial4.print(',');
+			Serial4.print(y);
+			Serial4.print(',');
+			Serial4.print(z);
+			Serial4.print("\n");
+
 			// SYS_INFO("roll: %f", data.roll);
 			// SYS_INFO("pitch: %f", data.pitch);
 		}
@@ -253,7 +303,7 @@ void stream_attitude_euler_data(void)
 		// Any user input cancels the spewing of data
 		if (Serial.available())
 		{
-			SYS_INFO("Disabling euler attitude data stream");
+			SYS_INFO("Disabling filtered gyro data stream");
 			return;
 		}
 	}

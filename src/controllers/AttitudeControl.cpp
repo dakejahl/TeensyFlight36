@@ -38,10 +38,10 @@ AttitudeControl::AttitudeControl()
 	_roll_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 
 	// Rates controller -- full PID
-	// p = 0.015; // 0.05 is a ton of overshoot // 0.015 is still seemingly strong
-	p = 0.01;
+	p = 0.005; // 0.05 is a ton of overshoot // 0.015 is still seemingly strong
+	// p = 0.01;
 	// i = 0;
-	// d = 0.025; // 0.025 is good but good probably go a bit lower
+	d = 0.025; // 0.025 is good but good probably go a bit lower
 
 	max_effort = 1; // what is this?
 	max_integrator = 0.3;
@@ -69,8 +69,8 @@ void AttitudeControl::collect_attitude_rate_data(void)
 		float y = data.y;
 		float z = data.z;
 
-		_pitch_rate = equations::pitch_rate_from_gyro(x, y, z, _roll);
-		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _roll, _pitch);
+		_pitch_rate = equations::pitch_rate_from_gyro(x, y, z, _roll * M_PI / 180);
+		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _roll * M_PI / 180, _pitch * M_PI / 180);
 	}
 }
 
