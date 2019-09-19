@@ -2,20 +2,41 @@
 <img src="images/teensyflight.png " width="80%">
 
 ## What's the point?
-Challenging myself to learn, improve, and produce practical high quality embedded systems and software.
+Aiming to improve in embedded firmware, electrical engineering, and software design.
+
+## Tools
+- make / cmake
+- GDB
+- JLink mini
+- Siglent SDS1202X-E
+- MCUXpresso
+- Lipow battery charger
+
+## Components
+- Teensy 3.6 microcontroller board
+- MPU9250 3-axis gyro / accel / mag
+- FrSky Mini radio transmitter
+- Blade Theory XL kit from amazon. Removed camera, radios, and flight controller board (leave the power distribution board attached).
 
 ## Features
 - Makefile + SWD GDB upload and debug
 - FreeRTOS
 - BSP is essentially `cores/teensy3`
-- C++ Dispatch queue for asynchronous and interval scheduling (100us tick interrupt)
-- Publish / Subscribe communication framework (very light weight)
+- C++ dispatch queue for asynchronous and interval scheduling (100us tick interrupt)
+- Publish / subscribe communication framework
 - MPU9250 @ 1kHz gyro / accel / mag on 10MHz SPI
 - FrSky XM+ mini on UART SBUS
-- PWM driver at 400Hz for actuator control signals
-- Attitude estimation. Complimentary filter, Kalman filter, EKF
-- Host side serial communications with onboard "shell" task
+- 400Hz PWM outputs for actuator control signals
+- 250Hz attitude estimation, 1kHz control. Complimentary filter attitude estimator using euler angles, [WIP] quaternion estimator w/ EKF
+- Data streaming in csv format over serial
 - Interactive plotting and visualizations with python and OpenGL
+
+Things I'd like to do...
+
+- Telemetry radio to host
+- MAVLink over telemetry radio for QGC communication
+- Full quaternion estimation and control
+- Optical flow for position hold
 
 ## Building with make
 I started with a framework I had been hearing about called `platformio`. I figured it sounded cool and I'd try it out. It became severely limiting as soon as I wanted to do anything more than what was supported from it natively, so I switched to a makefile. Using a hodgepodge of references from the interwebs, I created a makefile based build system that can be easily invoked via the command line or from an IDE.

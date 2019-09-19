@@ -57,3 +57,4 @@ build/
 # python virtual environment
 pyenv/
 tools/raw_data
+log.txt
