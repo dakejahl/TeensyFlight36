@@ -34,6 +34,8 @@ static constexpr double GYRO_FULL_SCALE_DPS = 2000.0;
 static constexpr double GYRO_FULL_SCALE_RAD_S = GYRO_FULL_SCALE_DPS / (180.0 / M_PI);
 static constexpr unsigned TICKS = 65536;
 static constexpr float RAD_S_PER_TICK = 2 * GYRO_FULL_SCALE_RAD_S / TICKS; // times 2 since +/- FS
+static constexpr float DEG_S_PER_TICK = RAD_S_PER_TICK * 180 / M_PI; // times 2 since +/- FS
+
 
 // Accel constants
 static constexpr double CONSTANTS_ONE_G = 9.80665; // m/s^2

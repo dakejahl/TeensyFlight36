@@ -69,8 +69,8 @@ void AttitudeControl::collect_attitude_rate_data(void)
 		float y = data.y;
 		float z = data.z;
 
-		_pitch_rate = equations::pitch_rate_from_gyro(x, y, z, _roll * M_PI / 180);
-		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _roll * M_PI / 180, _pitch * M_PI / 180);
+		_pitch_rate = equations::pitch_rate_from_gyro(x, y, z, _roll);
+		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _roll, _pitch);
 	}
 }
 
@@ -89,6 +89,7 @@ void AttitudeControl::get_rc_input(void)
 	}
 }
 
+// TODO: FIXME
 void AttitudeControl::convert_rc_to_trpy(void)
 {
 	// Throttle is scaled between 1 and 0

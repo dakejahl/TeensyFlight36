@@ -58,7 +58,8 @@ void draw()
 	snprintf(words, strlen(words), "yaw: %f", yaw);
 	print_text_on_screen(1, 1.6, 1, 0, 0, words);
 
-	// Perform rotation in scene based on attitude
+	// Perform rotation in scene based on attitude -- NOTE the sign is negative because it's actually the camera
+	// (us the observer) that is being rotated.
 	glRotatef(-roll, 0.00, 0.00, 1.00);
 	glRotatef(-pitch, 1.00, 0.00, 0.00);
 	glRotatef(-yaw, 0.00, 1.00, 0.00);

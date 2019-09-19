@@ -27,9 +27,9 @@
 
 
 std::string buffer;
-std::string GYRO_CAL = "gyro cal";
-std::string ACCEL_CAL = "accel cal";
-std::string MAG_CAL = "mag cal";
+std::string GYRO_CAL = "cal gyro";
+std::string ACCEL_CAL = "cal accel";
+std::string MAG_CAL = "cal mag";
 
 
 void evaluate_user_command(void);

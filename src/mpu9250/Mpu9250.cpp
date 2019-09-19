@@ -328,9 +328,9 @@ void Mpu9250::publish_accel_data(abs_time_t& timestamp)
 void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 {
 	// Convert the raw data
-	float x = _sensor_data.gyro_x * RAD_S_PER_TICK;
-	float y = _sensor_data.gyro_y * RAD_S_PER_TICK;
-	float z = _sensor_data.gyro_z * RAD_S_PER_TICK;
+	float x = _sensor_data.gyro_x * DEG_S_PER_TICK;
+	float y = _sensor_data.gyro_y * DEG_S_PER_TICK;
+	float z = _sensor_data.gyro_z * DEG_S_PER_TICK;
 	float temp = _sensor_data.temperature  / 333.87f + 21.0f;
 
 	// Stuff the message
@@ -395,9 +395,9 @@ void Mpu9250::print_formatted_data(void)
 	float accel_y = _sensor_data.accel_y * ACCEL_M_S2_PER_TICK;
 	float accel_z = _sensor_data.accel_z * ACCEL_M_S2_PER_TICK;
 
-	float gyro_x = _sensor_data.gyro_x * RAD_S_PER_TICK;
-	float gyro_y = _sensor_data.gyro_y * RAD_S_PER_TICK;
-	float gyro_z = _sensor_data.gyro_z * RAD_S_PER_TICK;
+	float gyro_x = _sensor_data.gyro_x * DEG_S_PER_TICK;
+	float gyro_y = _sensor_data.gyro_y * DEG_S_PER_TICK;
+	float gyro_z = _sensor_data.gyro_z * DEG_S_PER_TICK;
 
 	float temperature = _sensor_data.temperature / 333.87f + 21.0f;
 
