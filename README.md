@@ -1,4 +1,6 @@
-![](images/teensyflight.png)
+<!-- ![](images/teensyflight.png =50x50) -->
+<img src="images/teensyflight.png " width="80%">
+
 ## What's the point?
 Challenging myself to learn, improve, and produce practical high quality embedded systems and software.
 
@@ -15,33 +17,37 @@ Challenging myself to learn, improve, and produce practical high quality embedde
 - Host side serial communications with onboard "shell" task
 - Interactive plotting and visualizations with python and OpenGL
 
-## Debugging -- SWD: JLink + GDB + MCUXpresso
-Now this is a hardware hack. I soldered the reset line on the companion microcontroller (KL02) to ground, this holds the KL02 in reset and thus prevents its activity on the SWD lines.<br/>
-https://mcuoneclipse.com/2017/04/29/modifying-the-teensy-3-5-and-3-6-for-arm-swd-debugging/
-### Thread aware debug with MCUXpresso
-Pretty neat little GUI in MCUXpresso. I ended up implementing the debug support when I got stuck for a few hours on a program crash. It ended up being a stack overflow that I didn't suspect because I didn't know that the FreeRTOS `overflow_hook()` is not reliable.
+## Building with make
+I started with a framework I had been hearing about called `platformio`. I figured it sounded cool and I'd try it out. It became severely limiting as soon as I wanted to do anything more than what was supported from it natively, so I switched to a makefile. Using a hodgepodge of references from the interwebs, I created a makefile based build system that can be easily invoked via the command line or from an IDE.
 
-Anyways, check out your stack and heap usage as well as runtime stats
+## SWD Debugging: JLink + GDB
+Now this is a hardware hack. I soldered the reset line on the companion microcontroller (KL02) to ground, this holds the KL02 in reset and thus prevents its activity on the SWD lines.<newline/>
+https://mcuoneclipse.com/2017/04/29/modifying-the-teensy-3-5-and-3-6-for-arm-swd-debugging/
+
+### Thread aware debug with MCUXpresso
+I nice tool built into MCUXpresso, only requiring a somewhat poorly explained process for configuring it. I was able to piece it together from scouring the internet, and it is really useful! You can view your stack sizes, heap usage, and % cpu at any breakpoint.
 ![](images/freertosTAD.png)
+
 ### Segger SystemView
-This piece of software is amazing. I learn so much from reviewing the information preseneted in this GUI. Your program can be instrumented as much or as little as you'd like! This is used to verify timing as well as scheduling characteristics. This was a little bit of effort to integrate into the build but definitely worth it. As checked-in (9/1/19) it is ready to go with the click of a button! With the JLink hooked up: Target --> Start Recording.
+An amazing tool if you really want to take a detailed look "inside" of your machine. You can instrument any section of code you'd like using the API, however I chose to only verify ISR / Task interaction and timing characteristics.
 ![](images/systemview.png)<br/>
 https://www.segger.com/products/development-tools/systemview/
 
 ### Interactive data visualization
-Created a tool in C++ that reads 3-axis csv data and writes this to a file.  I then run an ellipsoid fit algorithm on the data set and plot the data in 3D with the caclulated offsets and scales for each axis. The plot is a 3D interactive plot created with `plotly`.<br/>
+I created a tool in C++ that reads 3-axis data from the serial port and optionally writes it to a file. I then run an ellipsoid fit algorithm on the data set and plot the data in 3D with the caclulated offsets and scales for each axis.
 https://plot.ly/python/3d-scatter-plots/
-
 ![](images/mag_data.gif)
 
 ### Live plotting
-Using the data stream to CSV tool paired with a python script that monitors the 3-axis data file for updates, I am able to view real-time data being streamed from the device.
+I use the 3-axis data stream and plot the results in real time. I can choose the data stream I am interested in with a simple shell command via the USB port.<br/>
+_i.e_ `stream accel_data`
 ![](images/live_plot.gif)
 
-
 ### Attitude visualization
-Using the data stream to CSV tool, I am able to parse attidue data and render in 3D using OpenGL.
+I created a tool using OpenGL to visualize attitude data coming from the flight controller in real time.
 ![](images/attitude.gif)
+
+<br/>
 
 ***Thank you to...***
 
@@ -49,4 +55,7 @@ The PX4 team, you guys rock https://github.com/PX4/Firmware<br/>
 Phillip Johnston https://embeddedartistry.com/<br/>
 Erich Styger https://mcuoneclipse.com/<br/>
 Paul Stoffregen https://www.pjrc.com/store/teensy36.html<br/>
+<br/>
+
+_"If I have seen further it is by standing on the shoulders of Giants."_ -- Isaac Newton
 
