@@ -49,7 +49,6 @@ void ComplimentaryFilter::estimate_rpy_from_accel_and_gyro(const Vector3f& accel
 	float dt = delta / MICROS_PER_SEC;
 	_last_timestamp = now;
 
-	_alpha = 0;
 	// Run filter
 	_roll_est = (1 - _alpha) * (_roll_est + roll_rate * dt) + _alpha * roll;
 	_pitch_est = (1 - _alpha) * (_pitch_est + pitch_rate * dt) + _alpha * pitch;

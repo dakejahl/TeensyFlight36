@@ -58,8 +58,7 @@ void estimator_task(void* args)
 		}
 
 		// 250hz is fine
-		// vTaskDelay(4);
-		vTaskDelay(100);
+		vTaskDelay(4);
 
 	}
 }

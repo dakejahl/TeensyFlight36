@@ -32,7 +32,8 @@ inline float roll_from_accel(float x, float y, float z)
 
 inline float pitch_from_accel(float x, float y, float z)
 {
-	return std::atan( x / (std::sqrt(y*y + z*z))) * 180.0f / M_PI;
+	// TODO: figure out why this is negative
+	return -std::atan( x / (std::sqrt(y*y + z*z))) * 180.0f / M_PI;
 }
 
 inline float roll_rate_from_gyro(float x, float y, float z, float pitch_est, float roll_est)
