@@ -27,6 +27,10 @@ AttitudeControl::AttitudeControl()
 	_pwm = new Pwm(400);
 
 	// Rate controller settings
+
+	// NOTES
+	// 0.0001 pretty much did nothing
+	// 0.001 ended up spinning the thing around likes nuts (I also had the motor wires hooked up wrong -_-)
 	float p = 0.001;
 	float i = 0;
 	float d = 0;
