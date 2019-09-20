@@ -29,13 +29,13 @@ AttitudeControl::AttitudeControl()
 	// Rate controller settings
 
 	// NOTES
-	// 0.0001 pretty much did nothing
-	// 0.001 ended up spinning the thing around likes nuts (I also had the motor wires hooked up wrong -_-)
-	float p = 0.001;
+	// 0.3 seemed good in a static test -- need to test a step input
+	// float p = 0.3;
+	float p = 0.2;
 	float i = 0;
 	float d = 0;
-	float max_effort = 220; // angular rate (deg/s)
-	float max_integrator = 220; // angular rate (deg/s)
+	float max_effort = 220 * M_PI / 180;; // angular rate (deg/s)
+	float max_integrator = 220 * M_PI / 180; // angular rate (deg/s)
 
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 	// _roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
@@ -94,8 +94,8 @@ void AttitudeControl::convert_rc_to_trpy(void)
 
 void AttitudeControl::convert_unit_rpy_to_rpy_degs(void)
 {
-	_pitch_sp = _pitch_sp * MAX_PITCH_ANGLE_DEG;
-	_roll_sp = _roll_sp * MAX_ROLL_ANGLE_DEG;
+	_pitch_sp = _pitch_sp * MAX_PITCH_ANGLE_RAD;
+	_roll_sp = _roll_sp * MAX_ROLL_ANGLE_RAD;
 }
 
 void AttitudeControl::check_for_arm_condition(void)
@@ -152,7 +152,21 @@ void AttitudeControl::run_controllers(void)
 
 
 	// TESTING CONTROL AROUND ZERO
-	float pitch_rate_sp = 0;
+
+
+	// some hacky logic to induce oscillations
+	if (_pitch > (M_PI / 6))
+	{
+		float dps = -60;
+		pitch_rate_sp = dps * M_PI / 180;
+	}
+	else if (_pitch < -M_PI / 6)
+	{
+		float dps = 60;
+		pitch_rate_sp = dps * M_PI / 180;
+	}
+
+	// publish the rates setpoint
 
 	// Rates
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
@@ -160,7 +174,7 @@ void AttitudeControl::run_controllers(void)
 	// ----- ACTUATOR OUTPUTS -----/
 	// SYS_INFO("--- --- --- --- ---");
 	// SYS_INFO("pitch_rate: %f\n", _pitch_rate);
-	// SYS_INFO("pitch_rate_sp: %f\n", pitch_rate_sp);
+	SYS_INFO("pitch_rate_sp: %f\n", pitch_rate_sp);
 
 	// SYS_INFO("_throttle: %f", _rc_throttle);
 	// SYS_INFO("_throttle_sp: %f\n", _throttle_sp);

@@ -28,9 +28,9 @@
 #include <Eigen/Dense>
 
 // Gyro
-static constexpr float GYRO_OFFSET_X =  -0.358073;
-static constexpr float GYRO_OFFSET_Y =  1.841227f;
-static constexpr float GYRO_OFFSET_Z =  0.925700f;
+static constexpr float GYRO_OFFSET_X =  -0.011789f;
+static constexpr float GYRO_OFFSET_Y =  0.032313f;
+static constexpr float GYRO_OFFSET_Z =  0.027732f;
 // Accel
 static constexpr float ACCEL_OFFSET_X = 0.317478f;
 static constexpr float ACCEL_OFFSET_Y = 0.224600f;

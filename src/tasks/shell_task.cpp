@@ -240,9 +240,9 @@ void stream_attitude_euler_data(void)
 		if (attitude_sub.updated())
 		{
 			auto data = attitude_sub.get();
-			float x = data.roll;
-			float y = data.pitch;
-			float z = data.yaw;
+			float x = data.roll * 180 / M_PI;
+			float y = data.pitch * 180 / M_PI;
+			float z = data.yaw * 180 / M_PI;
 
 			Serial4.print(x);
 			Serial4.print(',');

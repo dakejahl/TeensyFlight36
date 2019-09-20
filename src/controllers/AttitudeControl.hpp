@@ -30,8 +30,8 @@
 
 #define ARM_TIME_US 2000000
 #define KILL_VALUE 1000
-#define MAX_PITCH_ANGLE_DEG 45
-#define MAX_ROLL_ANGLE_DEG 45
+#define MAX_PITCH_ANGLE_RAD M_PI / 4
+#define MAX_ROLL_ANGLE_RAD M_PI / 4
 
 class AttitudeControl
 {
@@ -60,6 +60,8 @@ public:
 	void run_controllers(void);
 
 private:
+	// testin
+	float pitch_rate_sp = 60 * M_PI / 180;
 	// Attitude
 	float _roll = 0;
 	float _pitch = 0;
