@@ -68,6 +68,9 @@ _i.e_ `stream accel_data`
 I created a tool using OpenGL to visualize attitude data coming from the flight controller in real time.
 ![](images/attitude.gif)
 
+### Rate loop tuning
+![](images/test_jig.jpg)
+
 <br/>
 
 ***Thank you to...***
