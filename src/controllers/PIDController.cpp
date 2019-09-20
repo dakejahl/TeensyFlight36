@@ -58,7 +58,14 @@ float PIDController::get_effort(float target, float current)
 	// }
 
 	// Calculate effort from PID gains and error
-	float effort = _kP * error + _kI * _error_integral + _kD * (error - _last_error);
+	// float effort = _kP * error + _kI * _error_integral + _kD * (error - _last_error);
+
+	// Non-linear gains
+	float p_effort = apply_nonlinear_controller(error, _max_effort, _kP);
+	float i_effort = apply_nonlinear_controller(_error_integral, _max_effort, _kI);
+	float d_effort = apply_nonlinear_controller(error - _last_error, _max_effort, _kD);
+
+	float effort = p_effort + i_effort + d_effort;
 
 	if (effort > _max_effort)
 	{
@@ -72,6 +79,20 @@ float PIDController::get_effort(float target, float current)
 	_last_error = error;
 
 	return effort;
+}
+
+float PIDController::apply_nonlinear_controller(const float error, const float scale_factor, const float gain)
+{
+	float effort = scale_factor * std::erf(error * gain);
+
+    if (std::isfinite(effort))
+    {
+        return effort;
+    }
+    else
+    {
+        return 0.;
+    }
 }
 
 } // end namespace controllers

@@ -118,7 +118,7 @@ void evaluate_user_command(void)
 		stream_filtered_gyro_data();
 		return;
 	}
-	else if (buffer == "stream controller tuning")
+	else if (buffer == "stream test")
 	{
 		SYS_INFO("Streaming controller tuning data");
 		stream_controller_tuning();

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <cmath>
+
 namespace controllers
 {
 
@@ -31,6 +33,8 @@ public:
 	PIDController(float P, float I, float D, float max_effort, float max_integrator);
 
 	float get_effort(float target, float current);
+
+	float apply_nonlinear_controller(const float error, const float scale_factor, const float gain);
 
 private:
 	// gains

@@ -30,12 +30,18 @@ AttitudeControl::AttitudeControl()
 
 	// NOTES
 	// 0.3 seemed good in a static test -- need to test a step input
-	// float p = 0.3;
-	float p = 0.2;
-	float i = 0;
-	float d = 0;
-	float max_effort = 220 * M_PI / 180;; // angular rate (deg/s)
-	float max_integrator = 220 * M_PI / 180; // angular rate (deg/s)
+	float p = 0.1;
+	// float p = 0.05;
+	float i = 0.0;
+	// float d = 0.003;
+	float d = 1.5;
+
+	// float i = 0.0;
+	// float d = 0.0;
+
+	float max_effort = 1; // roll pitch and yaw are scaled from -1 to 1
+	float max_integrator = 0.3; // 30% of output
+
 
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 	// _roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
@@ -162,16 +168,20 @@ void AttitudeControl::run_controllers(void)
 
 
 	// some hacky logic to induce oscillations
-	if (_pitch > (M_PI / 6))
-	{
-		float dps = -60;
-		pitch_rate_sp = dps * M_PI / 180;
-	}
-	else if (_pitch < -M_PI / 6)
-	{
-		float dps = 60;
-		pitch_rate_sp = dps * M_PI / 180;
-	}
+	// float degs = 10;
+	// float angle = degs * M_PI / 180;
+	// if (_pitch > angle)
+	// {
+	// 	float dps = -60;
+	// 	pitch_rate_sp = dps * M_PI / 180;
+	// }
+	// else if (_pitch < -angle)
+	// {
+	// 	float dps = 60;
+	// 	pitch_rate_sp = dps * M_PI / 180;
+	// }
+
+	pitch_rate_sp = 0;
 
 	// publish the rates setpoint
 	setpoint_rates_s rates_sp;
@@ -181,21 +191,6 @@ void AttitudeControl::run_controllers(void)
 	// Rates
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
 
-	// ----- ACTUATOR OUTPUTS -----/
-	// SYS_INFO("--- --- --- --- ---");
-	// SYS_INFO("pitch_rate: %f\n", _pitch_rate);
-
-	// SYS_INFO("_throttle: %f", _rc_throttle);
-	// SYS_INFO("_throttle_sp: %f\n", _throttle_sp);
-
-	// SYS_INFO("_roll: %f", _roll);
-	// SYS_INFO("_roll_sp: %f", _roll_sp);
-	// SYS_INFO("roll_effort: %f\n", roll_effort);
-
-
-	// SYS_INFO("_pitch: %f", _pitch);
-	// SYS_INFO("_pitch_sp: %f", _pitch_sp);
-	// SYS_INFO("pitch_effort: %f\n", pitch_effort);
 
 	// unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort);
 	// unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort + roll_effort);

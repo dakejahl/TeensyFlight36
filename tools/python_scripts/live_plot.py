@@ -7,9 +7,9 @@ mpl.use("TkAgg")
 
 fig = plt.figure()
 #creating a subplot
-ax1 = fig.add_subplot(3,1,1)
-ay1 = fig.add_subplot(3,1,2)
-az1 = fig.add_subplot(3,1,3)
+# ax1 = fig.add_subplot(3,1,1)
+# ay1 = fig.add_subplot(3,1,1)
+# az1 = fig.add_subplot(3,1,3)
 
 def animate(i):
     path = "/home/jake/code/jake/TeensyFlight36/tools/raw_data/3_axis_data.csv"
@@ -40,14 +40,13 @@ def animate(i):
 
     plt.title('Live graph with matplotlib')
 
-    ax1.clear()
-    ax1.plot(sample_index, x_data)
+    plt.plot(sample_index, x_data, 'r')
 
-    ay1.clear()
-    ay1.plot(sample_index, y_data)
+    # ay1.clear()
+    plt.plot(sample_index, y_data, 'b')
 
-    az1.clear()
-    az1.plot(sample_index, z_data)
+    # az1.clear()
+    # az1.plot(sample_index, z_data)
 
 
 ani = animation.FuncAnimation(fig, animate, interval=100)

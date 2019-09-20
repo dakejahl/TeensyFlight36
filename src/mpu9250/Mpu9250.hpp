@@ -158,12 +158,12 @@ private:
 	LowPassFilter<float> _mag_filter_y {20}; // 20Hz filter
 	LowPassFilter<float> _mag_filter_z {20}; // 20Hz filter
 
-	LowPassFilter<float> _gyro_filter_x {100};// 100Hz filter
-	LowPassFilter<float> _gyro_filter_y {100};// 100Hz filter
-	LowPassFilter<float> _gyro_filter_z {100};// 100Hz filter
+	LowPassFilter<float> _gyro_filter_x {30};// 30Hz filter
+	LowPassFilter<float> _gyro_filter_y {30};// 30Hz filter
+	LowPassFilter<float> _gyro_filter_z {30};// 30Hz filter
 
-	LowPassFilter<float> _accel_filter_x {50};// 50Hz filter
-	LowPassFilter<float> _accel_filter_y {50};// 50Hz filter
-	LowPassFilter<float> _accel_filter_z {50};// 50Hz filter
+	LowPassFilter<float> _accel_filter_x {20};// 50Hz filter
+	LowPassFilter<float> _accel_filter_y {20};// 50Hz filter
+	LowPassFilter<float> _accel_filter_z {20};// 50Hz filter
 };
 
