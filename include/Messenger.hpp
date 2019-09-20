@@ -74,7 +74,23 @@ struct __attribute__((__packed__)) rc_input_s
 	bool rc_lost;
 };
 
-struct __attribute__((__packed__)) attitude_euler
+struct __attribute__((__packed__)) attitude_euler_s
+{
+	abs_time_t timestamp;
+	float roll;
+	float pitch;
+	float yaw;
+};
+
+struct __attribute__((__packed__)) rates_control_euler_s
+{
+	abs_time_t timestamp;
+	float roll;
+	float pitch;
+	float yaw;
+};
+
+struct __attribute__((__packed__)) setpoint_rates_s
 {
 	abs_time_t timestamp;
 	float roll;

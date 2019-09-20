@@ -42,6 +42,10 @@ void stream_mag_data(void);
 void stream_attitude_euler_data(void);
 void stream_filtered_gyro_data(void);
 
+// NOTE: used to send rate controller setpoints and rate actuals for controller tuning
+void stream_controller_tuning(void);
+
+
 
 // This task will poll the USB interface for user commands:
 // - gyro calibration, let sit still and measure offsets on all 3 axis (and noise value for ekf?)
@@ -112,6 +116,12 @@ void evaluate_user_command(void)
 	{
 		SYS_INFO("Streaming filtered gyro data");
 		stream_filtered_gyro_data();
+		return;
+	}
+	else if (buffer == "stream controller tuning")
+	{
+		SYS_INFO("Streaming controller tuning data");
+		stream_controller_tuning();
 		return;
 	}
 
@@ -231,7 +241,7 @@ void stream_attitude_euler_data(void)
 {
 	Serial4.begin(115200, SERIAL_8N1);
 
-	messenger::Subscriber<attitude_euler> attitude_sub;
+	messenger::Subscriber<attitude_euler_s> attitude_sub;
 
 	SYS_INFO("Enabling euler attitude data stream over serial4");
 
@@ -299,6 +309,49 @@ void stream_filtered_gyro_data(void)
 		if (Serial.available())
 		{
 			SYS_INFO("Disabling filtered gyro data stream");
+			return;
+		}
+	}
+}
+
+void stream_controller_tuning(void)
+{
+	Serial4.begin(115200, SERIAL_8N1);
+
+	messenger::Subscriber<rates_control_euler_s> rates_sub;
+	messenger::Subscriber<setpoint_rates_s> rates_sp_sub;
+
+	SYS_INFO("Enabling controller_tuning data stream over serial4");
+
+	for(;;)
+	{
+		if (rates_sp_sub.updated())
+		{
+			auto rates_sp = rates_sp_sub.get();
+			auto rates_act = rates_sub.get();
+
+			float x = rates_sp.pitch;
+			float y = rates_act.pitch;
+			float z = 0;
+
+			Serial4.print(x);
+			Serial4.print(',');
+			Serial4.print(y);
+			Serial4.print(',');
+			Serial4.print(z);
+			Serial4.print("\n");
+
+			// SYS_INFO("pitch: %f", y);
+			// SYS_INFO("pitch sp: %f", x);
+		}
+
+		// 20hz
+		vTaskDelay(50);
+
+		// Any user input cancels the spewing of data
+		if (Serial.available())
+		{
+			SYS_INFO("Disabling controller_tuning data stream");
 			return;
 		}
 	}

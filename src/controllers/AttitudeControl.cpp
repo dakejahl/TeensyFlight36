@@ -63,6 +63,13 @@ void AttitudeControl::collect_attitude_rate_data(void)
 
 		_pitch_rate = equations::pitch_rate_from_gyro(x, y, z, _roll);
 		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _roll, _pitch);
+
+		// Publish this rate data
+		rates_control_euler_s signal;
+		signal.roll = _roll_rate;
+		signal.pitch = _pitch_rate;
+
+		_rates_control_pub.publish(signal);
 	}
 }
 
@@ -167,6 +174,9 @@ void AttitudeControl::run_controllers(void)
 	}
 
 	// publish the rates setpoint
+	setpoint_rates_s rates_sp;
+	rates_sp.pitch = pitch_rate_sp;
+	_rates_sp_pub.publish(rates_sp);
 
 	// Rates
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
@@ -174,7 +184,6 @@ void AttitudeControl::run_controllers(void)
 	// ----- ACTUATOR OUTPUTS -----/
 	// SYS_INFO("--- --- --- --- ---");
 	// SYS_INFO("pitch_rate: %f\n", _pitch_rate);
-	SYS_INFO("pitch_rate_sp: %f\n", pitch_rate_sp);
 
 	// SYS_INFO("_throttle: %f", _rc_throttle);
 	// SYS_INFO("_throttle_sp: %f\n", _throttle_sp);

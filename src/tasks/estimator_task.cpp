@@ -32,7 +32,7 @@ void estimator_task(void* args)
 	messenger::Subscriber<accel_raw_data_s> accel_sub;
 	messenger::Subscriber<mag_raw_data_s> mag_sub;
 
-	messenger::Publisher<attitude_euler> attitude_pub;
+	messenger::Publisher<attitude_euler_s> attitude_pub;
 
 
 	auto estimator = new ComplimentaryFilter(0.1);
@@ -50,7 +50,7 @@ void estimator_task(void* args)
 			auto yaw = estimator->get_yaw();
 
 			// Publish for our stream
-			attitude_euler rpy;
+			attitude_euler_s rpy;
 			rpy.roll = roll;
 			rpy.pitch = pitch;
 			rpy.yaw = yaw;

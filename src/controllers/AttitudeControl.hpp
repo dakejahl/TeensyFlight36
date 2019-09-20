@@ -75,7 +75,11 @@ private:
 	// Subscribers
 	messenger::Subscriber<rc_input_s> _rc_sub;
 	messenger::Subscriber<gyro_filtered_data_s> _gyro_sub;
-	messenger::Subscriber<attitude_euler> _attitude_sub;
+	messenger::Subscriber<attitude_euler_s> _attitude_sub;
+
+	// Setpoint publishers
+	messenger::Publisher<rates_control_euler_s> _rates_control_pub;
+	messenger::Publisher<setpoint_rates_s> _rates_sp_pub;
 
 	// PWM output module
 	Pwm* _pwm {};
