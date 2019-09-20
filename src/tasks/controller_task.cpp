@@ -58,9 +58,7 @@ void controller_task(void* args)
 			attitude_controller->outputs_motors_disarmed();
 		}
 
-		// 250hz == 4ms
-		vTaskDelay(4);
-		// vTaskDelay(100);
-
+		// 1kHz loop rate
+		vTaskDelay(1);
 	}
 }

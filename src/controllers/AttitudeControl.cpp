@@ -26,27 +26,15 @@ AttitudeControl::AttitudeControl()
 {
 	_pwm = new Pwm(400);
 
-	// float p = 6.5;
-	float p = 0.75;
+	// Rate controller settings
+	float p = 0.001;
 	float i = 0;
 	float d = 0;
 	float max_effort = 220; // angular rate (deg/s)
-	// float max_integrator = 0.3; // from PX4
-	float max_integrator = 220; // from PX4
+	float max_integrator = 220; // angular rate (deg/s)
 
-	_pitch_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
-	_roll_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
-
-	// Rates controller -- full PID
-	p = 0.005; // 0.05 is a ton of overshoot // 0.015 is still seemingly strong
-	// p = 0.01;
-	// i = 0;
-	d = 0.025; // 0.025 is good but good probably go a bit lower
-
-	max_effort = 1; // what is this?
-	max_integrator = 0.3;
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
-	_roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
+	// _roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 }
 void AttitudeControl::collect_attitude_data(void)
 {
@@ -148,20 +136,26 @@ void AttitudeControl::run_controllers(void)
 
 	// ----- ROLL -----/
 	// Attitude
-	float roll_rate_sp = _roll_controller->get_effort(_roll_sp, _roll);
+	// float roll_rate_sp = _roll_controller->get_effort(_roll_sp, _roll);
 	// Rates
-	float roll_effort = _roll_rate_controller->get_effort(roll_rate_sp, _roll_rate);
+	// float roll_effort = _roll_rate_controller->get_effort(roll_rate_sp, _roll_rate);
 
 	// Scale actuator effort by the
 
 	// ----- PITCH -----/
 	// Attitude
-	float pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
+	// float pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
+
+
+	// TESTING CONTROL AROUND ZERO
+	float pitch_rate_sp = 0;
+
 	// Rates
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
 
 	// ----- ACTUATOR OUTPUTS -----/
 	// SYS_INFO("--- --- --- --- ---");
+	// SYS_INFO("pitch_rate: %f\n", _pitch_rate);
 	// SYS_INFO("pitch_rate_sp: %f\n", pitch_rate_sp);
 
 	// SYS_INFO("_throttle: %f", _rc_throttle);
@@ -192,12 +186,7 @@ void AttitudeControl::run_controllers(void)
 	motor_effort_3 = equations::clamp<unsigned>(motor_effort_3, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
 	motor_effort_4 = equations::clamp<unsigned>(motor_effort_4, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
 
-	// SYS_INFO("motor_effort_1: %d", motor_effort_1);
-	// SYS_INFO("motor_effort_2: %d", motor_effort_2);
-	// SYS_INFO("motor_effort_3: %d", motor_effort_3);
-	// SYS_INFO("motor_effort_4: %d\n", motor_effort_4);
-
-	// Ouput it to the motors.... fingers crossed
+	// Ouput it to the motors
 	_pwm->write(pwm::MOTOR_1, motor_effort_1);
 	_pwm->write(pwm::MOTOR_2, motor_effort_2);
 	_pwm->write(pwm::MOTOR_3, motor_effort_3);

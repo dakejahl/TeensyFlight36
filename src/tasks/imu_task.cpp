@@ -72,7 +72,6 @@ void imu_task(void* args)
 			mpu9250->publish_gyro_data(time);
 			mpu9250->publish_mag_data(time);
 
-
 			// mpu9250->print_formatted_data();
 		}
 		else
@@ -80,9 +79,6 @@ void imu_task(void* args)
 			early_counter++;
 			// SYS_INFO("mpu9250 data was not available: %u", early_counter);
 		}
-
-
-		// Let's throw our attitude estimator in here and see how it does
 
 		vTaskDelay(1); // 1kHz, sometimes we miss some data buts that's OK... I think
 	}
