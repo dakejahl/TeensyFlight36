@@ -44,13 +44,12 @@ void controller_task(void* args)
 
 		if (attitude_controller->armed())
 		{
-			// Convert RC into TRPY (sticks --> attitude)
-			attitude_controller->convert_rc_to_trpy();
+			// Convert RC to angle (sticks --> attitude setpoints)
+			attitude_controller->convert_sticks_to_setpoints();
 
-			// Convert unit length RPY to actual RPY values
-			attitude_controller->convert_unit_rpy_to_rpy_degs();
+			// Scale roll/pitch/yaw setpoints (-1 to 1) to +/- MAX_ANGLE
+			attitude_controller->scale_setpoints();
 
-			// Push attitude setpoint into attitude controller
 			attitude_controller->run_controllers();
 		}
 		else

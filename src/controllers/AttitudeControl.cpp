@@ -28,16 +28,14 @@ AttitudeControl::AttitudeControl()
 
 	// Rate controller settings
 
-	// NOTES
-	// 0.3 seemed good in a static test -- need to test a step input
-	float p = 0.1;
-	// float p = 0.05;
-	float i = 0.0;
-	// float d = 0.003;
-	float d = 1.5;
+	// tune P until oscillations -- then cut in half
+	// tune I until offsets reduced
+	// tune D last to reduce oscillations
 
-	// float i = 0.0;
-	// float d = 0.0;
+	float p = 0.3; // 0.3 is is oscillations
+	float i = 0.0;
+	float d = 1.6;
+
 
 	float max_effort = 1; // roll pitch and yaw are scaled from -1 to 1
 	float max_integrator = 0.3; // 30% of output
@@ -95,7 +93,7 @@ void AttitudeControl::get_rc_input(void)
 }
 
 // TODO: FIXME
-void AttitudeControl::convert_rc_to_trpy(void)
+void AttitudeControl::convert_sticks_to_setpoints(void)
 {
 	// Throttle is scaled between 1 and 0
 	_throttle_sp = (_rc_throttle - 982) / 982;
@@ -105,7 +103,7 @@ void AttitudeControl::convert_rc_to_trpy(void)
 	_roll_sp = (_rc_roll - 1495) / (0.5 * 982);
 }
 
-void AttitudeControl::convert_unit_rpy_to_rpy_degs(void)
+void AttitudeControl::scale_setpoints(void)
 {
 	_pitch_sp = _pitch_sp * MAX_PITCH_ANGLE_RAD;
 	_roll_sp = _roll_sp * MAX_ROLL_ANGLE_RAD;
@@ -213,14 +211,6 @@ void AttitudeControl::run_controllers(void)
 	_pwm->write(pwm::MOTOR_2, motor_effort_2);
 	_pwm->write(pwm::MOTOR_3, motor_effort_3);
 	_pwm->write(pwm::MOTOR_4, motor_effort_4);
-}
-
-void AttitudeControl::outputs_motors_idle(void)
-{
-	_pwm->write(pwm::MOTOR_1, pwm::IDLE_THROTTLE);
-	_pwm->write(pwm::MOTOR_2, pwm::IDLE_THROTTLE);
-	_pwm->write(pwm::MOTOR_3, pwm::IDLE_THROTTLE);
-	_pwm->write(pwm::MOTOR_4, pwm::IDLE_THROTTLE);
 }
 
 void AttitudeControl::outputs_motors_disarmed(void)

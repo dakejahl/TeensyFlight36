@@ -49,12 +49,11 @@ public:
 
 	// Motor stuff
 	bool armed(void) { return _enabled; };
-	void outputs_motors_idle(void);
 	void outputs_motors_disarmed(void);
 
 	// Controller stuff
-	void convert_rc_to_trpy(void);
-	void convert_unit_rpy_to_rpy_degs(void);
+	void convert_sticks_to_setpoints(void);
+	void scale_setpoints(void);
 
 	// Runs the attitude controller and then the rates controller
 	void run_controllers(void);

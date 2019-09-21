@@ -20,4 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Pwm.hpp>
+#include <board_config.hpp>
+#include <Messenger.hpp>
+#include <Sbus.hpp>
+
+void frsky_task(void* args)
+{
+	auto handle = xTaskGetCurrentTaskHandle();
+	auto sbus = new interface::Sbus(handle);
+
+	for(;;)
+	{
+		// TODO: make sbus task less stupid
+		// The vTaskDelay() call is inside of the class....
+		sbus->collect_data();
+
+		abs_time_t time = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
+		sbus->publish_data(time);
+
+		// sbus->print_data();
+	}
+}

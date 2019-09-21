@@ -24,7 +24,7 @@
 #include <timers/Time.hpp>
 
 extern void led_task(void* args);
-extern void serial_uart_task(void* args);
+extern void frsky_task(void* args);
 extern void estimator_task(void* args);
 extern void imu_task(void* args);
 extern void sanity_idle_task(void* args);
@@ -50,7 +50,7 @@ extern "C" int main()
 	// 	ESTIMATOR TASK SPAWNS A THREAD!! WTF! WHY??
 	xTaskCreate(estimator_task, "estimator", configMINIMAL_STACK_SIZE * 3, NULL, PriorityLevel::LOWEST+1, NULL);
 
-	xTaskCreate(serial_uart_task, "frsky", configMINIMAL_STACK_SIZE * 4, NULL, PriorityLevel::LOWEST+2, NULL);
+	xTaskCreate(frsky_task, "frsky", configMINIMAL_STACK_SIZE * 4, NULL, PriorityLevel::LOWEST+2, NULL);
 
 	xTaskCreate(dispatch_test_task, "dispatch_test_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::HIGHEST, NULL);
 	xTaskCreate(imu_task, "imu_task", configMINIMAL_STACK_SIZE * 5, NULL, PriorityLevel::HIGHEST-1, NULL);

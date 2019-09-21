@@ -195,7 +195,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(500, 500);
-	glutCreateWindow("The RGB Color Cube");
+	glutCreateWindow("Attitude Visualization");
 	glutReshapeFunc(reshape);
 	glutTimerFunc(100, timer, 0);
 	glutDisplayFunc(display);

@@ -25,7 +25,6 @@
 #include <GyroCalibration.hpp>
 #include <AccelCalibration.hpp>
 
-
 std::string buffer;
 std::string GYRO_CAL = "cal gyro";
 std::string ACCEL_CAL = "cal accel";
