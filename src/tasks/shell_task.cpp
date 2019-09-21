@@ -345,7 +345,7 @@ void stream_controller_tuning(void)
 		}
 
 		// 20hz
-		vTaskDelay(50);
+		vTaskDelay(10);
 
 		// Any user input cancels the spewing of data
 		if (Serial.available())

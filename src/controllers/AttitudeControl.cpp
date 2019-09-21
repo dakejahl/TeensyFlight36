@@ -32,10 +32,12 @@ AttitudeControl::AttitudeControl()
 	// tune I until offsets reduced
 	// tune D last to reduce oscillations
 
-	float p = 0.3; // 0.3 is is oscillations
-	float i = 0.0;
-	float d = 1.6;
+	float p = 0.15; // 0.3 is is oscillations
+	float i = 0.015;
+	float d = 6.0;
 
+	// p = .38
+	// d = 3 --- 6 is too low, 12 is too high
 
 	float max_effort = 1; // roll pitch and yaw are scaled from -1 to 1
 	float max_integrator = 0.3; // 30% of output
@@ -165,23 +167,23 @@ void AttitudeControl::run_controllers(void)
 	// TESTING CONTROL AROUND ZERO
 
 
-	// some hacky logic to induce oscillations
-	// float degs = 10;
-	// float angle = degs * M_PI / 180;
-	// if (_pitch > angle)
-	// {
-	// 	float dps = -60;
-	// 	pitch_rate_sp = dps * M_PI / 180;
-	// }
-	// else if (_pitch < -angle)
-	// {
-	// 	float dps = 60;
-	// 	pitch_rate_sp = dps * M_PI / 180;
-	// }
+	//some hacky logic to induce oscillations
+	float degs = 5;
+	float angle = degs * M_PI / 180;
+	if (_pitch > angle)
+	{
+		float dps = -80;
+		pitch_rate_sp = dps * M_PI / 180;
+	}
+	else if (_pitch < -angle)
+	{
+		float dps = 80;
+		pitch_rate_sp = dps * M_PI / 180;
+	}
 
-	pitch_rate_sp = 0;
+	// pitch_rate_sp = 0;
 
-	// publish the rates setpoint
+	// // publish the rates setpoint
 	setpoint_rates_s rates_sp;
 	rates_sp.pitch = pitch_rate_sp;
 	_rates_sp_pub.publish(rates_sp);
