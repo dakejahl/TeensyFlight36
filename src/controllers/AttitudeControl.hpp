@@ -27,11 +27,12 @@
 #include <Messenger.hpp>
 #include <Equations.hpp>
 
-
 #define ARM_TIME_US 2000000
 #define MAX_PITCH_ANGLE_RAD M_PI / 4
 #define MAX_ROLL_ANGLE_RAD M_PI / 4
 #define MAX_ANGULAR_RATE_RAD 220 * M_PI / 180;
+#define MAX_YAW_RATE_RAD 180 * M_PI / 180;
+
 
 class AttitudeControl
 {
@@ -58,10 +59,6 @@ public:
 	void run_controllers(void);
 
 private:
-	// testin
-	float pitch_rate_sp = 60 * M_PI / 180;
-	float roll_rate_sp = 60 * M_PI / 180;
-
 	// Attitude
 	float _roll = 0;
 	float _pitch = 0;
@@ -106,6 +103,7 @@ private:
 
 	controllers::PIDController* _pitch_rate_controller;
 	controllers::PIDController* _roll_rate_controller;
+	controllers::PIDController* _yaw_rate_controller;
 
 	// arming stuff
 	bool _enabled = false;

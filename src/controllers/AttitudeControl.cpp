@@ -35,6 +35,12 @@ AttitudeControl::AttitudeControl()
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 	_roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 
+	// Yaw rate controller is special
+	p = 0.06;
+	i = 0;
+	_yaw_rate_controller = new controllers::PIDController(p, i, 0, max_effort, max_integrator);
+
+
 	//----- Attitude controller settings -----//
 	p = 0.8; // Turned up until oscillations, turned down by 1/3
 	i = 0;
@@ -65,13 +71,15 @@ void AttitudeControl::collect_attitude_rate_data(void)
 		float y = data.y;
 		float z = data.z;
 
+		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _pitch, _roll);
 		_pitch_rate = equations::pitch_rate_from_gyro(x, y, z, _roll);
-		_roll_rate = equations::roll_rate_from_gyro(x, y, z, _roll, _pitch);
+		_yaw_rate = equations::yaw_rate_from_gyro(x, y, z, _pitch, _roll);
 
 		// Publish this rate data
 		rates_control_euler_s signal;
 		signal.roll = _roll_rate;
 		signal.pitch = _pitch_rate;
+		signal.yaw = _yaw_rate;
 
 		_rates_control_pub.publish(signal);
 	}
@@ -97,7 +105,9 @@ void AttitudeControl::convert_sticks_to_setpoints(void)
 	_pitch_sp = _rc_pitch * MAX_PITCH_ANGLE_RAD;
 	_roll_sp = _rc_roll * MAX_ROLL_ANGLE_RAD;
 
-	_yaw_rate_sp = _rc_yaw * MAX_ANGULAR_RATE_RAD; // yaw is fed into only a rates controller
+	_yaw_rate_sp = _rc_yaw * MAX_YAW_RATE_RAD; // yaw is fed into only a rates controller
+	// SYS_INFO("_yaw_rate_sp: %f", _yaw_rate_sp);
+	// SYS_INFO("_rc_yaw: %f", _rc_yaw);
 
 	_throttle_sp = _rc_throttle; // throttle_sp is fed directly to the mixer
 
@@ -111,13 +121,9 @@ void AttitudeControl::convert_sticks_to_setpoints(void)
 void AttitudeControl::run_controllers(void)
 {
 	// ----- Attitude Control ----- //
-	pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
-	roll_rate_sp = _roll_controller->get_effort(_roll_sp, _roll);
-
-
-	SYS_INFO("_pitch_sp: %f", _pitch_sp);
-	SYS_INFO("_roll_sp: %f", _roll_sp);
-
+	float pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
+	float roll_rate_sp = _roll_controller->get_effort(_roll_sp, _roll);
+	float yaw_rate_sp = _yaw_rate_sp;
 
 	// publish the rates setpoints
 	setpoint_rates_s rates_sp;
@@ -128,18 +134,15 @@ void AttitudeControl::run_controllers(void)
 	// ----- Rate Control ----- //
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
 	float roll_effort = _roll_rate_controller->get_effort(roll_rate_sp, _roll_rate);
+	float yaw_effort = _yaw_rate_controller->get_effort(yaw_rate_sp, _yaw_rate);
 
-	// unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort);
-	// unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort + roll_effort);
-	// unsigned motor_effort_3 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort + roll_effort);
-	// unsigned motor_effort_4 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort - roll_effort);
+	// Convert to motor torque
+	unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort - yaw_effort);
+	unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort + roll_effort - yaw_effort);
+	unsigned motor_effort_3 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort + roll_effort + yaw_effort);
+	unsigned motor_effort_4 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort - roll_effort + yaw_effort);
 
-	// NOTE: where is yaw?
-	unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort);
-	unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort + roll_effort);
-	unsigned motor_effort_3 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort + roll_effort);
-	unsigned motor_effort_4 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort - roll_effort);
-
+	// constrain
 	motor_effort_1 = equations::clamp<unsigned>(motor_effort_1, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
 	motor_effort_2 = equations::clamp<unsigned>(motor_effort_2, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
 	motor_effort_3 = equations::clamp<unsigned>(motor_effort_3, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
