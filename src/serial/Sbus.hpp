@@ -27,6 +27,8 @@
 #include <board_config.hpp>
 #include <Uart.hpp>
 #include <Messenger.hpp>
+#include <Equations.hpp>
+
 
 #define RC_KILL_VALUE 1000
 
@@ -51,6 +53,8 @@ public:
 	Sbus(TaskHandle_t& handle);
 
 	void collect_data(void);
+
+	void apply_deadzone(float& roll, float& pitch, float& yaw);
 
 	void publish_data(abs_time_t& timestamp);
 

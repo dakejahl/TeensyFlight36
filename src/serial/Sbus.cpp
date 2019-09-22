@@ -142,6 +142,9 @@ void Sbus::publish_data(abs_time_t& timestamp)
 	pitch = std::round(pitch * round_to_hundreds) / round_to_hundreds;
 	roll = std::round(roll * round_to_hundreds) / round_to_hundreds;
 
+	// We want some deadzone on RPY sticks, probably like +/-10%
+	apply_deadzone(roll, pitch, yaw);
+
 	// Publish scaled sticks
 	manual_control_s control;
 
@@ -152,6 +155,36 @@ void Sbus::publish_data(abs_time_t& timestamp)
 	control.kill_switch = kill > RC_KILL_VALUE ? 1 : 0;
 
 	_manual_control_pub.publish(control);
+}
+
+void Sbus::apply_deadzone(float& roll, float& pitch, float& yaw)
+{
+	if (roll < 0 && roll > -0.1)
+	{
+		roll = 0;
+	}
+	else if (roll > 0 && roll < 0.1)
+	{
+		roll = 0;
+	}
+
+	if (pitch < 0 && pitch > -0.1)
+	{
+		pitch = 0;
+	}
+	else if (pitch > 0 && pitch < 0.1)
+	{
+		pitch = 0;
+	}
+
+	if (yaw < 0 && yaw > -0.1)
+	{
+		yaw = 0;
+	}
+	else if (yaw > 0 && yaw < 0.1)
+	{
+		yaw = 0;
+	}
 }
 
 void Sbus::print_data(void)
