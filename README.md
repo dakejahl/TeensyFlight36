@@ -8,7 +8,7 @@ Aiming to improve in embedded firmware, electrical engineering, and software des
 - Makefile + SWD GDB upload and debug
 - FreeRTOS
 - BSP is essentially `cores/teensy3`
-- C++ dispatch queue for asynchronous and interval scheduling (100us tick interrupt)
+- Dispatch queue for asynchronous and interval scheduling (100us tick interrupt)
 - Publish / subscribe communication framework
 - MPU9250 @ 1kHz gyro / accel / mag on 10MHz SPI
 - FrSky XM+ mini on UART SBUS
@@ -25,18 +25,19 @@ Things I'd like to do...
 - Optical flow for position hold
 
 ## Tools
-- make / cmake
+- make / CMake
 - GDB
+- MCUXpresso
 - JLink mini
 - Siglent SDS1202X-E
-- MCUXpresso
-- Lipow battery charger
 
 ## Components
 - Teensy 3.6 microcontroller board
 - MPU9250 3-axis gyro / accel / mag
 - FrSky Mini radio transmitter
 - Blade Theory XL kit from amazon. Removed camera, radios, and flight controller board (leave the power distribution board attached).
+- Lipow battery charger
+- TaranisQ X7 remote controller
 
 ------
 
@@ -77,6 +78,7 @@ _i.e_ `stream rpy data`
 
 ------
 ### Rate loop tuning
+I started by tuning the pitch controller first, and then duplicated those settings for the roll controller. My flight controller is mostly symmetric so this worked well. I configured a data stream to send the setpoints and the measured pitch/roll/pitchrate/rollrate so that I could see the effects of changes to the controller gains.
 ![](images/test_jig.jpg)
 
 #### Step response
