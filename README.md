@@ -43,6 +43,8 @@ Things I'd like to do...
 ## Building with make
 I started with a framework I had been hearing about called `platformio`. I figured it sounded cool and I'd try it out. It became severely limiting as soon as I wanted to do anything more than what was supported from it natively, so I switched to a makefile. Using a hodgepodge of references from the interwebs, I created a makefile based build system that can be easily invoked via the command line or from an IDE.
 
+------
+
 ## SWD Debugging: JLink + GDB
 Now this is a hardware hack. I soldered the reset line on the companion microcontroller (KL02) to ground, this holds the KL02 in reset and thus prevents its activity on the SWD lines.<newline/>
 https://mcuoneclipse.com/2017/04/29/modifying-the-teensy-3-5-and-3-6-for-arm-swd-debugging/
@@ -56,22 +58,30 @@ An amazing tool if you really want to take a detailed look "inside" of your mach
 ![](images/systemview.png)<br/>
 https://www.segger.com/products/development-tools/systemview/
 
-### Interactive data visualization
+------
+### Attitude visualization
+I created a tool using OpenGL to visualize attitude data coming from the flight controller in real time.
+![](images/attitude.gif)
+
+------
+### Data visualization
 I created a tool in C++ that reads 3-axis data from the serial port and optionally writes it to a file. I then run an ellipsoid fit algorithm on the data set and plot the data in 3D with the caclulated offsets and scales for each axis.
 https://plot.ly/python/3d-scatter-plots/
 ![](images/mag_data.gif)
 
+------
 ### Live plotting
 I use the 3-axis data stream and plot the results in real time. I can choose the data stream I am interested in with a simple shell command via the USB port.<br/>
 _i.e_ `stream accel_data`
 ![](images/live_plot.gif)
 
-### Attitude visualization
-I created a tool using OpenGL to visualize attitude data coming from the flight controller in real time.
-![](images/attitude.gif)
-
+------
 ### Rate loop tuning
 ![](images/test_jig.jpg)
+
+#### Step response
+Shallow angle oscillations at a fixed angular rate(80dps) between two shallow angles(12deg).
+![](images/pitch_rate_step_response.png)
 
 <br/>
 
