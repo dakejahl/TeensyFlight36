@@ -60,6 +60,8 @@ public:
 private:
 	// testin
 	float pitch_rate_sp = 60 * M_PI / 180;
+	float roll_rate_sp = 60 * M_PI / 180;
+
 	// Attitude
 	float _roll = 0;
 	float _pitch = 0;
