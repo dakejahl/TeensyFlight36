@@ -72,7 +72,7 @@ https://plot.ly/python/3d-scatter-plots/
 ------
 ### Live plotting
 I use the 3-axis data stream and plot the results in real time. I can choose the data stream I am interested in with a simple shell command via the USB port.<br/>
-_i.e_ `stream accel_data`
+_i.e_ `stream rpy data`
 ![](images/live_plot.gif)
 
 ------
@@ -80,7 +80,7 @@ _i.e_ `stream accel_data`
 ![](images/test_jig.jpg)
 
 #### Step response
-Shallow angle oscillations at a fixed angular rate(80dps) between two shallow angles(12deg).
+Shallow angle step toggling. Rate angle is fixed(80dps) and rate setpoint toggles when orientation reaches either of two shallow angles(12deg).
 ![](images/pitch_rate_step_response.png)
 
 <br/>
