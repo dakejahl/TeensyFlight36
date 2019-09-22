@@ -27,9 +27,12 @@ AttitudeControl::AttitudeControl()
 	_pwm = new Pwm(400);
 
 	//----- Rate controller settings -----//
-	float p = 0.07; // turn up P until we overshoot 1/2 our overshoot spec
-	float i = 0.02; // turn up I until we overshoot our spec
-	float d = 2; // 6 causes oscillations, so we turn down by 2/3
+	// float p = 0.07; // turn up P until we overshoot 1/2 our overshoot spec
+	// float i = 0.02; // turn up I until we overshoot our spec
+	// float d = 2; // 6 causes oscillations, so we turn down by 2/3
+	float p = 0.13; // turn up P until we overshoot 1/2 our overshoot spec
+	float i = 0.005; // turn up I until we overshoot our spec
+	float d = 2.2; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // torque is just scaled between -1 and 1
 	float max_integrator = 0.3; // 30% of output
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
@@ -42,7 +45,8 @@ AttitudeControl::AttitudeControl()
 
 
 	//----- Attitude controller settings -----//
-	p = 1.4; // Turned up until oscillations, turned down by 1/3
+	// p = 1.4; // Turned up until oscillations, turned down by 1/3
+	p = 0.25;
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint
@@ -124,6 +128,10 @@ void AttitudeControl::run_controllers(void)
 	float pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
 	float roll_rate_sp = _roll_controller->get_effort(_roll_sp, _roll);
 	float yaw_rate_sp = _yaw_rate_sp;
+
+	// float pitch_rate_sp = 0;
+	// float roll_rate_sp = 0;
+	// float yaw_rate_sp = 0;
 
 	// publish the rates setpoints
 	setpoint_rates_s rates_sp;
