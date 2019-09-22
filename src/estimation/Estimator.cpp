@@ -22,56 +22,35 @@
 
 #include <Estimator.hpp>
 
-float Estimator::roll_from_quat(const Quaternionf& q)
-{
-	float q0 = q.w();
-	float q1 = q.x();
-	float q2 = q.y();
-	float q3 = q.z();
+// float Estimator::roll_from_quat(const Quaternionf& q)
+// {
+// 	float q0 = q.w();
+// 	float q1 = q.x();
+// 	float q2 = q.y();
+// 	float q3 = q.z();
 
-	return std::atan((2*q0*q1 - 2*q2*q3) / (q0*q0 - q1*q1 + q2*q2 - q3*q3));
-}
+// 	return std::atan((2*q0*q1 - 2*q2*q3) / (q0*q0 - q1*q1 + q2*q2 - q3*q3));
+// }
 
-float Estimator::pitch_from_quat(const Quaternionf& q)
-{
-	float q0 = q.w();
-	float q1 = q.x();
-	float q2 = q.y();
-	float q3 = q.z();
+// float Estimator::pitch_from_quat(const Quaternionf& q)
+// {
+// 	float q0 = q.w();
+// 	float q1 = q.x();
+// 	float q2 = q.y();
+// 	float q3 = q.z();
 
-	return std::asin(2*q0*q3 + 2*q1*q2);
-}
+// 	return std::asin(2*q0*q3 + 2*q1*q2);
+// }
 
-float Estimator::yaw_from_quat(const Quaternionf& q)
-{
-	float q0 = q.w();
-	float q1 = q.x();
-	float q2 = q.y();
-	float q3 = q.z();
+// float Estimator::yaw_from_quat(const Quaternionf& q)
+// {
+// 	float q0 = q.w();
+// 	float q1 = q.x();
+// 	float q2 = q.y();
+// 	float q3 = q.z();
 
-	return std::atan((2*q0*q2-2*q1*q3) / (q0*q0 + q1*q1 - q2*q2 - q3*q3));
-}
-
-void Estimator::apply_gyro_calibration(float& x, float& y, float& z)
-{
-	x = x - GYRO_OFFSET_X;
-	y = y - GYRO_OFFSET_Y;
-	z = z - GYRO_OFFSET_Z;
-}
-
-void Estimator::apply_accel_calibration(float& x, float& y, float& z)
-{
-	x = (x - ACCEL_OFFSET_X) * ACCEL_SCALE_X;
-	y = (y - ACCEL_OFFSET_Y) * ACCEL_SCALE_Y;
-	z = (z - ACCEL_OFFSET_Z) * ACCEL_SCALE_Z;
-}
-
-void Estimator::apply_mag_calibration(float& x, float& y, float& z)
-{
-	x = (x - MAG_OFFSET_X) / MAG_SCALE_X;
-	y = (y - MAG_OFFSET_Y) / MAG_SCALE_Y;
-	z = (z - MAG_OFFSET_Z) / MAG_SCALE_Z;
-}
+// 	return std::atan((2*q0*q2-2*q1*q3) / (q0*q0 + q1*q1 - q2*q2 - q3*q3));
+// }
 
 void Estimator::collect_sensor_data(void)
 {
@@ -81,8 +60,6 @@ void Estimator::collect_sensor_data(void)
 		auto x = data.x;
 		auto y = data.y;
 		auto z = data.z;
-
-		apply_gyro_calibration(x, y, z);
 
 		_gyro_xyz.x() = x;
 		_gyro_xyz.y() = y;
@@ -96,8 +73,6 @@ void Estimator::collect_sensor_data(void)
 		auto y = data.y;
 		auto z = data.z;
 
-		apply_accel_calibration(x, y, z);
-
 		_accel_xyz.x() = x;
 		_accel_xyz.y() = y;
 		_accel_xyz.z() = z;
@@ -109,8 +84,6 @@ void Estimator::collect_sensor_data(void)
 		auto x = data.x;
 		auto y = data.y;
 		auto z = data.z;
-
-		apply_mag_calibration(x, y, z);
 
 		_mag_xyz.x() = x;
 		_mag_xyz.y() = y;

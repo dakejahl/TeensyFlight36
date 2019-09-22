@@ -308,6 +308,8 @@ void Mpu9250::publish_accel_data(abs_time_t& timestamp)
 	float z = _sensor_data.accel_z * ACCEL_M_S2_PER_TICK;
 	float temp = _sensor_data.temperature / 333.87f + 21.0f;
 
+	apply_accel_calibration(x,y,z);
+
 	// Apply a lowpass filter
 	x = _accel_filter_x.apply(x, timestamp);
 	y = _accel_filter_y.apply(y, timestamp);
@@ -332,6 +334,8 @@ void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 	float y = _sensor_data.gyro_y * RAD_S_PER_TICK;
 	float z = _sensor_data.gyro_z * RAD_S_PER_TICK;
 	float temp = _sensor_data.temperature  / 333.87f + 21.0f;
+
+	apply_gyro_calibration(x,y,z);
 
 	// Stuff the message
 	gyro_raw_data_s data;
@@ -368,6 +372,9 @@ void Mpu9250::publish_mag_data(abs_time_t& timestamp)
 	float y = _sensor_data.mag_y * _mag_factory_scale_factor_y;
 	float z = _sensor_data.mag_z * _mag_factory_scale_factor_z;
 	float temp = _sensor_data.temperature  / 333.87f + 21.0f;
+
+	// TODO: fix shell calibration routine to first RESET the calibration scales to 1 and offsets to 0
+	apply_mag_calibration(x,y,z);
 
 	// Pass through a 50Hz LPF
 	x = _mag_filter_x.apply(x, timestamp);
@@ -422,4 +429,25 @@ void Mpu9250::print_formatted_data(void)
 
 
 	SYS_INFO("--- --- --- --- --- --- ---");
+}
+
+void Mpu9250::apply_gyro_calibration(float& x, float& y, float& z)
+{
+	x = x - GYRO_OFFSET_X;
+	y = y - GYRO_OFFSET_Y;
+	z = z - GYRO_OFFSET_Z;
+}
+
+void Mpu9250::apply_accel_calibration(float& x, float& y, float& z)
+{
+	x = (x - ACCEL_OFFSET_X) * ACCEL_SCALE_X;
+	y = (y - ACCEL_OFFSET_Y) * ACCEL_SCALE_Y;
+	z = (z - ACCEL_OFFSET_Z) * ACCEL_SCALE_Z;
+}
+
+void Mpu9250::apply_mag_calibration(float& x, float& y, float& z)
+{
+	x = (x - MAG_OFFSET_X) / MAG_SCALE_X;
+	y = (y - MAG_OFFSET_Y) / MAG_SCALE_Y;
+	z = (z - MAG_OFFSET_Z) / MAG_SCALE_Z;
 }

@@ -25,6 +25,7 @@
 #include "Estimator.hpp"
 
 #include <Equations.hpp>
+#include <Eigen/Dense>
 
 using namespace Eigen;
 

@@ -29,14 +29,35 @@
 #include <LowPassFilter.hpp>
 #include <ButterworthFilter.hpp>
 
-// Gyro constants
+//----- Calibration -----//
+// Gyro
+static constexpr float GYRO_OFFSET_X =  -0.011789f;
+static constexpr float GYRO_OFFSET_Y =  0.032313f;
+static constexpr float GYRO_OFFSET_Z =  0.027732f;
+// Accel
+static constexpr float ACCEL_OFFSET_X = 0.291080;
+static constexpr float ACCEL_OFFSET_Y = 0.200403;
+static constexpr float ACCEL_OFFSET_Z = -0.378607;
+static constexpr float ACCEL_SCALE_X = 1.001776;
+static constexpr float ACCEL_SCALE_Y = 1.001551;
+static constexpr float ACCEL_SCALE_Z = 0.985408;
+// Mag -- TODO: investigate why a single outlier fucks up the ellipsoid fit algorithm
+static constexpr float MAG_OFFSET_X =   10.0653f;
+static constexpr float MAG_OFFSET_Y =   34.8082f;
+static constexpr float MAG_OFFSET_Z =   -159.862;
+static constexpr float MAG_SCALE_X =  	289.209f;
+static constexpr float MAG_SCALE_Y =  	282.384f;
+static constexpr float MAG_SCALE_Z =  	262.062f;
+
+//----- Constants -----//
+// Gyro
 static constexpr double GYRO_FULL_SCALE_DPS = 2000.0;
 static constexpr double GYRO_FULL_SCALE_RAD_S = GYRO_FULL_SCALE_DPS / (180.0 / M_PI);
 static constexpr unsigned TICKS = 65536;
 static constexpr float RAD_S_PER_TICK = 2 * GYRO_FULL_SCALE_RAD_S / TICKS; // times 2 since +/- FS
 static constexpr float DEG_S_PER_TICK = RAD_S_PER_TICK * 180 / M_PI; // times 2 since +/- FS
 
-// Accel constants
+// Accel
 static constexpr double CONSTANTS_ONE_G = 9.80665; // m/s^2
 static constexpr double TICK_PER_G = 2048.0; // 65536 / 2
 static constexpr float ACCEL_M_S2_PER_TICK = CONSTANTS_ONE_G / TICK_PER_G;
@@ -112,6 +133,10 @@ public:
 	}
 
 private:
+	void apply_gyro_calibration(float& x, float& y, float& z);
+	void apply_accel_calibration(float& x, float& y, float& z);
+	void apply_mag_calibration(float& x, float& y, float& z);
+
 	void initialize_magnetometer_registers(void);
 
 	// Read / Write for the MPU9250

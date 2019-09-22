@@ -4,20 +4,6 @@
 ## What's the point?
 Aiming to improve in embedded firmware, electrical engineering, and software design.
 
-## Tools
-- make / cmake
-- GDB
-- JLink mini
-- Siglent SDS1202X-E
-- MCUXpresso
-- Lipow battery charger
-
-## Components
-- Teensy 3.6 microcontroller board
-- MPU9250 3-axis gyro / accel / mag
-- FrSky Mini radio transmitter
-- Blade Theory XL kit from amazon. Removed camera, radios, and flight controller board (leave the power distribution board attached).
-
 ## Features
 - Makefile + SWD GDB upload and debug
 - FreeRTOS
@@ -37,6 +23,22 @@ Things I'd like to do...
 - MAVLink over telemetry radio for QGC communication
 - Full quaternion estimation and control
 - Optical flow for position hold
+
+## Tools
+- make / cmake
+- GDB
+- JLink mini
+- Siglent SDS1202X-E
+- MCUXpresso
+- Lipow battery charger
+
+## Components
+- Teensy 3.6 microcontroller board
+- MPU9250 3-axis gyro / accel / mag
+- FrSky Mini radio transmitter
+- Blade Theory XL kit from amazon. Removed camera, radios, and flight controller board (leave the power distribution board attached).
+
+------
 
 ## Building with make
 I started with a framework I had been hearing about called `platformio`. I figured it sounded cool and I'd try it out. It became severely limiting as soon as I wanted to do anything more than what was supported from it natively, so I switched to a makefile. Using a hodgepodge of references from the interwebs, I created a makefile based build system that can be easily invoked via the command line or from an IDE.

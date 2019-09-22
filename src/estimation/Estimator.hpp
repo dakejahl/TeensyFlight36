@@ -27,25 +27,6 @@
 
 #include <Eigen/Dense>
 
-// Gyro
-static constexpr float GYRO_OFFSET_X =  -0.011789f;
-static constexpr float GYRO_OFFSET_Y =  0.032313f;
-static constexpr float GYRO_OFFSET_Z =  0.027732f;
-// Accel
-static constexpr float ACCEL_OFFSET_X = 0.317478f;
-static constexpr float ACCEL_OFFSET_Y = 0.224600f;
-static constexpr float ACCEL_OFFSET_Z = -0.334862f;
-static constexpr float ACCEL_SCALE_X =	1.003191f;
-static constexpr float ACCEL_SCALE_Y =	0.998537f;
-static constexpr float ACCEL_SCALE_Z =	0.992191f;
-// Mag -- TODO: investigate why a single outlier fucks up the ellipsoid fit algorithm
-static constexpr float MAG_OFFSET_X =   10.0653f;
-static constexpr float MAG_OFFSET_Y =   34.8082f;
-static constexpr float MAG_OFFSET_Z =   -159.862;
-static constexpr float MAG_SCALE_X =  	289.209f;
-static constexpr float MAG_SCALE_Y =  	282.384f;
-static constexpr float MAG_SCALE_Z =  	262.062f;
-
 using namespace Eigen;
 
 class Estimator
@@ -56,10 +37,6 @@ public:
 	float roll_from_quat(const Quaternionf& q);
 	float pitch_from_quat(const Quaternionf& q);
 	float yaw_from_quat(const Quaternionf& q);
-
-	void apply_gyro_calibration(float& x, float& y, float& z);
-	void apply_accel_calibration(float& x, float& y, float& z);
-	void apply_mag_calibration(float& x, float& y, float& z);
 
 	float get_roll() { return _roll_est; };
 	float get_pitch() { return _pitch_est; };
