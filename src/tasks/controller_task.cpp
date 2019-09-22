@@ -54,6 +54,6 @@ void controller_task(void* args)
 		}
 
 		// 1kHz loop rate
-		vTaskDelay(100);
+		vTaskDelay(1);
 	}
 }

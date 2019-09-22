@@ -28,9 +28,9 @@ AttitudeControl::AttitudeControl()
 
 	//----- Rate controller settings -----//
 	// pitch
-	float p = 0.15; // 0.3 is is oscillations
-	float i = 0.015;
-	float d = 6.0;
+	float p = 0.07; // 0.3 is is oscillations
+	float i = 0.02;
+	float d = 2; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // roll pitch and yaw are scaled from -1 to 1
 	float max_integrator = 0.3; // 30% of output
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
@@ -180,16 +180,16 @@ void AttitudeControl::run_controllers(void)
 	// 	pitch_rate_sp = dps * M_PI / 180;
 	// }
 
-	pitch_rate_sp = 0;
+	// pitch_rate_sp = 0;
 
-	// float angle_sp = 20 * M_PI / 180;
+	float angle_sp = 20 * M_PI / 180;
 
-	// setpoint_angle_s angle_sp_data;
-	// angle_sp_data.pitch = angle_sp;
-	// _angle_sp_pub.publish(angle_sp_data);
+	setpoint_angle_s angle_sp_data;
+	angle_sp_data.pitch = angle_sp;
+	_angle_sp_pub.publish(angle_sp_data);
 
 	// // ----- Attitude Control ----- //
-	// pitch_rate_sp = _pitch_controller->get_effort(angle_sp, _pitch);
+	pitch_rate_sp = _pitch_controller->get_effort(angle_sp, _pitch);
 
 	// // publish the rates setpoint
 	setpoint_rates_s rates_sp;
