@@ -30,8 +30,8 @@ AttitudeControl::AttitudeControl()
 	// float p = 0.07; // turn up P until we overshoot 1/2 our overshoot spec
 	// float i = 0.02; // turn up I until we overshoot our spec
 	// float d = 2; // 6 causes oscillations, so we turn down by 2/3
-	float p = 0.13; // turn up P until we overshoot 1/2 our overshoot spec
-	float i = 0.005; // turn up I until we overshoot our spec
+	float p = 0.14; // turn up P until we overshoot 1/2 our overshoot spec
+	float i = 0.002; // turn up I until we overshoot our spec
 	float d = 2.2; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // torque is just scaled between -1 and 1
 	float max_integrator = 0.3; // 30% of output
@@ -46,7 +46,9 @@ AttitudeControl::AttitudeControl()
 
 	//----- Attitude controller settings -----//
 	// p = 1.4; // Turned up until oscillations, turned down by 1/3
-	p = 0.25;
+	// p = 0.25;
+	p = 0.14;
+
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint

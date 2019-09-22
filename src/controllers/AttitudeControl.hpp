@@ -30,7 +30,7 @@
 #define ARM_TIME_US 2000000
 #define MAX_PITCH_ANGLE_RAD 30 * M_PI / 180
 #define MAX_ROLL_ANGLE_RAD 30* M_PI / 180
-#define MAX_ANGULAR_RATE_RAD 720 * M_PI / 180
+#define MAX_ANGULAR_RATE_RAD 1080 * M_PI / 180
 #define MAX_YAW_RATE_RAD 180 * M_PI / 180
 
 class AttitudeControl

@@ -191,7 +191,7 @@ void Sbus::apply_deadzone(float& roll, float& pitch, float& yaw)
 void Sbus::apply_expo(float& roll, float& pitch, float& yaw)
 {
 	// exponential function looks like: y = (1 - a)*x + a*x*x*x
-	float a = 0.45;
+	float a = 0.68;
 
 	auto expo = [a](float& val)
 	{
