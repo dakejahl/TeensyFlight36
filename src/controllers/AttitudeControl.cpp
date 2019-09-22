@@ -100,6 +100,10 @@ void AttitudeControl::get_rc_input(void)
 		_rc_pitch = data.pitch;
 		_rc_roll = data.roll;
 		_rc_kill = data.kill_switch;
+
+		// SYS_INFO("_rc_roll: %f", _rc_roll);
+		// SYS_INFO("_rc_pitch: %f", _rc_pitch);
+		// SYS_INFO("_rc_yaw: %f", _rc_yaw);
 	}
 }
 

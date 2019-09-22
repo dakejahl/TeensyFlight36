@@ -144,6 +144,7 @@ void Sbus::publish_data(abs_time_t& timestamp)
 
 	// We want some deadzone on RPY sticks, probably like +/-10%
 	apply_deadzone(roll, pitch, yaw);
+	apply_expo(roll, pitch, yaw);
 
 	// Publish scaled sticks
 	manual_control_s control;
@@ -185,6 +186,21 @@ void Sbus::apply_deadzone(float& roll, float& pitch, float& yaw)
 	{
 		yaw = 0;
 	}
+}
+
+void Sbus::apply_expo(float& roll, float& pitch, float& yaw)
+{
+	// exponential function looks like: y = (1 - a)*x + a*x*x*x
+	float a = 0.45;
+
+	auto expo = [a](float& val)
+	{
+		val = (1 - a)*val + a*val*val*val;
+	};
+
+	expo(roll);
+	expo(pitch);
+	expo(yaw);
 }
 
 void Sbus::print_data(void)

@@ -55,6 +55,7 @@ public:
 	void collect_data(void);
 
 	void apply_deadzone(float& roll, float& pitch, float& yaw);
+	void apply_expo(float& roll, float& pitch, float& yaw);
 
 	void publish_data(abs_time_t& timestamp);
 
