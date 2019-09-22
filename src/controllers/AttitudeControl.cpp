@@ -40,15 +40,15 @@ AttitudeControl::AttitudeControl()
 
 	// Yaw rate controller is special
 	p = 0.08;
-	i = 0;
-	_yaw_rate_controller = new controllers::PIDController(p, i, 0, max_effort, max_integrator);
+	i = 0.0;
+	d = 0.0;
+	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 
 
 	//----- Attitude controller settings -----//
 	// p = 1.4; // Turned up until oscillations, turned down by 1/3
 	// p = 0.25;
-	p = 0.14;
-
+	p = 0.12;
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint
