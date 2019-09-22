@@ -33,7 +33,6 @@
 #define MAX_ANGULAR_RATE_RAD 220 * M_PI / 180
 #define MAX_YAW_RATE_RAD 180 * M_PI / 180
 
-
 class AttitudeControl
 {
 public:

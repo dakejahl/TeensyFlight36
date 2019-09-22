@@ -27,6 +27,9 @@
 
 #include <Eigen/Dense>
 
+#define ROLL_OFFSET_HORIZON 0.061236f
+#define PITCH_OFFSET_HORIZON 0.032144f
+
 using namespace Eigen;
 
 class Estimator

@@ -24,16 +24,19 @@
 #include <Messenger.hpp>
 #include <GyroCalibration.hpp>
 #include <AccelCalibration.hpp>
+#include <HorizonCalibration.hpp>
+
 
 std::string buffer;
 std::string GYRO_CAL = "cal gyro";
 std::string ACCEL_CAL = "cal accel";
 std::string MAG_CAL = "cal mag";
-
+std::string HORIZON_CAL = "cal horizon";
 
 void evaluate_user_command(void);
 void calibrate_gyro(void);
 void calibrate_accel(void);
+void calibrate_horizon(void);
 
 // Functions to allow streaming of data in CSV format
 void stream_accel_data(void);
@@ -96,6 +99,12 @@ void evaluate_user_command(void)
 	{
 		SYS_INFO("Calibrating mag");
 		stream_mag_data();
+		return;
+	}
+	else if (buffer == HORIZON_CAL)
+	{
+		SYS_INFO("Calibrating level horizon");
+		calibrate_horizon();
 		return;
 	}
 	else if (buffer == "stream accel")
@@ -167,6 +176,13 @@ void calibrate_accel(void)
 	// estimation::Estimator::Instance()->update_mag_scale()
 
 	// estimation::Estimator::Instance()->reset() ... to reinitialize the estimator with the new offsets and scales
+}
+
+void calibrate_horizon(void)
+{
+	HorizonCalibration horizon;
+
+	horizon.calibrate();
 }
 
 void stream_mag_data(void)

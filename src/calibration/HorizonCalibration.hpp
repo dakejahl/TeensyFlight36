@@ -22,16 +22,12 @@
 
 #pragma once
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
-#include <Time.hpp>
-
-class GyroCalibration
+class HorizonCalibration
 {
 public:
 	void calibrate(void)
 	{
-		// We will sit for 3 seconds and collect data at 10Hz (gyro runs at 1khz)
+		// We will sit for 3 seconds and collect data at 10Hz
 		auto start = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 		abs_time_t run_time = 3000000; // 3 seconds
 		auto now = start;
@@ -39,13 +35,16 @@ public:
 		unsigned num_samples = 0;
 		while (now < start + run_time)
 		{
-			if (gyro_sub.updated())
+			if (_attitude_sub.updated())
 			{
-				auto data = gyro_sub.get();
+				auto data = _attitude_sub.get();
+
+				float roll = data.roll;
+				float pitch = data.pitch;
+
 				// gyro_data->push_back(data);
-				_accumulate_x += data.x;
-				_accumulate_y += data.y;
-				_accumulate_z += data.z;
+				_roll_accumulate += roll;
+				_pitch_accumulate += pitch;
 				num_samples++;
 			}
 
@@ -53,20 +52,16 @@ public:
 			now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 		}
 
-		auto x_offset = _accumulate_x / num_samples;
-		auto y_offset = _accumulate_y / num_samples;
-		auto z_offset = _accumulate_z / num_samples;
+		auto roll_offset = _roll_accumulate / num_samples;
+		auto pitch_offset = _pitch_accumulate / num_samples;
 
 		// Offset is the average value of the measurement
-		SYS_INFO("gyro_offset_x: %f", x_offset);
-		SYS_INFO("gyro_offset_y: %f", y_offset);
-		SYS_INFO("gyro_offset_z: %f", z_offset);
+		SYS_INFO("roll_offset: %f", roll_offset);
+		SYS_INFO("pitch_offset: %f", pitch_offset);
 	}
 
 private:
-	messenger::Subscriber<gyro_raw_data_s> gyro_sub;
-	double _accumulate_x = 0;
-	double _accumulate_y = 0;
-	double _accumulate_z = 0;
-
+	messenger::Subscriber<attitude_euler_s> _attitude_sub;
+	double _roll_accumulate = 0;
+	double _pitch_accumulate = 0;
 };
