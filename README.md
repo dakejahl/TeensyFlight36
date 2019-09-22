@@ -85,6 +85,9 @@ I started by tuning the pitch controller first, and then duplicated those settin
 Shallow angle step toggling. Rate angle is fixed(80dps) and rate setpoint toggles when orientation reaches either of two shallow angles(12deg).
 ![](images/pitch_rate_step_response.png)
 
+### First flight
+https://www.youtube.com/watch?v=_Rxv4iX8fl8
+
 <br/>
 
 ***Thank you to...***
