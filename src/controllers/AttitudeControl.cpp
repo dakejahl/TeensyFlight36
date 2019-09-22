@@ -26,25 +26,31 @@ AttitudeControl::AttitudeControl()
 {
 	_pwm = new Pwm(400);
 
-	// Rate controller settings
-
-	// tune P until oscillations -- then cut in half
-	// tune I until offsets reduced
-	// tune D last to reduce oscillations
-
+	//----- Rate controller settings -----//
+	// pitch
 	float p = 0.15; // 0.3 is is oscillations
 	float i = 0.015;
 	float d = 6.0;
-
-	// p = .38
-	// d = 3 --- 6 is too low, 12 is too high
-
 	float max_effort = 1; // roll pitch and yaw are scaled from -1 to 1
 	float max_integrator = 0.3; // 30% of output
-
-
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
+
+	// roll
+
+
 	// _roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
+
+
+	//----- Attitude controller settings -----//
+	// pitch
+	p = 1;
+	i = 0;
+	d = 0;
+	max_effort = MAX_ANGULAR_RATE_RAD;
+	_pitch_controller = new controllers::PIDController(p, i, d, max_effort, 0);
+
+	// roll
+
 }
 void AttitudeControl::collect_attitude_data(void)
 {
@@ -81,39 +87,32 @@ void AttitudeControl::collect_attitude_rate_data(void)
 
 void AttitudeControl::get_rc_input(void)
 {
-	if (_rc_sub.updated())
+	if (_manual_control_sub.updated())
 	{
-		auto data = _rc_sub.get();
+		auto data = _manual_control_sub.get();
 
-		_rc_throttle = data.channels[0]; // 982 -- 1514 -- 2006
-		_rc_yaw = data.channels[3]; // 982 -- 1495 -- 2006
-		_rc_pitch = data.channels[2]; // 982 -- 1494 -- 2006
-		_rc_roll = data.channels[1]; // 982 -- 1493 -- 2006
-
-		_rc_kill = data.channels[5]; // away: 982 -- center: 1494 -- towards me: 2006
+		_rc_throttle = data.throttle;
+		_rc_yaw = data.yaw;
+		_rc_pitch = data.pitch;
+		_rc_roll = data.roll;
+		_rc_kill = data.kill_switch;
 	}
 }
 
-// TODO: FIXME
 void AttitudeControl::convert_sticks_to_setpoints(void)
 {
-	// Throttle is scaled between 1 and 0
-	_throttle_sp = (_rc_throttle - 982) / 982;
+	// pitch and roll are fed into the attitude controller
+	_pitch_sp = _rc_pitch * MAX_PITCH_ANGLE_RAD;
+	_roll_sp = _rc_roll * MAX_ROLL_ANGLE_RAD;
 
-	// Roll/Pitch/Yaw is scaled between -1 and 1
-	_pitch_sp = - (_rc_pitch - 1495) / (0.5 * 982); // pitch is inverted because we want forward stick to be negative pitch
-	_roll_sp = (_rc_roll - 1495) / (0.5 * 982);
-}
+	_yaw_rate_sp = _rc_yaw * MAX_ANGULAR_RATE_RAD; // yaw is fed into only a rates controller
 
-void AttitudeControl::scale_setpoints(void)
-{
-	_pitch_sp = _pitch_sp * MAX_PITCH_ANGLE_RAD;
-	_roll_sp = _roll_sp * MAX_ROLL_ANGLE_RAD;
+	_throttle_sp = _rc_throttle; // throttle_sp is fed directly to the mixer
 }
 
 void AttitudeControl::check_for_arm_condition(void)
 {
-	if (_rc_throttle == 982 && _rc_yaw == 2006 && !_enabled)
+	if (_rc_throttle == 0 && _rc_yaw == -1 && !_enabled)
 	{
 		auto now = time::HighPrecisionTimer::Instance()->get_absolute_time_us();
 
@@ -142,7 +141,7 @@ void AttitudeControl::check_for_arm_condition(void)
 
 void AttitudeControl::check_for_kill_condition(void)
 {
-	if (_rc_kill > KILL_VALUE)
+	if (_rc_kill)
 	{
 		_enabled = false;
 	}
@@ -168,28 +167,39 @@ void AttitudeControl::run_controllers(void)
 
 
 	//some hacky logic to induce oscillations
-	float degs = 5;
-	float angle = degs * M_PI / 180;
-	if (_pitch > angle)
-	{
-		float dps = -80;
-		pitch_rate_sp = dps * M_PI / 180;
-	}
-	else if (_pitch < -angle)
-	{
-		float dps = 80;
-		pitch_rate_sp = dps * M_PI / 180;
-	}
+	// float degs = 5;
+	// float angle = degs * M_PI / 180;
+	// if (_pitch > angle)
+	// {
+	// 	float dps = -80;
+	// 	pitch_rate_sp = dps * M_PI / 180;
+	// }
+	// else if (_pitch < -angle)
+	// {
+	// 	float dps = 80;
+	// 	pitch_rate_sp = dps * M_PI / 180;
+	// }
 
-	// pitch_rate_sp = 0;
+	pitch_rate_sp = 0;
+
+	// float angle_sp = 20 * M_PI / 180;
+
+	// setpoint_angle_s angle_sp_data;
+	// angle_sp_data.pitch = angle_sp;
+	// _angle_sp_pub.publish(angle_sp_data);
+
+	// // ----- Attitude Control ----- //
+	// pitch_rate_sp = _pitch_controller->get_effort(angle_sp, _pitch);
 
 	// // publish the rates setpoint
 	setpoint_rates_s rates_sp;
 	rates_sp.pitch = pitch_rate_sp;
 	_rates_sp_pub.publish(rates_sp);
 
-	// Rates
+	// ----- Rate Control ----- //
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
+
+
 
 
 	// unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort);

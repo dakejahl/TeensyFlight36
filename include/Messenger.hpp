@@ -65,13 +65,14 @@ struct __attribute__((__packed__)) mag_raw_data_s
 	float z;
 };
 
-struct __attribute__((__packed__)) rc_input_s
+struct __attribute__((__packed__)) manual_control_s
 {
 	abs_time_t timestamp;
-	uint16_t channels[16];
-	uint16_t lost_frame_count;
-	bool rc_failsafe;
-	bool rc_lost;
+	float roll;
+	float pitch;
+	float yaw;
+	float throttle;
+	bool kill_switch;
 };
 
 struct __attribute__((__packed__)) attitude_euler_s
@@ -91,6 +92,14 @@ struct __attribute__((__packed__)) rates_control_euler_s
 };
 
 struct __attribute__((__packed__)) setpoint_rates_s
+{
+	abs_time_t timestamp;
+	float roll;
+	float pitch;
+	float yaw;
+};
+
+struct __attribute__((__packed__)) setpoint_angle_s
 {
 	abs_time_t timestamp;
 	float roll;

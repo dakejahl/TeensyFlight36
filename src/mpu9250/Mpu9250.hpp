@@ -27,7 +27,7 @@
 #include <Spi.hpp>
 #include <Messenger.hpp>
 #include <LowPassFilter.hpp>
-
+#include <ButterworthFilter.hpp>
 
 // Gyro constants
 static constexpr double GYRO_FULL_SCALE_DPS = 2000.0;
@@ -35,7 +35,6 @@ static constexpr double GYRO_FULL_SCALE_RAD_S = GYRO_FULL_SCALE_DPS / (180.0 / M
 static constexpr unsigned TICKS = 65536;
 static constexpr float RAD_S_PER_TICK = 2 * GYRO_FULL_SCALE_RAD_S / TICKS; // times 2 since +/- FS
 static constexpr float DEG_S_PER_TICK = RAD_S_PER_TICK * 180 / M_PI; // times 2 since +/- FS
-
 
 // Accel constants
 static constexpr double CONSTANTS_ONE_G = 9.80665; // m/s^2
@@ -158,9 +157,9 @@ private:
 	LowPassFilter<float> _mag_filter_y {20}; // 20Hz filter
 	LowPassFilter<float> _mag_filter_z {20}; // 20Hz filter
 
-	LowPassFilter<float> _gyro_filter_x {80};// 30Hz filter
-	LowPassFilter<float> _gyro_filter_y {80};// 30Hz filter
-	LowPassFilter<float> _gyro_filter_z {80};// 30Hz filter
+	ButterworthFilter _gyro_filter_x {1000, 30};// 30Hz filter
+	ButterworthFilter _gyro_filter_y {1000, 30};// 30Hz filter
+	ButterworthFilter _gyro_filter_z {1000, 30};// 30Hz filter
 
 	LowPassFilter<float> _accel_filter_x {20};// 50Hz filter
 	LowPassFilter<float> _accel_filter_y {20};// 50Hz filter

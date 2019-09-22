@@ -348,9 +348,9 @@ void Mpu9250::publish_gyro_data(abs_time_t& timestamp)
 	// publish filtered data for controller input
 	gyro_filtered_data_s filtered_gyro;
 
-	x = _gyro_filter_x.apply(x, timestamp);
-	y = _gyro_filter_y.apply(y, timestamp);
-	z = _gyro_filter_z.apply(z, timestamp);
+	x = _gyro_filter_x.apply(x);
+	y = _gyro_filter_y.apply(y);
+	z = _gyro_filter_z.apply(z);
 
 	filtered_gyro.timestamp = timestamp;
 	filtered_gyro.x = x;

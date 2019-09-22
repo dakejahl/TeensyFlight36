@@ -22,9 +22,13 @@
 
 #pragma once
 
+#include <cmath>
+
 #include <board_config.hpp>
 #include <Uart.hpp>
 #include <Messenger.hpp>
+
+#define RC_KILL_VALUE 1000
 
 namespace interface
 {
@@ -66,7 +70,7 @@ private:
 	interface::Uart0* _uart;
 	TaskHandle_t _task_handle; // handle of the task that owns this interface
 
-	messenger::Publisher<rc_input_s> _rc_pub;
+	messenger::Publisher<manual_control_s> _manual_control_pub;
 };
 
 } // end namespace interface

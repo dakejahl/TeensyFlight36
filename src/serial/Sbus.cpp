@@ -118,18 +118,40 @@ void Sbus::collect_data(void)
 
 void Sbus::publish_data(abs_time_t& timestamp)
 {
-	rc_input_s data;
-	data.timestamp = timestamp;
-	data.lost_frame_count = _lost_frames;
-	data.rc_failsafe = _rc_failsafe;
-	data.rc_lost = _rc_lost;
+	float throttle = _channels_data[0];
+	float yaw = _channels_data[3];
+	float pitch = _channels_data[2];
+	float roll = _channels_data[1];
+	float kill = _channels_data[5];
 
-	for (size_t i = 0; i < RC_NUMBER_CHANNELS; i++)
-	{
-		data.channels[i] = _channels_data[i];
-	}
+	// Scale the sticks
+	static constexpr float stick_high = 2006;
+	static constexpr float stick_low = 982;
+	static constexpr float stick_center = 1495;
+	static constexpr float stick_range = stick_high - stick_low;
 
-	_rc_pub.publish(data);
+	throttle = (throttle - stick_low) / (stick_range); // Throttle is scaled between 0 and 1
+	yaw = -(yaw - stick_center) / (0.5*stick_range); // Yaw is negative because positive yaw is to the right
+	pitch = (pitch - stick_center) / (0.5*stick_range); // Roll/Pitch/Yaw is scaled between -1 and 1
+	roll = (roll - stick_center) / (0.5*stick_range);
+
+	// We only want ticks of 0.01 with range of -1 to 1 -- so we round these down
+	unsigned round_to_hundreds = 100U;
+	throttle = std::round(throttle * round_to_hundreds) / round_to_hundreds;
+	yaw = std::round(yaw * round_to_hundreds) / round_to_hundreds;
+	pitch = std::round(pitch * round_to_hundreds) / round_to_hundreds;
+	roll = std::round(roll * round_to_hundreds) / round_to_hundreds;
+
+	// Publish scaled sticks
+	manual_control_s control;
+
+	control.roll = roll;
+	control.pitch = pitch;
+	control.yaw = yaw;
+	control.throttle = throttle;
+	control.kill_switch = kill > RC_KILL_VALUE ? 1 : 0;
+
+	_manual_control_pub.publish(control);
 }
 
 void Sbus::print_data(void)

@@ -29,9 +29,9 @@
 
 
 #define ARM_TIME_US 2000000
-#define KILL_VALUE 1000
 #define MAX_PITCH_ANGLE_RAD M_PI / 4
 #define MAX_ROLL_ANGLE_RAD M_PI / 4
+#define MAX_ANGULAR_RATE_RAD 220 * M_PI / 180;
 
 class AttitudeControl
 {
@@ -53,7 +53,6 @@ public:
 
 	// Controller stuff
 	void convert_sticks_to_setpoints(void);
-	void scale_setpoints(void);
 
 	// Runs the attitude controller and then the rates controller
 	void run_controllers(void);
@@ -72,13 +71,15 @@ private:
 	float _yaw_rate = 0;
 
 	// Subscribers
-	messenger::Subscriber<rc_input_s> _rc_sub;
+	messenger::Subscriber<manual_control_s> _manual_control_sub;
 	messenger::Subscriber<gyro_filtered_data_s> _gyro_sub;
 	messenger::Subscriber<attitude_euler_s> _attitude_sub;
 
 	// Setpoint publishers
 	messenger::Publisher<rates_control_euler_s> _rates_control_pub;
 	messenger::Publisher<setpoint_rates_s> _rates_sp_pub;
+	messenger::Publisher<setpoint_angle_s> _angle_sp_pub;
+
 
 	// PWM output module
 	Pwm* _pwm {};
@@ -88,18 +89,19 @@ private:
 	float _rc_yaw = 0;
 	float _rc_pitch = 0;
 	float _rc_roll = 0;
-	float _rc_kill = 0;
+	bool _rc_kill = false;
 
 	// Attitude control
 	float _throttle_sp = 0;
 	float _roll_sp = 0;
 	float _pitch_sp = 0;
-	float _yaw_sp = 0;
 
 	controllers::PIDController* _pitch_controller;
 	controllers::PIDController* _roll_controller;
 
 	// Rate control
+	float _yaw_rate_sp = 0;
+
 	controllers::PIDController* _pitch_rate_controller;
 	controllers::PIDController* _roll_rate_controller;
 

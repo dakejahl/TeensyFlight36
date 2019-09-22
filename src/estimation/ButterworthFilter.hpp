@@ -20,40 +20,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <board_config.hpp>
-#include <Messenger.hpp>
-#include <Pwm.hpp>
-#include <AttitudeControl.hpp>
+#pragma once
 
+#include <cmath>
+// Second order butterworth filter
 
-void controller_task(void* args)
+class ButterworthFilter
 {
-	auto attitude_controller = new AttitudeControl();
+public:
 
-	for(;;)
+	ButterworthFilter(float sample_freq, float cutoff_freq)
 	{
-		// Get controller command if updated
-		attitude_controller->get_rc_input();
-		attitude_controller->convert_sticks_to_setpoints();
-
-		attitude_controller->check_for_arm_condition();
-		attitude_controller->check_for_kill_condition();
-
-		// Retrieve latest gyro data
-		attitude_controller->collect_attitude_data();
-		attitude_controller->collect_attitude_rate_data();
-
-		if (attitude_controller->armed())
-		{
-
-			attitude_controller->run_controllers();
-		}
-		else
-		{
-			attitude_controller->outputs_motors_disarmed();
-		}
-
-		// 1kHz loop rate
-		vTaskDelay(100);
+		// set initial parameters
+		set_cutoff_frequency(sample_freq, cutoff_freq);
 	}
-}
+
+	// Change filter parameters
+	void set_cutoff_frequency(float sample_freq, float cutoff_freq);
+
+	/**
+	 * Add a new raw value to the filter
+	 *
+	 * @return retrieve the filtered result
+	 */
+	float apply(float sample);
+
+	// Return the cutoff frequency
+	float get_cutoff_freq() const { return _cutoff_freq; }
+
+	// Reset the filter state to this value
+	float reset(float sample);
+
+private:
+
+	float _cutoff_freq{0.0f};
+
+	float _a1{0.0f};
+	float _a2{0.0f};
+
+	float _b0{0.0f};
+	float _b1{0.0f};
+	float _b2{0.0f};
+
+	float _delay_element_1{0.0f};	// buffered sample -1
+	float _delay_element_2{0.0f};	// buffered sample -2
+};
