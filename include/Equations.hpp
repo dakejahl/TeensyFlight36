@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 namespace equations
 {
 
@@ -56,6 +58,29 @@ inline float yaw_rate_from_gyro(float x, float y, float z, float pitch_est, floa
 	float yaw_rate = y * std::sin(roll_est) / std::cos(pitch_est) + z * std::cos(roll_est) / std::cos(pitch_est);
 
 	return yaw_rate;
+}
+
+// TODO: use a variadic function and std::for_each instead of overloading
+inline void apply_expo(float a, float& item1, float& item2, float& item3)
+{
+	auto expo = [a](float& val)
+	{
+		val = (1 - a)*val + a*val*val*val;
+	};
+
+	expo(item1);
+	expo(item2);
+	expo(item3);
+}
+
+inline void apply_expo(float a, float& item)
+{
+	auto expo = [a](float& val)
+	{
+		val = (1 - a)*val + a*val*val*val;
+	};
+
+	expo(item);
 }
 
 template <typename T>

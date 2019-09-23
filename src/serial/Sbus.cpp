@@ -181,15 +181,7 @@ void Sbus::apply_expo(float& roll, float& pitch, float& yaw)
 {
 	// exponential function looks like: y = (1 - a)*x + a*x*x*x
 	float a = 0.68;
-
-	auto expo = [a](float& val)
-	{
-		val = (1 - a)*val + a*val*val*val;
-	};
-
-	expo(roll);
-	expo(pitch);
-	expo(yaw);
+	equations::apply_expo(a, roll, pitch, yaw);
 }
 
 void Sbus::print_data(void)
