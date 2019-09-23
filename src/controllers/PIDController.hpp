@@ -32,11 +32,9 @@ class PIDController
 public:
 	PIDController(float P, float I, float D, float max_effort, float max_integrator);
 
-	float get_effort(float target, float current);
+	virtual float get_effort(float target, float current);
 
-	float apply_nonlinear_controller(const float error, const float scale_factor, const float gain);
-
-private:
+protected:
 	// gains
 	float _kP = 0;
 	float _kI = 0;
@@ -49,6 +47,16 @@ private:
 	// constraints
 	float _max_effort = 0;
 	float _max_integrator = 0;
+};
+
+class NonlinearPIDController : public PIDController
+{
+public:
+	NonlinearPIDController(float P, float I, float D, float max_effort, float max_integrator) : PIDController(P, I, D, max_effort, max_integrator)
+	{}
+
+	float get_effort(float target, float current) override;
+	float apply_nonlinear_controller(const float error, const float scale_factor, const float gain);
 };
 
 } // end namespace controllers

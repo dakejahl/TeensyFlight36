@@ -51,14 +51,42 @@ float PIDController::get_effort(float target, float current)
 		_error_integral = -_max_integrator;
 	}
 
-	// integral windup reset
-	// if ( (_last_error < 0.0f && error > 0.0f) || (_last_error > 0.0f && error < 0.0f))
-	// {
-	// 	_error_integral = 0;
-	// }
+	float p_effort = error * _kP;
+	float i_effort = _error_integral * _kI;
+	float d_effort = (error - _last_error) * _kD;
 
-	// Calculate effort from PID gains and error
-	// float effort = _kP * error + _kI * _error_integral + _kD * (error - _last_error);
+	float effort = p_effort + i_effort + d_effort;
+
+	if (effort > _max_effort)
+	{
+		effort = _max_effort;
+	}
+	else if (effort < -_max_effort)
+	{
+		effort = -_max_effort;
+	}
+
+	_last_error = error;
+
+	return effort;
+}
+
+/////----- NON LINEAR PID -----/////
+float NonlinearPIDController::get_effort(float target, float current)
+{
+	float error = target - current;
+
+	_error_integral += error;
+
+	// integral clamp
+	if (_error_integral > _max_integrator)
+	{
+		_error_integral = _max_integrator;
+	}
+	else if (_error_integral < -_max_integrator)
+	{
+		_error_integral = -_max_integrator;
+	}
 
 	// Non-linear gains
 	float p_effort = apply_nonlinear_controller(error, _max_effort, _kP);
@@ -81,7 +109,7 @@ float PIDController::get_effort(float target, float current)
 	return effort;
 }
 
-float PIDController::apply_nonlinear_controller(const float error, const float scale_factor, const float gain)
+float NonlinearPIDController::apply_nonlinear_controller(const float error, const float scale_factor, const float gain)
 {
 	float effort = scale_factor * std::erf(error * gain);
 

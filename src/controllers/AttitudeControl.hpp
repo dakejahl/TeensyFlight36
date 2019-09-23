@@ -100,9 +100,9 @@ private:
 	// Rate control
 	float _yaw_rate_sp = 0;
 
-	controllers::PIDController* _pitch_rate_controller;
-	controllers::PIDController* _roll_rate_controller;
-	controllers::PIDController* _yaw_rate_controller;
+	controllers::NonlinearPIDController* _pitch_rate_controller;
+	controllers::NonlinearPIDController* _roll_rate_controller;
+	controllers::NonlinearPIDController* _yaw_rate_controller;
 
 	// arming stuff
 	bool _enabled = false;

@@ -35,19 +35,17 @@ AttitudeControl::AttitudeControl()
 	float d = 2.2; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // torque is just scaled between -1 and 1
 	float max_integrator = 0.3; // 30% of output
-	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
-	_roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
+	_pitch_rate_controller = new controllers::NonlinearPIDController(p, i, d, max_effort, max_integrator);
+	_roll_rate_controller = new controllers::NonlinearPIDController(p, i, d, max_effort, max_integrator);
 
 	// Yaw rate controller is special
 	p = 0.08;
 	i = 0.0;
 	d = 0.0;
-	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, 0);
+	_yaw_rate_controller = new controllers::NonlinearPIDController(p, i, d, max_effort, 0);
 
 	//----- Attitude controller settings -----//
-	// p = 1.4; // Turned up until oscillations, turned down by 1/3
-	// p = 0.25;
-	p = 0.18; // 0.18 seems okay
+	p = 5; // we may need some expo, large errors are not producing enough effort
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint
