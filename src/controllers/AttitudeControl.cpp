@@ -27,12 +27,9 @@ AttitudeControl::AttitudeControl()
 	_pwm = new Pwm(400);
 
 	//----- Rate controller settings -----//
-	// float p = 0.07; // turn up P until we overshoot 1/2 our overshoot spec
-	// float i = 0.02; // turn up I until we overshoot our spec
-	// float d = 2; // 6 causes oscillations, so we turn down by 2/3
-	float p = 0.12; // turn up P until we overshoot 1/2 our overshoot spec
+	float p = 0.08; // turn up P until we overshoot 1/2 our overshoot spec
 	float i = 0.003; // turn up I until we overshoot our spec
-	float d = 2.8; // 6 causes oscillations, so we turn down by 2/3
+	float d = 3.2; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // torque is just scaled between -1 and 1
 	float max_integrator = 0.3; // 30% of output
 	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
@@ -45,12 +42,12 @@ AttitudeControl::AttitudeControl()
 	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, 0);
 
 	//----- Attitude controller settings -----//
-	p = 5; // we may need some expo, large errors are not producing enough effort
+	p = 4.5; // we may need some expo, large errors are not producing enough effort :()
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint
-	_pitch_controller = new controllers::PIDController(p, i, d, max_effort, 0);
-	_roll_controller = new controllers::PIDController(p, i, d, max_effort, 0);
+	_pitch_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
+	_roll_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 }
 
 void AttitudeControl::collect_attitude_data(void)
