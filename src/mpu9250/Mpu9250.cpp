@@ -311,9 +311,9 @@ void Mpu9250::publish_accel_data(abs_time_t& timestamp)
 	apply_accel_calibration(x,y,z);
 
 	// Apply a lowpass filter
-	x = _accel_filter_x.apply(x, timestamp);
-	y = _accel_filter_y.apply(y, timestamp);
-	z = _accel_filter_z.apply(z, timestamp);
+	x = _accel_filter_x.apply(x);
+	y = _accel_filter_y.apply(y);
+	z = _accel_filter_z.apply(z);
 
 	// Stuff the message
 	accel_raw_data_s data;

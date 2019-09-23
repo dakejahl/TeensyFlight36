@@ -30,19 +30,19 @@ AttitudeControl::AttitudeControl()
 	// float p = 0.07; // turn up P until we overshoot 1/2 our overshoot spec
 	// float i = 0.02; // turn up I until we overshoot our spec
 	// float d = 2; // 6 causes oscillations, so we turn down by 2/3
-	float p = 0.1; // turn up P until we overshoot 1/2 our overshoot spec
-	float i = 0.0; // turn up I until we overshoot our spec
-	float d = 2.2; // 6 causes oscillations, so we turn down by 2/3
+	float p = 0.12; // turn up P until we overshoot 1/2 our overshoot spec
+	float i = 0.003; // turn up I until we overshoot our spec
+	float d = 2.8; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // torque is just scaled between -1 and 1
 	float max_integrator = 0.3; // 30% of output
-	_pitch_rate_controller = new controllers::NonlinearPIDController(p, i, d, max_effort, max_integrator);
-	_roll_rate_controller = new controllers::NonlinearPIDController(p, i, d, max_effort, max_integrator);
+	_pitch_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
+	_roll_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
 
 	// Yaw rate controller is special
 	p = 0.08;
 	i = 0.0;
 	d = 0.0;
-	_yaw_rate_controller = new controllers::NonlinearPIDController(p, i, d, max_effort, 0);
+	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, 0);
 
 	//----- Attitude controller settings -----//
 	p = 5; // we may need some expo, large errors are not producing enough effort
@@ -113,12 +113,6 @@ void AttitudeControl::convert_sticks_to_setpoints(void)
 	_roll_sp = _rc_roll * MAX_ROLL_ANGLE_RAD;
 
 	_yaw_rate_sp = _rc_yaw * MAX_YAW_RATE_RAD; // yaw is fed into only a rates controller
-	// SYS_INFO("_yaw_rate_sp: %f", _yaw_rate_sp);
-	// SYS_INFO("_rc_yaw: %f", _rc_yaw);
-	// SYS_INFO("pitch: %f", _pitch);
-	// SYS_INFO("_pitch_sp: %f", _pitch_sp);
-	// SYS_INFO("roll: %f", _roll);
-	// SYS_INFO("_roll_sp: %f", _roll_sp);
 
 	_throttle_sp = _rc_throttle; // throttle_sp is fed directly to the mixer
 
@@ -132,11 +126,11 @@ void AttitudeControl::convert_sticks_to_setpoints(void)
 void AttitudeControl::run_controllers(void)
 {
 	// ----- Attitude Control ----- //
-	float pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
 	float roll_rate_sp = _roll_controller->get_effort(_roll_sp, _roll);
+	float pitch_rate_sp = _pitch_controller->get_effort(_pitch_sp, _pitch);
 	float yaw_rate_sp = _yaw_rate_sp;
 
-	// float pitch_rate_sp = 0;
+	// float pitch_rate_sp = _pitch_sp * 4;
 	// float roll_rate_sp = 0;
 	// float yaw_rate_sp = 0;
 
@@ -148,8 +142,8 @@ void AttitudeControl::run_controllers(void)
 
 	// ----- Rate Control ----- //
 	float throttle_effort = _throttle_sp;
-	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
 	float roll_effort = _roll_rate_controller->get_effort(roll_rate_sp, _roll_rate);
+	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
 	float yaw_effort = 0;
 
 	// TODO: figure out why yaw controller freaks out when vehicle is first armed
