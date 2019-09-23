@@ -30,8 +30,8 @@ AttitudeControl::AttitudeControl()
 	// float p = 0.07; // turn up P until we overshoot 1/2 our overshoot spec
 	// float i = 0.02; // turn up I until we overshoot our spec
 	// float d = 2; // 6 causes oscillations, so we turn down by 2/3
-	float p = 0.14; // turn up P until we overshoot 1/2 our overshoot spec
-	float i = 0.002; // turn up I until we overshoot our spec
+	float p = 0.1; // turn up P until we overshoot 1/2 our overshoot spec
+	float i = 0.0; // turn up I until we overshoot our spec
 	float d = 2.2; // 6 causes oscillations, so we turn down by 2/3
 	float max_effort = 1; // torque is just scaled between -1 and 1
 	float max_integrator = 0.3; // 30% of output
@@ -48,7 +48,7 @@ AttitudeControl::AttitudeControl()
 	//----- Attitude controller settings -----//
 	// p = 1.4; // Turned up until oscillations, turned down by 1/3
 	// p = 0.25;
-	p = 0.12;
+	p = 0.18; // 0.18 seems okay
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint
@@ -146,21 +146,28 @@ void AttitudeControl::run_controllers(void)
 	_rates_sp_pub.publish(rates_sp);
 
 	// ----- Rate Control ----- //
+	float throttle_effort = _throttle_sp;
 	float pitch_effort = _pitch_rate_controller->get_effort(pitch_rate_sp, _pitch_rate);
 	float roll_effort = _roll_rate_controller->get_effort(roll_rate_sp, _roll_rate);
-	float yaw_effort = _yaw_rate_controller->get_effort(yaw_rate_sp, _yaw_rate);
+	float yaw_effort = 0;
+
+	// TODO: figure out why yaw controller freaks out when vehicle is first armed
+	if (throttle_effort > 0)
+	{
+		yaw_effort = _yaw_rate_controller->get_effort(yaw_rate_sp, _yaw_rate);
+	}
 
 	// Convert to motor torque
-	unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort - roll_effort - yaw_effort);
-	unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort + roll_effort - yaw_effort);
-	unsigned motor_effort_3 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp - pitch_effort + roll_effort + yaw_effort);
-	unsigned motor_effort_4 = pwm::IDLE_THROTTLE + (pwm::SAFE_THROTTLE - pwm::IDLE_THROTTLE) * (_throttle_sp + pitch_effort - roll_effort + yaw_effort);
+	unsigned motor_effort_1 = pwm::IDLE_THROTTLE + (pwm::MORE_THROTTLE - pwm::IDLE_THROTTLE) * (throttle_effort - pitch_effort - roll_effort - yaw_effort);
+	unsigned motor_effort_2 = pwm::IDLE_THROTTLE + (pwm::MORE_THROTTLE - pwm::IDLE_THROTTLE) * (throttle_effort + pitch_effort + roll_effort - yaw_effort);
+	unsigned motor_effort_3 = pwm::IDLE_THROTTLE + (pwm::MORE_THROTTLE - pwm::IDLE_THROTTLE) * (throttle_effort - pitch_effort + roll_effort + yaw_effort);
+	unsigned motor_effort_4 = pwm::IDLE_THROTTLE + (pwm::MORE_THROTTLE - pwm::IDLE_THROTTLE) * (throttle_effort + pitch_effort - roll_effort + yaw_effort);
 
 	// constrain
-	motor_effort_1 = equations::clamp<unsigned>(motor_effort_1, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
-	motor_effort_2 = equations::clamp<unsigned>(motor_effort_2, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
-	motor_effort_3 = equations::clamp<unsigned>(motor_effort_3, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
-	motor_effort_4 = equations::clamp<unsigned>(motor_effort_4, pwm::IDLE_THROTTLE, pwm::SAFE_THROTTLE);
+	motor_effort_1 = equations::clamp<unsigned>(motor_effort_1, pwm::IDLE_THROTTLE, pwm::MORE_THROTTLE);
+	motor_effort_2 = equations::clamp<unsigned>(motor_effort_2, pwm::IDLE_THROTTLE, pwm::MORE_THROTTLE);
+	motor_effort_3 = equations::clamp<unsigned>(motor_effort_3, pwm::IDLE_THROTTLE, pwm::MORE_THROTTLE);
+	motor_effort_4 = equations::clamp<unsigned>(motor_effort_4, pwm::IDLE_THROTTLE, pwm::MORE_THROTTLE);
 
 	// Ouput it to the motors
 	_pwm->write(pwm::MOTOR_1, motor_effort_1);

@@ -45,7 +45,6 @@ void controller_task(void* args)
 
 		if (attitude_controller->armed())
 		{
-
 			attitude_controller->run_controllers();
 		}
 		else
