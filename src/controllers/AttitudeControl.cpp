@@ -42,8 +42,7 @@ AttitudeControl::AttitudeControl()
 	p = 0.08;
 	i = 0.0;
 	d = 0.0;
-	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, max_integrator);
-
+	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, 0);
 
 	//----- Attitude controller settings -----//
 	// p = 1.4; // Turned up until oscillations, turned down by 1/3
@@ -118,6 +117,10 @@ void AttitudeControl::convert_sticks_to_setpoints(void)
 	_yaw_rate_sp = _rc_yaw * MAX_YAW_RATE_RAD; // yaw is fed into only a rates controller
 	// SYS_INFO("_yaw_rate_sp: %f", _yaw_rate_sp);
 	// SYS_INFO("_rc_yaw: %f", _rc_yaw);
+	// SYS_INFO("pitch: %f", _pitch);
+	// SYS_INFO("_pitch_sp: %f", _pitch_sp);
+	// SYS_INFO("roll: %f", _roll);
+	// SYS_INFO("_roll_sp: %f", _roll_sp);
 
 	_throttle_sp = _rc_throttle; // throttle_sp is fed directly to the mixer
 

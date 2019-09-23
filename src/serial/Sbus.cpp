@@ -160,32 +160,21 @@ void Sbus::publish_data(abs_time_t& timestamp)
 
 void Sbus::apply_deadzone(float& roll, float& pitch, float& yaw)
 {
-	if (roll < 0 && roll > -0.1)
+	auto deadzone = [](float& val)
 	{
-		roll = 0;
-	}
-	else if (roll > 0 && roll < 0.1)
-	{
-		roll = 0;
-	}
+		if (val < 0 && val > -0.1)
+		{
+			val = 0;
+		}
+		else if (val > 0 && val < 0.1)
+		{
+			val = 0;
+		}
+	};
 
-	if (pitch < 0 && pitch > -0.1)
-	{
-		pitch = 0;
-	}
-	else if (pitch > 0 && pitch < 0.1)
-	{
-		pitch = 0;
-	}
-
-	if (yaw < 0 && yaw > -0.1)
-	{
-		yaw = 0;
-	}
-	else if (yaw > 0 && yaw < 0.1)
-	{
-		yaw = 0;
-	}
+	deadzone(roll);
+	deadzone(pitch);
+	deadzone(yaw);
 }
 
 void Sbus::apply_expo(float& roll, float& pitch, float& yaw)
