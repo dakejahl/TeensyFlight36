@@ -42,7 +42,7 @@ AttitudeControl::AttitudeControl()
 	_yaw_rate_controller = new controllers::PIDController(p, i, d, max_effort, 0);
 
 	//----- Attitude controller settings -----//
-	p = 4.5; // we may need some expo, large errors are not producing enough effort :()
+	p = 6.3; // we may need some expo, large errors are not producing enough effort :()
 	i = 0;
 	d = 0;
 	max_effort = MAX_ANGULAR_RATE_RAD; // attitude controlle produces a rate setpoint

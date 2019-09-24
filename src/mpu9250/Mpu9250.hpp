@@ -178,16 +178,16 @@ private:
 	abs_time_t _last_timestamp = 0;
 
 	// mag filter
-	LowPassFilter<float> _mag_filter_x {20}; // 20Hz filter
-	LowPassFilter<float> _mag_filter_y {20}; // 20Hz filter
-	LowPassFilter<float> _mag_filter_z {20}; // 20Hz filter
+	LowPassFilter<float> _mag_filter_x {20};
+	LowPassFilter<float> _mag_filter_y {20};
+	LowPassFilter<float> _mag_filter_z {20};
 
-	ButterworthFilter _gyro_filter_x {1000, 30};// 30Hz filter
-	ButterworthFilter _gyro_filter_y {1000, 30};// 30Hz filter
-	ButterworthFilter _gyro_filter_z {1000, 30};// 30Hz filter
+	ButterworthFilter _gyro_filter_x {1000, 80};
+	ButterworthFilter _gyro_filter_y {1000, 80};
+	ButterworthFilter _gyro_filter_z {1000, 80};
 
-	ButterworthFilter _accel_filter_x {1000, 30};// 50Hz filter
-	ButterworthFilter _accel_filter_y {1000, 30};// 50Hz filter
-	ButterworthFilter _accel_filter_z {1000, 30};// 50Hz filter
+	ButterworthFilter _accel_filter_x {1000, 30};
+	ButterworthFilter _accel_filter_y {1000, 30};
+	ButterworthFilter _accel_filter_z {1000, 30};
 };
 

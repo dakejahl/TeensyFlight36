@@ -37,7 +37,6 @@ void estimator_task(void* args)
 
 	auto estimator = new ComplimentaryFilter(0.1);
 
-
 	for(;;)
 	{
 		if (accel_sub.updated())

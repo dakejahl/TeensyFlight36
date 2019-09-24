@@ -3,6 +3,7 @@
 
 ## What's the point?
 Aiming to improve in embedded firmware, electrical engineering, and software design.
+https://hackaday.io/project/167420-teensyflight36
 
 ## Features
 - Makefile + SWD GDB upload and debug
@@ -82,11 +83,11 @@ I started by tuning the pitch controller first, and then duplicated those settin
 ![](images/test_jig.jpg)
 
 #### Step response
-Shallow angle step toggling. Rate angle is fixed(80dps) and rate setpoint toggles when orientation reaches either of two shallow angles(12deg).
+Flick of the sticks while in rate control mode.
 ![](images/pitch_rate_step_response.png)
 
-### First flight
-https://www.youtube.com/watch?v=_Rxv4iX8fl8
+### Video
+[![Teensy Flight](https://img.youtube.com/vi/uor3z-m6CgQ/0.jpg)](https://www.youtube.com/watch?v=uor3z-m6CgQ)
 
 <br/>
 
